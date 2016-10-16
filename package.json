@@ -1,0 +1,29 @@
+{
+  "name": "mde",
+  "version": "1.0.0",
+  "description": "A Markdown Editor",
+  "main": "index.js",
+  "scripts": {
+    "server": "http-server ./ -p8085",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ChannelOne/MDE.git"
+  },
+  "keywords": [
+    "editor"
+  ],
+  "author": "DZ Chan",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ChannelOne/MDE/issues"
+  },
+  "homepage": "https://github.com/ChannelOne/MDE#readme",
+  "dependencies": {
+    "gulp": "^3.9.1",
+    "gulp-cached": "^1.1.0",
+    "gulp-sourcemaps": "^2.1.1",
+    "gulp-typescript": "^3.0.2"
+  }
+}

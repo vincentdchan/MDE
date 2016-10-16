@@ -1,0 +1,39 @@
+{
+    "version": "0.1.0",
+    "configurations": [
+        {
+            "name": "Launch",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceRoot}/build/server.js",
+            "stopOnEntry": false,
+            "args": [],
+            "cwd": "${workspaceRoot}",
+            "preLaunchTask": null,
+            "runtimeExecutable": null,
+            "runtimeArgs": [
+                "--nolazy"
+            ],
+            "env": {
+                "Node_ENV": "development"
+            },
+            "port": 13872,
+            "sourceMaps": true,
+            "outDir": null
+        },
+        {
+            "name": "Launch localhost with sourcemaps",
+            "type": "chrome",
+            "request": "launch",
+            "url": "http://localhost/mypage.html",
+            "webRoot": "${workspaceRoot}/app/files",
+            "sourceMaps": true
+        },
+        {
+            "name": "Launch index.html (without sourcemaps)",
+            "type": "chrome",
+            "request": "launch",
+            "file": "${workspaceRoot}/index.html"
+        }
+    ]
+}

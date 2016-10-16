@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+        "target": "es6",
+        "removeComments": true,
+        "module": "commonjs",
+        "sourceMap": true,
+        "outDir": "./build",
+        "typeRoots": ["node_modules/@types"],
+        "types": [
+        ]
+    }
+}
