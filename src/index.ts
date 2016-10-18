@@ -1,14 +1,29 @@
-import {RopeString} from "./model/TextModel"
+import {RopeString} from "./model/ropeString"
+import {app, BrowserWindow} from "electron"
 
+let win;
 
-var str = new RopeString("hello");
-console.log(str.reportAll());
+function createWindow() {
+    win = new BrowserWindow({width: 800, height : 600});
+    
+    win.loadURL("file://" + __dirname + "/../index.html");
+    
+    win.webContents.openDevTools();
+    
+    win.on('closed', ()=> {
+        win = null;
+    });
+}
 
-str.insert(2, "FUCK")
-console.log(str.reportAll());
+app.on('ready', createWindow);
+app.on('window-all-closed', () => {
+    if (process.platform !== 'darwin') {
+        app.quit();
+    }
+});
 
-str.insert(3, "fuck");
-console.log(str.reportAll());
-
-str.delete(1, 2);
-console.log(str.reportAll());
+app.on('activate', () => {
+    if (win === null) {
+        createWindow();
+    }
+})

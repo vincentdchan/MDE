@@ -2,6 +2,13 @@
     "version": "0.1.0",
     "configurations": [
         {
+            "name": "Launch Exporter",
+            "type": "chrome",
+            "request": "launch",
+            "runtimeExecutable": "${workspaceRoot}/scripts/launch.bat",
+			"sourceMaps": true
+        },
+        {
             "name": "Launch",
             "type": "node",
             "request": "launch",
