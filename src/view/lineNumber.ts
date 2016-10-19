@@ -1,3 +1,4 @@
+import {elem} from "../util/dom"
 
 export class LineNumber {
     
@@ -7,7 +8,7 @@ export class LineNumber {
     constructor(_num : number) {
         this._total_number = _num;
         
-        this._frame = document.createElement("div");
+        this._frame = elem("div", "linenumber-frame");
     }
     
     get total_number() {

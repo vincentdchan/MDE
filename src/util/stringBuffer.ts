@@ -18,5 +18,9 @@ export class StringBuffer {
     getStr() {
         return this._buf.join("");
     }
+    
+    get length() {
+        return this._buf.length;
+    }
 
 }

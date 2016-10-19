@@ -1,29 +1,15 @@
-import {RopeString} from "./model/ropeString"
-import {app, BrowserWindow} from "electron"
+import {Display} from "./view/display"
+import {TextModel} from "./model/textModel"
 
-let win;
+let content = 
+"# title \n" +
+"\n" +
+"content\n" +
+"something else\n"
 
-function createWindow() {
-    win = new BrowserWindow({width: 800, height : 600});
-    
-    win.loadURL("file://" + __dirname + "/../index.html");
-    
-    win.webContents.openDevTools();
-    
-    win.on('closed', ()=> {
-        win = null;
-    });
-}
+let elem = document.getElementById("frame");
+let display = new Display(elem);
+let textModel = new TextModel();
 
-app.on('ready', createWindow);
-app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') {
-        app.quit();
-    }
-});
-
-app.on('activate', () => {
-    if (win === null) {
-        createWindow();
-    }
-})
+textModel.setFromRawText(content);
+display.render(textModel);

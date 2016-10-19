@@ -7,7 +7,7 @@ export class LineModel {
     protected _text : string;
     
     constructor(_num : number, _t : string) {
-        this._number | 0;
+        this._number = _num | 0;
         this._text = _t;
     }
     
@@ -15,8 +15,16 @@ export class LineModel {
         return this._text;
     }
     
-    setText(_t : string) {
+    set text(_t : string) {
         this._text = _t
+    }
+
+    get number() {
+        return this._number;
+    }
+
+    set number(num : number) {
+        this._number = num;
     }
     
     get length() {
@@ -30,6 +38,8 @@ export class TextModel {
     protected _lines : LineModel[];
     
     setFromRawText(_string : string) {
+        this._lines = new Array<LineModel>();
+        
         let lc = 1;
         
         var buf = new StringBuffer();
@@ -54,6 +64,11 @@ export class TextModel {
             }
         }
         
+        if (buf.length > 0) {
+            var li = new LineModel(lc++, buf.getStr());
+            this.lines.push(li);
+            buf = null;
+        }        
     }
     
     setLineValue(_line_num : number, lm : LineModel) {

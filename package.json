@@ -2,7 +2,7 @@
   "name": "mde",
   "version": "1.0.0",
   "description": "A Markdown Editor",
-  "main": "build/index.js",
+  "main": "build/window.js",
   "scripts": {
     "server": "http-server ./ -p8085",
     "test": "echo \"Error: no test specified\" && exit 1"
