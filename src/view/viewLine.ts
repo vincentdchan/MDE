@@ -1,5 +1,4 @@
-
-import {LineModel} from "../model/textModel"
+import {LineModel} from "../model/lineModel"
 import {elem} from "../util/dom"
 import {insertBreakAtPoint} from "../util/util"
 
