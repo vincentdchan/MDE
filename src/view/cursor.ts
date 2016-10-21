@@ -1,6 +1,6 @@
-import {elem} from "../util/dom"
+import {elem, IElement} from "../util/dom"
 
-export class Cursor {
+export class Cursor implements IElement {
 
     private _element : HTMLDivElement;
 
@@ -32,8 +32,12 @@ export class Cursor {
         this._element.style.top = y + "px";
     }
 
-    get element() {
+    getElement() {
         return this._element;
+    }
+
+    appendTo(elem : HTMLElement) {
+        elem.appendChild(this._element);
     }
 
 }

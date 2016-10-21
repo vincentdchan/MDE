@@ -4,3 +4,10 @@ export function elem(elemName : string, className : string) {
     _elm.setAttribute("class", className);
     return _elm;
 }
+
+export interface IElement {
+
+    appendTo(elem: HTMLElement);
+    getElement() : HTMLElement;
+
+}

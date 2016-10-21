@@ -1,8 +1,8 @@
 import {LineModel} from "../model/lineModel"
-import {elem} from "../util/dom"
+import {elem, IElement} from "../util/dom"
 import {insertBreakAtPoint} from "../util/util"
 
-export class ViewLine {
+export class ViewLine implements IElement {
     
     private _elem : HTMLElement;
     private _model : LineModel;
@@ -27,14 +27,27 @@ export class ViewLine {
             this.fireClickEvent(this, e);
             // console.log("number: " + this.lineNumber + " offset: " + insertBreakAtPoint(e));
         })
+
+        this._model.onInsert((lm: LineModel, e : Event) => {
+            this._elem.innerHTML = lm.text
+        });
+
+        this._model.onDelete((lm: LineModel, e : Event) => {
+            this._elem.innerHTML = lm.text
+        })
+
     }
 
     onClickEvent(fun : (vl : ViewLine, e : Event) => void) {
         this._clickEventHandler.push(fun);
     }
 
-    get element() {
+    getElement() {
         return this._elem;
+    }
+
+    appendTo(elem : HTMLElement) {
+       elem.appendChild(this._elem);
     }
 
     get lineNumber() {
@@ -42,7 +55,7 @@ export class ViewLine {
     }
 
     get coordinate() : ClientRect {
-        return  this.element.getBoundingClientRect();
+        return  this._elem.getBoundingClientRect();
     }
 
 }

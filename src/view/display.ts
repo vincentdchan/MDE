@@ -3,6 +3,7 @@ import {Cursor} from "./cursor"
 import {TextModel} from "../model/textModel"
 import {LineModel} from "../model/lineModel"
 import {LineNumber} from "./lineNumber"
+import {Input} from "./input"
 import {elem} from "../util/dom"
 import {insertBreakAtPoint} from "../util/util"
 
@@ -13,7 +14,7 @@ export class Display {
     
     private _frame : HTMLElement;
     private _render_frame : HTMLElement;
-    private _input : HTMLTextAreaElement;
+    private _input : Input;
     private _cursor : Cursor;
     private _lineNumber : LineNumber;
     private _currentLine : number;
@@ -26,12 +27,13 @@ export class Display {
         
         this._frame = elem("div", "display-frame");
         this._render_frame = elem("div", "render-frame");
-        this._input = <HTMLTextAreaElement>(elem("textarea", "input-textarea"));
+        this._input = new Input();
         this._cursor = new Cursor();
 
-        this._frame.appendChild(this._input);
-        this._frame.appendChild(this._cursor.element);
+        this._input.appendTo(this._frame);
+        this._cursor.appendTo(this._frame);
         this._frame.appendChild(this._lineNumber.frame);
+
         this._frame.appendChild(this._render_frame);
         
         container.appendChild(this._frame);
@@ -62,39 +64,22 @@ export class Display {
 
                 this._cursor.setCoordinate(coordinate.left, coordinate.top);
 
-                this._input.style.top = coordinate.top.toString() + "px";
-                this._input.style.left = coordinate.left.toString() + "px";
-                this._input.focus();
+                this._input.setCoordinate(coordinate.left, coordinate.top);
+                this._input.getElement().focus();
 
                 this._currentLine = i;
                 this._currentOffset = range.startOffset;
             });
 
-            lineModel.onInsert((lm: LineModel, e : Event) => {
-                vl.element.innerHTML = lm.text;
-            });
-            
             this._lines.push(vl);
         }
         
         for (let i = 0; i < this._lines.length; ++i) {
-            this._render_frame.appendChild(this._lines[i].element);
+            this._lines[i].appendTo(this._render_frame);
         }
 
-        this._input.addEventListener("compositionstart", (e : any) => {
-            // console.log("begin: " + e.data);
-        });
 
-        this._input.addEventListener("compositionupdate", (e : any) => {
-            // console.log("update: " + e.data);
-        });
-
-        this._input.addEventListener("compositionend", (e : any) => {
-            // console.log("end: " + e.data);
-        });
-
-        this._input.addEventListener("input", (e : Event) => {
-            // console.log("input" + this._input.value);
+        this._input.onInputEvent((input : Input, e : Event) => {
             let content = this._input.value;
             let insert_len = content.length;
 
@@ -103,15 +88,110 @@ export class Display {
 
             this._currentOffset += insert_len;
             let range = document.createRange();
-            let _elem = this._lines[this._currentLine - 1].element;
+            let _elem = this._lines[this._currentLine - 1].getElement();
             range.setStart(_elem.firstChild, this._currentOffset);
             range.setEnd(_elem.firstChild, this._currentOffset);
             let rect = range.getBoundingClientRect();
 
             this._cursor.setCoordinate(rect.left, rect.top);
-            this._input.style.left = rect.left + "px";
-            this._input.style.top = rect.top + "px";
+            this._input.setCoordinate(rect.left, rect.top);
+
+            this._input.focus();
         });
+
+        this._input.onKeyboardEvent((input : Input, e : KeyboardEvent) => {
+            // console.log(e.which);
+
+            switch (e.which) {
+                case 8 : // backspace
+                {
+                    this._model.deleteText(this._currentLine, this._currentOffset - 1, this._currentOffset);
+                    this._currentOffset--;
+
+                    let range = document.createRange();
+                    let _elem = this._lines[this._currentLine - 1].getElement();
+                    range.setStart(_elem.firstChild, this._currentOffset);
+                    range.setEnd(_elem.firstChild, this._currentOffset);
+                    let rect = range.getBoundingClientRect();
+
+                    this._cursor.setCoordinate(rect.left, rect.top);
+                    this._input.setCoordinate(rect.left, rect.top);
+                    break;
+                }
+                case 46: // delete
+                {
+                    this._model.deleteText(this._currentLine, this._currentOffset, this._currentOffset + 1);
+                    break;
+                }
+                case 37: // left
+                {
+
+                    if (this._currentOffset > 0)
+                    {
+                        this._currentOffset--;
+                        let range =document.createRange();
+                        let _elem = this._lines[this._currentLine - 1].getElement();
+                        range.setStart(_elem.firstChild, this._currentOffset);
+                        range.setEnd(_elem.firstChild, this._currentOffset);
+                        let rect = range.getBoundingClientRect();
+
+                        this._cursor.setCoordinate(rect.left, rect.top);
+                        this._input.setCoordinate(rect.left, rect.top);
+                    } else {
+
+                    }
+
+                    break;
+                }
+                case 38: // up
+                {
+                    if (this._currentLine > 1) {
+                        this._currentLine--;
+                        let range = document.createRange();
+                        let _elem = this._lines[this._currentLine - 1].getElement();
+
+                        let modelLine = this._model.getLineFromNum(this._currentLine);
+                        if (this._currentOffset >= modelLine.length) {
+                            range.setStart(_elem.firstChild, modelLine.length - 1);
+                            range.setEnd(_elem.firstChild, modelLine.length - 1);
+                        } else {
+                            range.setStart(_elem.firstChild, this._currentOffset);
+                            range.setEnd(_elem.firstChild, this._currentOffset);
+                        }
+                        
+                        let rect = range.getBoundingClientRect();
+
+                        this._cursor.setCoordinate(rect.left, rect.top);
+                        this._input.setCoordinate(rect.left, rect.top);
+
+                    }
+
+                    break;
+                }
+                case 39: // right
+                {
+                    let lineModel = this._model.getLineFromNum(this._currentLine);
+
+                    if (this._currentOffset <= lineModel.length - 1) {
+                        this._currentOffset++;
+                        let range =document.createRange();
+                        let _elem = this._lines[this._currentLine - 1].getElement();
+                        range.setStart(_elem.firstChild, this._currentOffset);
+                        range.setEnd(_elem.firstChild, this._currentOffset);
+                        let rect = range.getBoundingClientRect();
+
+                        this._cursor.setCoordinate(rect.left, rect.top);
+                        this._input.setCoordinate(rect.left, rect.top);
+                    }
+                    break;
+                }
+                case 40: //down
+                {
+
+                    break;
+                }
+            }
+        })
 
     }
     
