@@ -67,6 +67,10 @@ export class LineModel extends EventEmitter {
             index, index + content.length, content))
     }
 
+    append(content : string) {
+        this._text = this._text + content;
+    }
+
     delete(begin : number, end : number) {
         let before = this._text.slice(0, begin);
         let deleted = this._text.slice(begin, end);
@@ -76,6 +80,10 @@ export class LineModel extends EventEmitter {
 
         this.emit("delete", new LineChangedEvent(LineChangedType.Delete, this._number, 
             begin, end, deleted));
+    }
+
+    deleteToEnd(offset : number) {
+        this._text = this._text.slice(0, offset);
     }
     
     get text() {

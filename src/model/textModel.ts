@@ -2,48 +2,44 @@ import {Deque} from "../util/queue"
 import {StringBuffer} from "../util/StringBuffer"
 import {LineModel} from "./LineModel"
 import {EventEmitter} from "events"
+import {Position} from "."
 
 export enum TextChangedType {
-    InsertText, DeleteText, InsertLine, DeleteLine
+    InsertText, DeleteText
 }
 
 export class TextChangedEvent extends Event {
 
-    private _lineNumber : number = 0;
-    private _count : number = 0;
-    private _startOffset : number = 0;
-    private _endOffset : number = 0;
     private _type : TextChangedType;
+    private _begin_pos : Position;
+    private _end_pos : Position;
+    private _content : string;
 
-    constructor(_type : TextChangedType, _number : number, _start : number, _end? : number) {
+    constructor(_type : TextChangedType, _begin_pos : Position, _end_pos : Position, content?: string) {
         super("textChanged");
 
         this._type = _type;
 
         if (this._type === TextChangedType.InsertText || this._type === TextChangedType.DeleteText) {
-            this._lineNumber;
-            this._startOffset = _start;
-            this._endOffset = _end;
+            this._begin_pos = _begin_pos;
+            this._end_pos = _end_pos;
+            this._content = content;
         } else {
-            this._lineNumber = _number;
-            this._count = _start;
+            this._begin_pos = _begin_pos;
+            this._end_pos = _end_pos;
         }
     }
 
-    get lineNumber() {
-        return this._lineNumber;
+    get beginPosition() {
+        return this._begin_pos;
     }
 
-    get count() {
-        return this._count;
+    get endPostition() {
+        return this._end_pos;
     }
 
-    get startOffset() {
-        return this._startOffset;
-    }
-
-    get endOffset() {
-        return this._endOffset;
+    get content() {
+        return this._content;
     }
 
     get changedType() {
@@ -69,93 +65,125 @@ export class TextModel extends EventEmitter {
         
         var buf = new StringBuffer();
 
-        for (let i = 0; i < _string.length; ++i) {
-            if (_string[i] === '\n') {
-                if (_string[i + 1] === '\r') {
-                    ++i;
-                }
-                var li = new LineModel(lc, buf.getStr())
-                this._lines[lc++] = li;
-                buf = new StringBuffer();
-            } else if (_string[i] === '\r') {
-                if (_string[i + 1] == '\n') {
-                    ++i;
-                }
-                var li = new LineModel(lc, buf.getStr())
-                this._lines[lc++] = li
-                buf = new StringBuffer();
-            } else {
-                buf.push(_string.charAt(i))
-            }
+        var lines = this.toLines(_string);
+
+        for (let i = 0; i < lines.length; i++) {
+            var lm = new LineModel(lc, lines[i]);            
+            this._lines[lc++] = lm;
         }
-        
-        if (buf.length > 0) {
-            var li = new LineModel(lc++, buf.getStr());
-            this._lines.push(li);
-            buf = null;
-        }        
 
         this._lineCount = lc;
+
     }
 
-    insertText(_line : number, _offset : number, _content : string) {
-        this._lines[_line].insert(_offset, _content);
-        this.emit("insertText", new TextChangedEvent(
-            TextChangedType.InsertText, _line, _offset, _offset + _content.length
-        ));
-    }
+    insertText(pos : Position, _content : string) {
+        var lines = this.toLines(_content);
+        
+        if (lines.length > 0) {
+            var firstLineStr = lines[0];
 
-    deleteText(_line : number, _begin : number, _end : number) {
-        this._lines[_line].delete(_begin, _end);
-        this.emit("deleteText", new TextChangedEvent(
-            TextChangedType.DeleteText, _line, _begin, _end
-        ));
-    }
+            var firstLineLm = this._lines[pos.line];
+            firstLineLm.insert(pos.offset, firstLineStr);
 
-    // insert after index
-    insertLine(_index : number, _num? : number) {
-        let old_length = this.linesCount;
-        let _count = _num | 1; 
+            var extendLineCount = lines.length - 1;
 
-        for (let i = old_length + _count; i > _index; ++i) {
-            this._lines[i] = this._lines[i - _count];
-            this._lines[i].number = i + _count;
+            // make n lines forward
+            for (let i = this.linesCount + extendLineCount; i > pos.line + extendLineCount; i++) {
+                this._lines[i] = this._lines[i - extendLineCount];
+                this._lines[i].number = i;
+            }
+
+            // fill the line
+            for (let i = 1; i < lines.length; i++) {
+                this._lines[pos.line + i] = new LineModel(pos.line + i, lines[i]);
+            }
+
+            this.emit("intertText", new TextChangedEvent(
+                TextChangedType.InsertText, pos, null, _content));
         }
-
-        this._lineCount += _count;
-
-        for (let i=0; i < _count; i++) {
-            this._lines[_index + i] = new LineModel(_index, "");
-        }
-
-        this.emit("insertLine", new TextChangedEvent(TextChangedType.InsertLine, _index, _count));
     }
 
-    deleteLine(_index : number, _num? : number) {
-        let old_length = this.linesCount;
-        let count = _num | 1;
+    deleteText(_begin_pos : Position, _end_pos : Position) {
+        if (_begin_pos.line === _end_pos.line) {
+            this._lines[_begin_pos.line].delete(_begin_pos.offset, _end_pos.offset);
+        } else if (_begin_pos.line > _end_pos.line) {
+            this._lines[_begin_pos.line].deleteToEnd(_begin_pos.offset);
 
-        for (let i = _index; i < old_length - count; ++i) {
-            this._lines[i] = this._lines[i + count];
-            this._lines[i].number = i;
+            var suffixStr = this._lines[_end_pos.line].text.slice(_end_pos.offset);
+
+            var shrinkLinesCount = _end_pos.line - _begin_pos.line
+
+            for (let i = _begin_pos.line + 1; i < this._lines.length - shrinkLinesCount; i++) {
+                this._lines[i] = this._lines[i + shrinkLinesCount];
+                this._lines[i].number = i;
+            }
+
+            this._lines.length -= shrinkLinesCount;
+            this._lines[_begin_pos.line].append(suffixStr);
+
+        } else {
+            throw new Error("Illegal data.");
         }
-
-        this._lineCount -= count;
-        this._lines.pop();
-
-        this.emit("deleteLine", new TextChangedEvent(TextChangedType.DeleteLine, _index, count));
-    }
-    
-    setLineValue(_line_num : number, lm : LineModel) {
-        this._lines[_line_num] = lm;
     }
     
     getLineFromNum(_line_num : number) : LineModel {
         return this._lines[_line_num];
     }
+
+    reportString(_begin_pos : Position, _end_pos : Position) : string {
+        var buf = new StringBuffer();
+        buf.push(this._lines[_begin_pos.line].text.slice(_begin_pos.offset, _end_pos.offset));
+
+        for (let i = _begin_pos.line + 1; i < _end_pos.line - 1; i++) {
+            buf.push(this._lines[i].text)
+        }
+
+        if (_end_pos.line > _begin_pos.line) {
+            buf.push(this._lines[_end_pos.line].text.slice(0, _end_pos.offset));
+        }
+
+        return buf.getStr();
+    }
     
     get linesCount() {
-        return this._lineCount;
+        return this._lineCount - 1;
+    }
+
+    private toLines(content : string) : string[] {
+
+        var lines = new Array<string>();
+        
+        var buf = new StringBuffer();
+
+        if (content.length == 0) {
+            lines.push("");
+        } else {
+            for (let i = 0; i < content.length; ++i) {
+                if (content[i] === '\n') {
+                    if (content[i + 1] === '\r') {
+                        ++i;
+                    }
+                    
+                    lines.push(buf.getStr());
+                    buf = new StringBuffer();
+                } else if (content[i] === '\r') {
+                    if (content[i + 1] == '\n') {
+                        ++i;
+                    }
+                    lines.push(buf.getStr());
+                    buf = new StringBuffer();
+                } else {
+                    buf.push(content.charAt(i))
+                }
+            }
+            
+            if (buf.length > 0) {
+                lines.push(buf.getStr());
+                buf = null;
+            }
+        }
+
+        return lines;
     }
     
 }
