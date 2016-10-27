@@ -130,7 +130,21 @@ export class TextModel extends EventEmitter {
         return this._lines[_line_num];
     }
 
-    reportString(_begin_pos : Position, _end_pos : Position) : string {
+    charAt(pos : Position) : string {
+        return this._lines[pos.line].charAt(pos.offset);
+    }
+
+    reportAll() {
+        var buf = new StringBuffer();
+
+        for (let i = 1; i < this._lines.length; i++) {
+            buf.push(this._lines[i].report());
+        }
+
+        return buf.getStr();
+    }
+
+    report(_begin_pos : Position, _end_pos : Position) : string {
         var buf = new StringBuffer();
         buf.push(this._lines[_begin_pos.line].text.slice(_begin_pos.offset, _end_pos.offset));
 
@@ -178,7 +192,7 @@ export class TextModel extends EventEmitter {
             }
             
             if (buf.length > 0) {
-                lines.push(buf.getStr());
+                lines.push(buf.getStr() + '\n');
                 buf = null;
             }
         }

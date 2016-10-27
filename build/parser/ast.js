@@ -1,142 +1,82 @@
 "use strict";
 class Node {
+    get beginLine() {
+        return this._beginLine;
+    }
+    get endLine() {
+        return this._beginLine;
+    }
 }
 exports.Node = Node;
-class HeaderNode extends Node {
-    constructor(_level, _text) {
+class TextNode extends Node {
+    constructor() {
         super();
-        this._level = _level | 1;
+        this._children = [];
+    }
+    get children() {
+        return this._children;
+    }
+}
+exports.TextNode = TextNode;
+class NormalTextNode extends Node {
+    constructor(_text) {
+        super();
         this._text = _text;
     }
-    set level(l) {
-        this._level = l;
+    get text() {
+        return this._text;
+    }
+}
+exports.NormalTextNode = NormalTextNode;
+class BoldTextNode extends Node {
+    constructor(_text) {
+        super();
+        this._text = _text;
+    }
+    get text() {
+        return this._text;
+    }
+}
+exports.BoldTextNode = BoldTextNode;
+class ItalicTextNode extends Node {
+    constructor(_text) {
+        super();
+        this._text = _text;
+    }
+    get text() {
+        return this._text;
+    }
+}
+exports.ItalicTextNode = ItalicTextNode;
+class HeaderNode extends Node {
+    constructor(_level, _content) {
+        super();
+        this._level = _level;
+        this._content = _content;
     }
     get level() {
         return this._level;
     }
-    set text(t) {
-        this._text = t;
-    }
-    get text() {
-        return this._text;
+    get content() {
+        return this._content;
     }
 }
 exports.HeaderNode = HeaderNode;
-class ParagraphNode extends Node {
-    constructor(_text) {
-        super();
-        this._text = _text;
-    }
-    get text() {
-        return this._text;
-    }
-    set text(_text) {
-        this._text = _text;
+class ListNode extends Node {
+    get isNumbered() {
+        return this._isNumbered;
     }
 }
-exports.ParagraphNode = ParagraphNode;
-class OrderListNode extends Node {
-    constructor() {
+exports.ListNode = ListNode;
+class HtmlNode extends Node {
+    constructor(_content) {
         super();
-        this._dict = new Map();
+        this._content = _content;
     }
-    setValue(_index, _node) {
-        this._dict[_index] = _node;
-    }
-    getValue(_index) {
-        return this._dict[_index];
-    }
-    get dict() {
-        return this._dict;
+    get content() {
+        return this._content;
     }
 }
-exports.OrderListNode = OrderListNode;
-class UnorderListNode extends Node {
-    constructor() {
-        super();
-        this._array = new Array();
-    }
-    push(_node) {
-        this._array.push(_node);
-    }
-    setValue(_index, _node) {
-        if (_index >= this.length) {
-            throw new Error("Input out of range");
-        }
-        this._array[_index] = _node;
-    }
-    getValue(_index) {
-        if (_index >= this.length) {
-            throw new Error("Input out of range");
-        }
-        return this._array[_index];
-    }
-    get length() {
-        return this._array.length;
-    }
-    get array() {
-        return this._array;
-    }
-}
-exports.UnorderListNode = UnorderListNode;
-class AnchorNode extends Node {
-    constructor(_text, _link) {
-        super();
-        this._text = _text;
-        this._link = _link;
-    }
-    get text() {
-        return this._text;
-    }
-    set text(_text) {
-        this._text = _text;
-    }
-    get link() {
-        return this._link;
-    }
-    set link(_link) {
-        this._link = _link;
-    }
-}
-exports.AnchorNode = AnchorNode;
-class BlockQuoteNode extends Node {
-    constructor(_text) {
-        super();
-        this._text = _text;
-    }
-    get text() {
-        return this._text;
-    }
-    set text(_text) {
-        this._text = _text;
-    }
-}
-exports.BlockQuoteNode = BlockQuoteNode;
-class RawNode extends Node {
-    constructor(_text) {
-        super();
-        this._text = _text;
-    }
-    get text() {
-        return this._text;
-    }
-    set text(_text) {
-        this._text = _text;
-    }
-}
-exports.RawNode = RawNode;
-class HTMLElementNode extends Node {
-    constructor(_text) {
-        super();
-        this._text = _text;
-    }
-    get text() {
-        return this._text;
-    }
-    set text(_text) {
-        this._text = _text;
-    }
-}
-exports.HTMLElementNode = HTMLElementNode;
+exports.HtmlNode = HtmlNode;
 
-//# sourceMappingURL=data:application/json;charset=utf8;base64,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QUssR0FBRyxLQUFLLENBQUM7SUFDdkIsQ0FBQztJQUVELElBQUksSUFBSTtRQUNKLE1BQU0sQ0FBQyxJQUFJLENBQUMsS0FBSyxDQUFDO0lBQ3RCLENBQUM7SUFFRCxJQUFJLElBQUksQ0FBQyxLQUFjO1FBQ25CLElBQUksQ0FBQyxLQUFLLEdBQUcsS0FBSyxDQUFDO0lBQ3ZCLENBQUM7QUFFTCxDQUFDO0FBakJZLGVBQU8sVUFpQm5CLENBQUE7QUFFRCw4QkFBcUMsSUFBSTtJQUlyQyxZQUFZLEtBQWM7UUFDdEIsT0FBTyxDQUFDO1FBQ1IsSUFBSSxDQUFDLEtBQUssR0FBRyxLQUFLLENBQUM7SUFDdkIsQ0FBQztJQUVELElBQUksSUFBSTtRQUNKLE1BQU0sQ0FBQyxJQUFJLENBQUMsS0FBSyxDQUFDO0lBQ3RCLENBQUM7SUFFRCxJQUFJLElBQUksQ0FBQyxLQUFjO1FBQ25CLElBQUksQ0FBQyxLQUFLLEdBQUcsS0FBSyxDQUFDO0lBQ3ZCLENBQUM7QUFFTCxDQUFDO0FBakJZLHVCQUFlLGtCQWlCM0IsQ0FBQSIsImZpbGUiOiJwYXJzZXIvYXN0LmpzIiwic291cmNlUm9vdCI6InNyYy8ifQ==
+//# sourceMappingURL=data:application/json;charset=utf8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi4uL3NyYy9wYXJzZXIvYXN0LnRzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7QUFDQTtJQUtJLElBQUksU0FBUztRQUNULE1BQU0sQ0FBQyxJQUFJLENBQUMsVUFBVSxDQUFDO0lBQzNCLENBQUM7SUFFRCxJQUFJLE9BQU87UUFDUCxNQUFNLENBQUMsSUFBSSxDQUFDLFVBQVUsQ0FBQztJQUMzQixDQUFDO0FBRUwsQ0FBQztBQWJZLFlBQUksT0FhaEIsQ0FBQTtBQUVELHVCQUE4QixJQUFJO0lBSTlCO1FBQ0ksT0FBTyxDQUFDO1FBQ1IsSUFBSSxDQUFDLFNBQVMsR0FBRyxFQUFFLENBQUM7SUFDeEIsQ0FBQztJQUVELElBQUksUUFBUTtRQUNSLE1BQU0sQ0FBQyxJQUFJLENBQUMsU0FBUyxDQUFDO0lBQzFCLENBQUM7QUFFTCxDQUFDO0FBYlksZ0JBQVEsV0FhcEIsQ0FBQTtBQUVELDZCQUFvQyxJQUFJO0lBSXBDLFlBQVksS0FBYztRQUN0QixPQUFPLENBQUM7UUFDUixJQUFJLENBQUMsS0FBSyxHQUFHLEtBQUssQ0FBQztJQUN2QixDQUFDO0lBRUQsSUFBSSxJQUFJO1FBQ0osTUFBTSxDQUFDLElBQUksQ0FBQyxLQUFLLENBQUM7SUFDdEIsQ0FBQztBQUVMLENBQUM7QUFiWSxzQkFBYyxpQkFhMUIsQ0FBQTtBQUVELDJCQUFrQyxJQUFJO0lBSWxDLFlBQVksS0FBYztRQUN0QixPQUFPLENBQUM7UUFDUixJQUFJLENBQUMsS0FBSyxHQUFHLEtBQUssQ0FBQztJQUN2QixDQUFDO0lBRUQsSUFBSSxJQUFJO1FBQ0osTUFBTSxDQUFDLElBQUksQ0FBQyxLQUFLLENBQUM7SUFDdEIsQ0FBQztBQUVMLENBQUM7QUFiWSxvQkFBWSxlQWF4QixDQUFBO0FBRUQsNkJBQW9DLElBQUk7SUFJcEMsWUFBWSxLQUFjO1FBQ3RCLE9BQU8sQ0FBQztRQUNSLElBQUksQ0FBQyxLQUFLLEdBQUcsS0FBSyxDQUFDO0lBQ3ZCLENBQUM7SUFFRCxJQUFJLElBQUk7UUFDSixNQUFNLENBQUMsSUFBSSxDQUFDLEtBQUssQ0FBQztJQUN0QixDQUFDO0FBRUwsQ0FBQztBQWJZLHNCQUFjLGlCQWExQixDQUFBO0FBRUQseUJBQWdDLElBQUk7SUFLaEMsWUFBWSxNQUFlLEVBQUUsUUFBaUI7UUFDMUMsT0FBTyxDQUFDO1FBQ1IsSUFBSSxDQUFDLE1BQU0sR0FBRyxNQUFNLENBQUM7UUFDckIsSUFBSSxDQUFDLFFBQVEsR0FBRyxRQUFRLENBQUM7SUFDN0IsQ0FBQztJQUVELElBQUksS0FBSztRQUNMLE1BQU0sQ0FBQyxJQUFJLENBQUMsTUFBTSxDQUFDO0lBQ3ZCLENBQUM7SUFFRCxJQUFJLE9BQU87UUFDUCxNQUFNLENBQUMsSUFBSSxDQUFDLFFBQVEsQ0FBQztJQUN6QixDQUFDO0FBRUwsQ0FBQztBQW5CWSxrQkFBVSxhQW1CdEIsQ0FBQTtBQUVELHVCQUE4QixJQUFJO0lBSzlCLElBQUksVUFBVTtRQUNWLE1BQU0sQ0FBQyxJQUFJLENBQUMsV0FBVyxDQUFDO0lBQzVCLENBQUM7QUFFTCxDQUFDO0FBVFksZ0JBQVEsV0FTcEIsQ0FBQTtBQUVELHVCQUE4QixJQUFJO0lBSTlCLFlBQVksUUFBaUI7UUFDekIsT0FBTyxDQUFDO1FBQ1IsSUFBSSxDQUFDLFFBQVEsR0FBRyxRQUFRLENBQUM7SUFDN0IsQ0FBQztJQUVELElBQUksT0FBTztRQUNQLE1BQU0sQ0FBQyxJQUFJLENBQUMsUUFBUSxDQUFDO0lBQ3pCLENBQUM7QUFDTCxDQUFDO0FBWlksZ0JBQVEsV0FZcEIsQ0FBQSIsImZpbGUiOiJwYXJzZXIvYXN0LmpzIiwic291cmNlUm9vdCI6InNyYy8ifQ==

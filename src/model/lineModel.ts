@@ -57,6 +57,10 @@ export class LineModel extends EventEmitter {
         this._text = _t;
     }
 
+    charAt(offset : number) : string {
+        return this._text.charAt(offset);
+    }
+
     insert(index : number, content : string) {
         let before = this._text.slice(0, index);
         let after = this._text.slice(index);
@@ -84,6 +88,10 @@ export class LineModel extends EventEmitter {
 
     deleteToEnd(offset : number) {
         this._text = this._text.slice(0, offset);
+    }
+
+    report() {
+        return this._text + "\n";
     }
     
     get text() {

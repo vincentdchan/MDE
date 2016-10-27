@@ -14,7 +14,7 @@ export class Node {
     
 }
 
-export class LineNode extends Node {
+export class TextNode extends Node {
 
     private _children : Node[];
 
@@ -29,7 +29,7 @@ export class LineNode extends Node {
 
 }
 
-export class TextNode extends Node {
+export class NormalTextNode extends Node {
 
     private _text : string;
 
@@ -77,20 +77,20 @@ export class ItalicTextNode extends Node {
 export class HeaderNode extends Node {
 
     private _level : number;
-    private _lineNode : LineNode;
+    private _content : string;
 
-    constructor(_level : number, _ln : LineNode) {
+    constructor(_level : number, _content : string) {
         super();
         this._level = _level;
-        this._lineNode = _ln;
+        this._content = _content;
     }
 
     get level() {
         return this._level;
     }
 
-    get lineNode() {
-        return this._lineNode;
+    get content() {
+        return this._content;
     }
 
 }
