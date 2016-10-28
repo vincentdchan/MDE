@@ -24,7 +24,8 @@
     "gulp": "^3.9.1",
     "gulp-cached": "^1.1.0",
     "gulp-sourcemaps": "^2.1.1",
-    "gulp-typescript": "^3.0.2"
+    "gulp-typescript": "^3.0.2",
+    "list-diff2": "^0.1.4"
   },
   "devDependencies": {
     "electron": "^1.4.3"

@@ -10,6 +10,6 @@ export function patch(node: VElement | string, patches: Difference[]) {
     dfsWalk(node, walker, patches);
 }
 
-export function dfsWalk(node: VElement | string, walker: Walker, patches: Difference[]){
+function dfsWalk(node: VElement | string, walker: Walker, patches: Difference[]){
     let currentPatches = patches[walker.index];
 }
