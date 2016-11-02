@@ -4,20 +4,23 @@ export class VElement {
     private _tagName : string;    
     private _props : Map<string, string>;
     private _children : Array<VElement | string>; // VElement or string
-    private _count : number = 0;
 
-    constructor(_tn : string, _props: Map<string, string>, _children: Array<VElement | string>) {
+    constructor(_tn : string, _props: Map<string, string> | any, _children: Array<VElement | string>) {
         this._tagName = _tn;
-        this._props = _props;
+
+        if (_props instanceof Map)
+            this._props = _props
+        else if (typeof _props === "object") {
+            this._props = new Map<string, string>();
+            for (let key in _props) {
+                this._props.set(key, _props[key]);
+            }
+        }
+        else
+            this._props = new Map<string, string>();
+
         this._children = _children;
 
-        this._children.forEach((child: VElement | string, i: number) => {
-            if (child instanceof VElement)
-                this._count += child.count;
-            else
-                this._children[i] = <string>child;
-            this._count++;
-        })
     }
 
     render(): HTMLElement {
@@ -66,7 +69,15 @@ export class VElement {
     }
 
     get count() {
-        return this._count;
+        let _count = 0;
+        this._children.forEach((child: VElement | string, i: number) => {
+            if (child instanceof VElement)
+                _count += child.count;
+            else
+                this._children[i] = <string>child;
+            _count++;
+        })
+        return _count;
     }
 
 }

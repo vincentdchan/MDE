@@ -2,25 +2,45 @@ import {Deque} from "../util/queue"
 import {StringBuffer} from "../util/StringBuffer"
 import {LineModel} from "./LineModel"
 import {EventEmitter} from "events"
-import {Position} from "."
+import {Position, Range} from "."
 
-export enum TextChangedType {
+export enum TextEditType {
     InsertText, DeleteText
+}
+
+export class TextEdit {
+
+    private _type : TextEdit
+    private _range : Range
+
+    constructor(_type: TextEdit, _range: Range) {
+        this._type = _type;
+        this._range = _range;
+    }
+
+    get type() {
+        return this._type;
+    }
+
+    get range() {
+        return this._range;
+    }
+
 }
 
 export class TextChangedEvent extends Event {
 
-    private _type : TextChangedType;
+    private _type : TextEditType;
     private _begin_pos : Position;
     private _end_pos : Position;
     private _content : string;
 
-    constructor(_type : TextChangedType, _begin_pos : Position, _end_pos : Position, content?: string) {
+    constructor(_type : TextEditType, _begin_pos : Position, _end_pos : Position, content?: string) {
         super("textChanged");
 
         this._type = _type;
 
-        if (this._type === TextChangedType.InsertText || this._type === TextChangedType.DeleteText) {
+        if (this._type === TextEditType.InsertText || this._type === TextEditType.DeleteText) {
             this._begin_pos = _begin_pos;
             this._end_pos = _end_pos;
             this._content = content;
@@ -76,6 +96,10 @@ export class TextModel extends EventEmitter {
 
     }
 
+    lineAt(num: number): LineModel {
+        return this._lines[num];
+    }
+
     insertText(pos : Position, _content : string) {
         var lines = this.toLines(_content);
         
@@ -99,27 +123,27 @@ export class TextModel extends EventEmitter {
             }
 
             this.emit("intertText", new TextChangedEvent(
-                TextChangedType.InsertText, pos, null, _content));
+                TextEditType.InsertText, pos, null, _content));
         }
     }
 
-    deleteText(_begin_pos : Position, _end_pos : Position) {
-        if (_begin_pos.line === _end_pos.line) {
-            this._lines[_begin_pos.line].delete(_begin_pos.offset, _end_pos.offset);
-        } else if (_begin_pos.line > _end_pos.line) {
-            this._lines[_begin_pos.line].deleteToEnd(_begin_pos.offset);
+    deleteText(_range: Range) {
+        if (_range.begin.line === _range.end.line) {
+            this._lines[_range.begin.line].delete(_range.begin.offset, _range.end.offset);
+        } else if (_range.begin.line > _range.end.line) {
+            this._lines[_range.begin.line].deleteToEnd(_range.begin.offset);
 
-            var suffixStr = this._lines[_end_pos.line].text.slice(_end_pos.offset);
+            var suffixStr = this._lines[_range.end.line].text.slice(_range.end.offset);
 
-            var shrinkLinesCount = _end_pos.line - _begin_pos.line
+            var shrinkLinesCount = _range.end.line - _range.begin.line
 
-            for (let i = _begin_pos.line + 1; i < this._lines.length - shrinkLinesCount; i++) {
+            for (let i = _range.begin.line + 1; i < this._lines.length - shrinkLinesCount; i++) {
                 this._lines[i] = this._lines[i + shrinkLinesCount];
                 this._lines[i].number = i;
             }
 
             this._lines.length -= shrinkLinesCount;
-            this._lines[_begin_pos.line].append(suffixStr);
+            this._lines[_range.begin.line].append(suffixStr);
 
         } else {
             throw new Error("Illegal data.");
@@ -144,16 +168,16 @@ export class TextModel extends EventEmitter {
         return buf.getStr();
     }
 
-    report(_begin_pos : Position, _end_pos : Position) : string {
+    report(_range: Range) : string {
         var buf = new StringBuffer();
-        buf.push(this._lines[_begin_pos.line].text.slice(_begin_pos.offset, _end_pos.offset));
+        buf.push(this._lines[_range.begin.line].text.slice(_range.begin.offset, _range.end.offset));
 
-        for (let i = _begin_pos.line + 1; i < _end_pos.line - 1; i++) {
+        for (let i = _range.begin.line + 1; i < _range.end.line - 1; i++) {
             buf.push(this._lines[i].text)
         }
 
-        if (_end_pos.line > _begin_pos.line) {
-            buf.push(this._lines[_end_pos.line].text.slice(0, _end_pos.offset));
+        if (_range.end.line > _range.begin.line) {
+            buf.push(this._lines[_range.end.line].text.slice(0, _range.end.offset));
         }
 
         return buf.getStr();
