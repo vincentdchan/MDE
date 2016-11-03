@@ -3,7 +3,8 @@
 */
 /// <reference path="./list-diff2.d.ts" />
 import {VElement} from "./vElement"
-import {listDiff} from "list-diff2"
+import listDiff = require("list-diff2")
+
 
 export enum DiffType {
     REPLACE,
@@ -17,6 +18,7 @@ export interface Difference {
     node?: VElement;
     props?: Map<string, string>;
     content?: string;
+    moves?: listDiff.Move<VElement | string>[];
 }
 
 export function diff(oldTree : VElement, newTree : VElement) : Map<number, Difference[]> {
@@ -57,14 +59,14 @@ function dfsWalk(oldNode: VElement | string, newNode: VElement | string,
         diffChildren(oldNode.children, newNode.children, index, patches, currentPatch);
 
     } else {
-        patches[index].push(<Difference>{
+        patches.get(index).push(<Difference>{
             type: DiffType.REPLACE,
             node: newNode,
         })
     }
 
     if (currentPatch.length > 0)
-        patches[index] = currentPatch;
+        patches.set(index, currentPatch);
 }
 
 function diffChildren(oldChildren: Array<VElement | string>, newChildren: Array<VElement | string>, 
@@ -103,21 +105,19 @@ function diffProps(oldNode: VElement, newNode: VElement) {
     let propsPatches : Map<string, string> = new Map<string, string>();
     
     // find out different properties
-    for (key in oldProps) {
-        value = oldProps[key];
-        if (newProps[key] !== value) {
+    oldProps.forEach((value, key) => {
+        if (newProps.get(key) !== value) {
             count++;
-            propsPatches[key] = newProps[key];
+            propsPatches.set(key, newProps.get(key));
         }
-    }
+    });
 
-    for (key in newProps) {
-        value = newProps[key];
+    newProps.forEach((value,key) => {
         if (!oldProps.has(key)) {
             count++;
-            propsPatches[key] = newProps[key];
+            propsPatches.set(key, newProps.get(key));
         }
-    }
+    })
 
     if (count === 0)
         return null;

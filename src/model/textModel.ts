@@ -1,8 +1,9 @@
 import {Deque} from "../util/queue"
 import {StringBuffer} from "../util/StringBuffer"
+import {parseTextToLines} from "../util/text"
 import {LineModel} from "./LineModel"
 import {EventEmitter} from "events"
-import {Position, Range} from "."
+import {Position, Range, isPosition, isRange} from "."
 
 export enum TextEditType {
     InsertText, DeleteText
@@ -10,12 +11,29 @@ export enum TextEditType {
 
 export class TextEdit {
 
-    private _type : TextEdit
+    private _type : TextEditType
     private _range : Range
+    private _position : Position;
+    private _text: string;
+    private _lines: string[]
 
-    constructor(_type: TextEdit, _range: Range) {
+    constructor(_type: TextEditType, _rp: Range | Position, _text?: string) {
         this._type = _type;
-        this._range = _range;
+        if (_text === undefined)
+            this._text = null;
+        else
+        {
+            this._text = _text;
+            this._lines = parseTextToLines(_text);
+        }
+
+        if (_type == TextEditType.InsertText && isPosition(_rp)) {
+            this._position = _rp;
+        }
+        else if (_type == TextEditType.DeleteText && isRange(_rp)) {
+            this._range = _rp;
+        } else
+            throw new Error("Error data input");
     }
 
     get type() {
@@ -24,6 +42,18 @@ export class TextEdit {
 
     get range() {
         return this._range;
+    }
+
+    get position() {
+        return this._position
+    }
+
+    get text() {
+        return this._text;
+    }
+
+    get lines() {
+        return this._lines;
     }
 
 }
@@ -85,7 +115,7 @@ export class TextModel extends EventEmitter {
         
         var buf = new StringBuffer();
 
-        var lines = this.toLines(_string);
+        var lines = parseTextToLines(_string);
 
         for (let i = 0; i < lines.length; i++) {
             var lm = new LineModel(lc, lines[i]);            
@@ -101,8 +131,10 @@ export class TextModel extends EventEmitter {
     }
 
     insertText(pos : Position, _content : string) {
-        var lines = this.toLines(_content);
-        
+        var lines = parseTextToLines(_content);
+
+        if (pos.line <= 0 || pos.line > this.linesCount)
+            throw new Error("data illegal when inserting text to TextModel");
         if (lines.length > 0) {
             var firstLineStr = lines[0];
 
@@ -112,9 +144,11 @@ export class TextModel extends EventEmitter {
             var extendLineCount = lines.length - 1;
 
             // make n lines forward
-            for (let i = this.linesCount + extendLineCount; i > pos.line + extendLineCount; i++) {
-                this._lines[i] = this._lines[i - extendLineCount];
-                this._lines[i].number = i;
+            if (extendLineCount > 0) {
+                for (let i = this.linesCount + extendLineCount; i > pos.line + extendLineCount; i--) {
+                    this._lines[i] = this._lines[i - extendLineCount];
+                    this._lines[i].number = i;
+                }
             }
 
             // fill the line
@@ -185,43 +219,6 @@ export class TextModel extends EventEmitter {
     
     get linesCount() {
         return this._lineCount - 1;
-    }
-
-    private toLines(content : string) : string[] {
-
-        var lines = new Array<string>();
-        
-        var buf = new StringBuffer();
-
-        if (content.length == 0) {
-            lines.push("");
-        } else {
-            for (let i = 0; i < content.length; ++i) {
-                if (content[i] === '\n') {
-                    if (content[i + 1] === '\r') {
-                        ++i;
-                    }
-                    
-                    lines.push(buf.getStr());
-                    buf = new StringBuffer();
-                } else if (content[i] === '\r') {
-                    if (content[i + 1] == '\n') {
-                        ++i;
-                    }
-                    lines.push(buf.getStr());
-                    buf = new StringBuffer();
-                } else {
-                    buf.push(content.charAt(i))
-                }
-            }
-            
-            if (buf.length > 0) {
-                lines.push(buf.getStr() + '\n');
-                buf = null;
-            }
-        }
-
-        return lines;
     }
     
 }

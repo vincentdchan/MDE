@@ -62,6 +62,8 @@ export class LineModel extends EventEmitter {
     }
 
     insert(index : number, content : string) {
+        if (index < 0 || index >= this._text.length)
+            throw new Error("Illegal input data when inserting text to LineModel");
         let before = this._text.slice(0, index);
         let after = this._text.slice(index);
 

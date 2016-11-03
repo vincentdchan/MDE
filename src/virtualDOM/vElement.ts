@@ -27,10 +27,9 @@ export class VElement {
         let el = document.createElement(this._tagName);
         let props = this._props;
 
-        for (let propName in props) {
-            let propValue = props[propName];
-            el.setAttribute(propName, propValue);
-        }
+        props.forEach((value, key) => {
+            el.setAttribute(key, value);
+        })
 
         let children = this._children || [];
 

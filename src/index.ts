@@ -8,8 +8,9 @@ let content =
 "something else\n"
 
 let elem = document.getElementById("frame");
-let display = new Display(elem);
+
 let textModel = new TextModel();
 
 textModel.setFromRawText(content);
-display.render(textModel);
+Display(textModel);
+

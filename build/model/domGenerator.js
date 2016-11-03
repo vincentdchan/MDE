@@ -1,0 +1,59 @@
+"use strict";
+const textModel_1 = require("./textModel");
+const dom_1 = require("../util/dom");
+class LineModelToDOMGenerator {
+    constructor(_lm) {
+        this._lineModel = _lm;
+    }
+    generate() {
+        let div = dom_1.elem("div", "editor-line", {
+            "data-lineId": this._lineModel.number
+        });
+        let span = dom_1.elem("span");
+        span.innerText = this._lineModel.text;
+        div.appendChild(span);
+        return div;
+    }
+}
+exports.LineModelToDOMGenerator = LineModelToDOMGenerator;
+class TextModelToDOMGenerator {
+    constructor(_tm) {
+        this._textModel = _tm;
+    }
+    generate() {
+        let frame = dom_1.elem("div", "editor-frame");
+        for (let i = 1; i <= this._textModel.linesCount; i++) {
+            let lm = this._textModel.lineAt(i);
+            let lmGen = new LineModelToDOMGenerator(lm);
+            frame.appendChild(lmGen.generate());
+        }
+        return frame;
+    }
+}
+exports.TextModelToDOMGenerator = TextModelToDOMGenerator;
+function refreshDOM(beginLine, endLine, _tm, _dom) {
+    for (let i = beginLine; i < endLine; i++) {
+        let oldElm = document.querySelector("div[data-lineId=\"" + i + "\"]");
+        let lineGen = new LineModelToDOMGenerator(_tm.lineAt(i));
+        let dom = lineGen.generate();
+        oldElm.parentElement.replaceChild(dom, oldElm);
+    }
+}
+exports.refreshDOM = refreshDOM;
+function applyTextEditToDOM(_textEdit, _tm, _dom) {
+    switch (_textEdit.type) {
+        case textModel_1.TextEditType.InsertText:
+            _tm.insertText(_textEdit.position, _textEdit.text);
+            refreshDOM(_textEdit.position.line, _textEdit.position.line + _textEdit.lines.length, _tm, _dom);
+            break;
+        case textModel_1.TextEditType.DeleteText:
+            _tm.deleteText(_textEdit.range);
+            refreshDOM(_textEdit.range.begin.line, _textEdit.range.end.line, _tm, _dom);
+            break;
+        default:
+            throw new Error("Error text edit type.");
+    }
+}
+exports.applyTextEditToDOM = applyTextEditToDOM;
+
+//# sourceMappingURL=data:application/json;charset=utf8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi4uL3NyYy9tb2RlbC9kb21HZW5lcmF0b3IudHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IjtBQUFBLDRCQUFnRCxhQUNoRCxDQUFDLENBRDREO0FBRTdELHNCQUFtQixhQUNuQixDQUFDLENBRCtCO0FBR2hDO0lBSUksWUFBWSxHQUFjO1FBQ3RCLElBQUksQ0FBQyxVQUFVLEdBQUcsR0FBRyxDQUFDO0lBQzFCLENBQUM7SUFFRCxRQUFRO1FBQ0osSUFBSSxHQUFHLEdBQUcsVUFBSSxDQUFDLEtBQUssRUFBRSxhQUFhLEVBQUU7WUFDakMsYUFBYSxFQUFFLElBQUksQ0FBQyxVQUFVLENBQUMsTUFBTTtTQUN4QyxDQUFDLENBQUM7UUFFSCxJQUFJLElBQUksR0FBRyxVQUFJLENBQUMsTUFBTSxDQUFDLENBQUM7UUFDeEIsSUFBSSxDQUFDLFNBQVMsR0FBRyxJQUFJLENBQUMsVUFBVSxDQUFDLElBQUksQ0FBQztRQUV0QyxHQUFHLENBQUMsV0FBVyxDQUFDLElBQUksQ0FBQyxDQUFDO1FBRXRCLE1BQU0sQ0FBQyxHQUFHLENBQUM7SUFDZixDQUFDO0FBRUwsQ0FBQztBQXJCWSwrQkFBdUIsMEJBcUJuQyxDQUFBO0FBRUQ7SUFJSSxZQUFZLEdBQWM7UUFDdEIsSUFBSSxDQUFDLFVBQVUsR0FBRyxHQUFHLENBQUM7SUFDMUIsQ0FBQztJQUVELFFBQVE7UUFFSixJQUFJLEtBQUssR0FBRyxVQUFJLENBQUMsS0FBSyxFQUFFLGNBQWMsQ0FBQyxDQUFDO1FBRXhDLEdBQUcsQ0FBQyxDQUFDLElBQUksQ0FBQyxHQUFHLENBQUMsRUFBRSxDQUFDLElBQUksSUFBSSxDQUFDLFVBQVUsQ0FBQyxVQUFVLEVBQUUsQ0FBQyxFQUFFLEVBQUUsQ0FBQztZQUNuRCxJQUFJLEVBQUUsR0FBRyxJQUFJLENBQUMsVUFBVSxDQUFDLE1BQU0sQ0FBQyxDQUFDLENBQUMsQ0FBQztZQUVuQyxJQUFJLEtBQUssR0FBRyxJQUFJLHVCQUF1QixDQUFDLEVBQUUsQ0FBQyxDQUFDO1lBQzVDLEtBQUssQ0FBQyxXQUFXLENBQUMsS0FBSyxDQUFDLFFBQVEsRUFBRSxDQUFDLENBQUM7UUFDeEMsQ0FBQztRQUVELE1BQU0sQ0FBQyxLQUFLLENBQUM7SUFFakIsQ0FBQztBQUVMLENBQUM7QUF2QlksK0JBQXVCLDBCQXVCbkMsQ0FBQTtBQUVELG9CQUEyQixTQUFpQixFQUFFLE9BQWUsRUFBRSxHQUFjLEVBQUUsSUFBaUI7SUFDNUYsR0FBRyxDQUFDLENBQUMsSUFBSSxDQUFDLEdBQUcsU0FBUyxFQUFFLENBQUMsR0FBRyxPQUFPLEVBQUUsQ0FBQyxFQUFFLEVBQUUsQ0FBQztRQUN2QyxJQUFJLE1BQU0sR0FBZ0IsUUFBUSxDQUFDLGFBQWEsQ0FBQyxvQkFBb0IsR0FBRyxDQUFDLEdBQUcsS0FBSyxDQUFDLENBQUM7UUFFbkYsSUFBSSxPQUFPLEdBQUcsSUFBSSx1QkFBdUIsQ0FBQyxHQUFHLENBQUMsTUFBTSxDQUFDLENBQUMsQ0FBQyxDQUFDLENBQUM7UUFDekQsSUFBSSxHQUFHLEdBQUcsT0FBTyxDQUFDLFFBQVEsRUFBRSxDQUFDO1FBQzdCLE1BQU0sQ0FBQyxhQUFhLENBQUMsWUFBWSxDQUFDLEdBQUcsRUFBRSxNQUFNLENBQUMsQ0FBQTtJQUNsRCxDQUFDO0FBQ0wsQ0FBQztBQVJlLGtCQUFVLGFBUXpCLENBQUE7QUFFRCw0QkFBbUMsU0FBbUIsRUFBRSxHQUFjLEVBQUUsSUFBaUI7SUFDckYsTUFBTSxDQUFBLENBQUMsU0FBUyxDQUFDLElBQUksQ0FBQyxDQUFDLENBQUM7UUFDcEIsS0FBSyx3QkFBWSxDQUFDLFVBQVU7WUFDeEIsR0FBRyxDQUFDLFVBQVUsQ0FBQyxTQUFTLENBQUMsUUFBUSxFQUFFLFNBQVMsQ0FBQyxJQUFJLENBQUMsQ0FBQztZQUNuRCxVQUFVLENBQUMsU0FBUyxDQUFDLFFBQVEsQ0FBQyxJQUFJLEVBQzlCLFNBQVMsQ0FBQyxRQUFRLENBQUMsSUFBSSxHQUFHLFNBQVMsQ0FBQyxLQUFLLENBQUMsTUFBTSxFQUFFLEdBQUcsRUFBRSxJQUFJLENBQUMsQ0FBQztZQUNqRSxLQUFLLENBQUM7UUFDVixLQUFLLHdCQUFZLENBQUMsVUFBVTtZQUN4QixHQUFHLENBQUMsVUFBVSxDQUFDLFNBQVMsQ0FBQyxLQUFLLENBQUMsQ0FBQztZQUNoQyxVQUFVLENBQUMsU0FBUyxDQUFDLEtBQUssQ0FBQyxLQUFLLENBQUMsSUFBSSxFQUNqQyxTQUFTLENBQUMsS0FBSyxDQUFDLEdBQUcsQ0FBQyxJQUFJLEVBQUUsR0FBRyxFQUFFLElBQUksQ0FBQyxDQUFDO1lBQ3pDLEtBQUssQ0FBQztRQUNWO1lBQ0ksTUFBTSxJQUFJLEtBQUssQ0FBQyx1QkFBdUIsQ0FBQyxDQUFDO0lBQ2pELENBQUM7QUFDTCxDQUFDO0FBZmUsMEJBQWtCLHFCQWVqQyxDQUFBIiwiZmlsZSI6Im1vZGVsL2RvbUdlbmVyYXRvci5qcyIsInNvdXJjZVJvb3QiOiJzcmMvIn0=

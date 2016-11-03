@@ -1,7 +1,6 @@
+declare namespace listDiff {
 
-declare module "list-diff2" {
-
-    enum MoveType {
+    export enum MoveType {
         Removing,
         Inserting,
     }
@@ -12,11 +11,18 @@ declare module "list-diff2" {
         item?: T;
     }
 
-    interface DiffResult<T> {
+    export interface DiffResult<T> {
         moves: Move<T>[];
         children: T[];
     }
 
-    function listDiff<T>(oldList: T[], newList: T[], key: string): DiffResult<T>;
+    export function listDiff<T>(oldList: T[], newList: T[], key: string): DiffResult<T>;
+
+}
+
+declare module "list-diff2" {
+
+    import D = listDiff.listDiff;
+    export = D;
 
 }
