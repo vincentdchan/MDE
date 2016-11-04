@@ -9,8 +9,7 @@ let content =
 
 let elem = document.getElementById("frame");
 
-let textModel = new TextModel();
+let textModel = new TextModel(content);
 
-textModel.setFromRawText(content);
 Display(textModel);
 

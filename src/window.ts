@@ -1,5 +1,4 @@
 
-import {RopeString} from "./model/ropeString"
 import {app, BrowserWindow} from "electron"
 
 let win;

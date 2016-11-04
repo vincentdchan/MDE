@@ -1,32 +1,15 @@
+import {Position, Range, isPosition, isRange} from "."
 
 export class Selection {
 
-    private _beginLine : number;
-    private _beginOffset : number;
-    private _endLine : number;
-    private _endOffset : number;
+    private _ranges: Range[];
 
-    constructor(_beginLine : number, _beginOffset, _endLine : number, _endOffset : number) {
-        this._beginLine = _beginLine;
-        this._beginOffset = _beginOffset;
-        this._endLine = _endLine;
-        this._endOffset = _endOffset;
+    constructor() {
+        this._ranges;
     }
 
-    get beginLine() {
-        return this._beginLine
-    }
-
-    get endLine() {
-        return this._endLine
-    }
-
-    get beginOffset() {
-        return this._beginOffset;
-    }
-
-    get endOffset() {
-        return this._endOffset;
+    get ranges() {
+        return this._ranges;
     }
 
 }

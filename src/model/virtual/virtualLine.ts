@@ -1,6 +1,8 @@
 import {VirtualWord} from "./virtualWord"
+import {IVirtualElement} from "."
+import {elem} from "../../util/dom"
 
-export class VirtualLine {
+export class VirtualLine implements IVirtualElement {
 
     private _line: number;
     private _words: VirtualWord[]; 
@@ -10,6 +12,15 @@ export class VirtualLine {
             this._words = words;
         else
             this._words = [];
+    }
+
+    render(): HTMLElement {
+        let dom = elem("div");
+        dom.setAttribute("data-lineId", this._line.toString());
+        this._words.forEach((e: VirtualWord)=> {
+            dom.appendChild(e.render());
+        });
+        return dom;
     }
 
     get lineNumber() {

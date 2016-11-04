@@ -5,107 +5,34 @@ import {LineModel} from "./LineModel"
 import {EventEmitter} from "events"
 import {Position, Range, isPosition, isRange} from "."
 
-export enum TextEditType {
-    InsertText, DeleteText
+export interface ITextDocument {
+    reportAll(): string;
+    report(range: Range): string;
 }
 
-export class TextEdit {
-
-    private _type : TextEditType
-    private _range : Range
-    private _position : Position;
-    private _text: string;
-    private _lines: string[]
-
-    constructor(_type: TextEditType, _rp: Range | Position, _text?: string) {
-        this._type = _type;
-        if (_text === undefined)
-            this._text = null;
-        else
-        {
-            this._text = _text;
-            this._lines = parseTextToLines(_text);
-        }
-
-        if (_type == TextEditType.InsertText && isPosition(_rp)) {
-            this._position = _rp;
-        }
-        else if (_type == TextEditType.DeleteText && isRange(_rp)) {
-            this._range = _rp;
-        } else
-            throw new Error("Error data input");
-    }
-
-    get type() {
-        return this._type;
-    }
-
-    get range() {
-        return this._range;
-    }
-
-    get position() {
-        return this._position
-    }
-
-    get text() {
-        return this._text;
-    }
-
-    get lines() {
-        return this._lines;
-    }
-
-}
-
-export class TextChangedEvent extends Event {
-
-    private _type : TextEditType;
-    private _begin_pos : Position;
-    private _end_pos : Position;
-    private _content : string;
-
-    constructor(_type : TextEditType, _begin_pos : Position, _end_pos : Position, content?: string) {
-        super("textChanged");
-
-        this._type = _type;
-
-        if (this._type === TextEditType.InsertText || this._type === TextEditType.DeleteText) {
-            this._begin_pos = _begin_pos;
-            this._end_pos = _end_pos;
-            this._content = content;
-        } else {
-            this._begin_pos = _begin_pos;
-            this._end_pos = _end_pos;
-        }
-    }
-
-    get beginPosition() {
-        return this._begin_pos;
-    }
-
-    get endPostition() {
-        return this._end_pos;
-    }
-
-    get content() {
-        return this._content;
-    }
-
-    get changedType() {
-        return this._type;
-    }
-
-}
-
-export class TextModel extends EventEmitter {
+export class TextModel implements ITextDocument {
 
     protected _lines : LineModel[];
 
-    constructor() {
-        super();
+    constructor(_string: string) {
+
+        this._lines = new Array<LineModel>();
+        
+        let lc = 1;
+        
+        var buf = new StringBuffer();
+
+        var lines = parseTextToLines(_string);
+
+        this._lines.length = lc;
+        for (let i = 0; i < lines.length; i++) {
+            var lm = new LineModel(lc, lines[i]);            
+            this._lines[lc++] = lm;
+        }
+
     }
     
+    /*
     setFromRawText(_string : string) {
 
         this._lines = new Array<LineModel>();
@@ -123,11 +50,24 @@ export class TextModel extends EventEmitter {
         }
 
     }
+    */
 
     lineAt(num: number): LineModel {
         if (num <= 0 || num > this.linesCount)
             throw new Error("index out of range");
         return this._lines[num];
+    }
+
+    get firstLine(): LineModel {
+        if (this._lines.length === 0)
+            throw new Error("No lines found.");
+        return this._lines[0];
+    }
+
+    get lastLine(): LineModel {
+        if (this._lines.length === 0)
+            throw new Error("No lines found.");
+        return this._lines[this._lines.length - 1];
     }
 
     insertText(pos : Position, _content : string) {
@@ -156,8 +96,6 @@ export class TextModel extends EventEmitter {
                 this._lines[pos.line + i] = new LineModel(pos.line + i, lines[i]);
             }
 
-            this.emit("intertText", new TextChangedEvent(
-                TextEditType.InsertText, pos, null, _content));
         }
     }
 

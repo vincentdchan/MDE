@@ -6,6 +6,11 @@ import {Position} from "../model"
 
 const EOF = '\0';
 
+interface ParseState {
+    pos: Position;
+    finished: boolean;
+}
+
 export class Parser {
     
     private _root: node.Node;
@@ -19,9 +24,9 @@ export class Parser {
     private _continue : boolean = true;
 
     private _prefixArray : string[];
-    private _lookahead_line : LineModel;
-    private _lookahead_position : Position;
     private _lookahead : string;
+
+    private _parseState: ParseState;
     
     constructor(_model : TextModel) {
         this._model = _model;
@@ -31,10 +36,36 @@ export class Parser {
 
         this._errors = new Array<Error>();
 
-        this._lookahead_position = {line:1, offset:0};
-        this._lookahead = this._model.charAt(this._lookahead_position);
         this._prefixArray = [];
 
+        this._parseState = {
+            pos: {
+                line: 1, offset: 0
+            },
+            finished: false,
+        }
+
+    }
+
+    nextState() {
+        // last char in this line
+        if (this._parseState.pos.offset === this._model.lineAt(this._parseState.pos.line).length - 1) {
+            // last line
+            if (this._parseState.pos.line === this._model.linesCount) {
+                // finish
+                this._parseState.finished = true;
+            } else {
+                // new line
+                this._parseState.pos.line++;
+                this._parseState.pos.offset = 0;
+            }
+        } else {
+            this._parseState.pos.offset++;
+        }
+    }
+
+    isFinished(): boolean {
+        return this._parseState.finished;
     }
     
     match(char : string) : boolean {
@@ -47,24 +78,10 @@ export class Parser {
 
     nextChar() : string {
         var _tmp = this._lookahead
-        if (_tmp === '\n') {
-            if (this._lookahead_position.line === this._model.linesCount) {
-                this._lookahead = EOF;
-            }
-            else {
-                this._lookahead_position = {
-                    line: this._lookahead_position.line + 1,
-                    offset: 0
-                };
-                this._lookahead = this._model.charAt(this._lookahead_position);
-            }
-        } else {
-            this._lookahead_position = {
-                line : this._lookahead_position.line,
-                offset : this._lookahead_position.offset + 1
-            }
-            this._lookahead = this._model.charAt(this._lookahead_position);
-        }
+        if (this._parseState.finished)
+            throw new Error("end of fine");
+        this.nextState();
+        this._lookahead = this._model.charAt(this._parseState.pos);
         return _tmp;
     }
 
@@ -94,6 +111,19 @@ export class Parser {
         switch(this.lookahead()) {
             case '#':
                 return this.parseHeader();
+            case '-':
+                return this.parseUnorderList();
+            case '0':
+            case '1':
+            case '2':
+            case '3':
+            case '4':
+            case '5':
+            case '6':
+            case '7':
+            case '8':
+            case '9':
+                return this.parseOrderList();
             default:
                 this.reportError(new Error("Unexpected token."), true);
         }
@@ -117,23 +147,25 @@ export class Parser {
     }
 
     private parseText() : node.TextNode {
-        var node = new node.TextNode();
+        var _node = new node.TextNode();
 
         var buf = new StringBuffer();
         while (!this.match('\n')) {
             buf.push(this.nextChar());
         }
 
-        node.children.push(new node.NormalTextNode(buf.getStr()));
-        return node;
+        _node.children.push(new node.NormalTextNode(buf.getStr()));
+        return _node;
     }
     
-    private parseOrderList() {
-
+    private parseOrderList(): node.ListNode {
+        let _node = new node.ListNode();
+        return _node;
     }
     
-    private parseUnorderList() {
-
+    private parseUnorderList(): node.ListNode {
+        let _node = new node.ListNode();
+        return _node;
     }
     
     private parseAnchor() {

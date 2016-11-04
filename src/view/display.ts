@@ -1,4 +1,5 @@
-import {TextModel, TextEdit, TextEditType} from "../model/textModel"
+import {TextModel} from "../model/textModel"
+import {TextEdit, TextEditType} from "../model/textEdit"
 import {LineModel} from "../model/lineModel"
 import {TextModelToDOMGenerator, applyTextEditToDOM} from "../model/domGenerator"
 import {diff} from "../virtualDOM/diff"
@@ -59,7 +60,6 @@ export function Display(textModel: TextModel) {
             }
         });
 
-        console.log(textEdit);
         applyTextEditToDOM(textEdit, textModel, realDOM);
     });
 

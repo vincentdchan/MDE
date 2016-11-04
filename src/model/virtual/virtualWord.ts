@@ -1,7 +1,9 @@
 import {ImmutableArray} from "../../util"
+import {IVirtualElement} from "."
+import {elem} from "../../util/dom"
 
 // Immutable
-export class VirtualWord {
+export class VirtualWord implements IVirtualElement {
 
     private _classList: ImmutableArray<string>
     private _text: string;
@@ -15,6 +17,15 @@ export class VirtualWord {
         }
 
         this._classList = _classList;
+    }
+
+    render(): HTMLElement {
+        let dom = elem("span");
+        dom.innerText = this._text;
+        this._classList.forEach((e: string)=> {
+            dom.classList.add(e);
+        })
+        return dom;
     }
 
     get text() {
