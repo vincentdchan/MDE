@@ -51,13 +51,39 @@ export class TextModelToDOMGenerator implements IGenerator<HTMLElement>{
 
 }
 
-export function refreshDOM(beginLine: number, endLine: number, _tm: TextModel, _dom: HTMLElement) {
-    for (let i = beginLine; i < endLine; i++) {
-        let oldElm = <HTMLElement>document.querySelector("div[data-lineId=\"" + i + "\"]");
+export function refreshDOM(_tm: TextModel, _dom: HTMLElement, beginLine: number, endLine?: number) {
+    let childList = _dom.children;
 
-        let lineGen = new LineModelToDOMGenerator(_tm.lineAt(i));
-        let dom = lineGen.generate();
-        oldElm.parentElement.replaceChild(dom, oldElm)
+    if (endLine) {
+        for (let i = beginLine; i <= endLine; i++) {
+
+            let oldElm = childList.item(i - 1);
+
+            let lineGen = new LineModelToDOMGenerator(_tm.lineAt(i));
+            let dom = lineGen.generate();
+            oldElm.parentElement.replaceChild(dom, oldElm)
+        }
+    } else {
+
+        for (let i = beginLine; i <= _tm.linesCount; i++) {
+
+            let oldElm = childList.item(i - 1);
+
+            let lineGen = new LineModelToDOMGenerator(_tm.lineAt(i));
+            let dom = lineGen.generate();
+            oldElm.parentElement.replaceChild(dom, oldElm)
+        }
+
+        if (childList.length > _tm.linesCount) {
+
+            // the element must be deleted in reverse order
+            for (let i = childList.length - 1; i >= _tm.linesCount; i--) {
+                let elm = childList.item(i);
+                elm.parentElement.removeChild(elm);
+            }
+
+        }
+
     }
 }
 
@@ -65,15 +91,16 @@ export function applyTextEditToDOM(_textEdit: TextEdit, _tm: TextModel, _dom: HT
     switch(_textEdit.type) {
         case TextEditType.InsertText:
             _tm.insertText(_textEdit.position, _textEdit.text);
-            refreshDOM(_textEdit.position.line, 
-                _textEdit.position.line + _textEdit.lines.length, _tm, _dom);
+            refreshDOM( _tm, _dom, _textEdit.position.line, 
+                _textEdit.position.line + _textEdit.lines.length - 1);
             break;
         case TextEditType.DeleteText:
             _tm.deleteText(_textEdit.range);
-            refreshDOM(_textEdit.range.begin.line, 
-                _textEdit.range.end.line, _tm, _dom);
+            refreshDOM(_tm, _dom, _textEdit.range.begin.line);
             break;
         default:
             throw new Error("Error text edit type.");
     }
+
+    console.log(_tm);
 }

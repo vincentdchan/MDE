@@ -101,7 +101,6 @@ export class TextChangedEvent extends Event {
 export class TextModel extends EventEmitter {
 
     protected _lines : LineModel[];
-    protected _lineCount : number;
 
     constructor() {
         super();
@@ -117,16 +116,17 @@ export class TextModel extends EventEmitter {
 
         var lines = parseTextToLines(_string);
 
+        this._lines.length = lc;
         for (let i = 0; i < lines.length; i++) {
             var lm = new LineModel(lc, lines[i]);            
             this._lines[lc++] = lm;
         }
 
-        this._lineCount = lc;
-
     }
 
     lineAt(num: number): LineModel {
+        if (num <= 0 || num > this.linesCount)
+            throw new Error("index out of range");
         return this._lines[num];
     }
 
@@ -164,7 +164,7 @@ export class TextModel extends EventEmitter {
     deleteText(_range: Range) {
         if (_range.begin.line === _range.end.line) {
             this._lines[_range.begin.line].delete(_range.begin.offset, _range.end.offset);
-        } else if (_range.begin.line > _range.end.line) {
+        } else if (_range.begin.line < _range.end.line) {
             this._lines[_range.begin.line].deleteToEnd(_range.begin.offset);
 
             var suffixStr = this._lines[_range.end.line].text.slice(_range.end.offset);
@@ -218,7 +218,7 @@ export class TextModel extends EventEmitter {
     }
     
     get linesCount() {
-        return this._lineCount - 1;
+        return this._lines.length - 1;
     }
     
 }

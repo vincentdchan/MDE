@@ -23,6 +23,12 @@ export function Display(textModel: TextModel) {
     const insertTextInput = <HTMLInputElement>document.getElementById("input-insert-text");
     const insertButton = <HTMLButtonElement>document.getElementById("button-insert");
 
+    const deleteBeginLineInput = <HTMLInputElement>document.getElementById("input-delete-begin-line");
+    const deleteBeginOffsetInput = <HTMLInputElement>document.getElementById("input-delete-begin-offset");
+    const deleteEndLineInput = <HTMLInputElement>document.getElementById("input-delete-end-line");
+    const deleteEndOffsetInput = <HTMLInputElement>document.getElementById("input-delete-end-offset");
+    const deleteButton = <HTMLElement>document.getElementById("button-delete");
+
     insertButton.addEventListener("click", (e: MouseEvent) => {
         const beginLine = parseInt(beginLineInput.value);
         const beginOffset = parseInt(beginOffsetInput.value);
@@ -35,5 +41,26 @@ export function Display(textModel: TextModel) {
 
         applyTextEditToDOM(textEdit, textModel, realDOM);
     })
+
+    deleteButton.addEventListener("click", (e: MouseEvent) => {
+        const beginLine = parseInt(deleteBeginLineInput.value);
+        const beginOffset = parseInt(deleteBeginOffsetInput.value);
+        const endLine = parseInt(deleteEndLineInput.value);
+        const endOffset = parseInt(deleteEndOffsetInput.value);
+
+        let textEdit = new TextEdit(TextEditType.DeleteText, {
+            begin: {
+                line: beginLine,
+                offset: beginOffset
+            },
+            end: {
+                line: endLine,
+                offset: endOffset
+            }
+        });
+
+        console.log(textEdit);
+        applyTextEditToDOM(textEdit, textModel, realDOM);
+    });
 
 }
