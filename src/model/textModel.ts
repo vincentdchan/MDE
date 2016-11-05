@@ -52,6 +52,37 @@ export class TextModel implements ITextDocument {
     }
     */
 
+    positionAt(offset: number): Position {
+        let currentLine = 1;
+        let remainOffset = offset;
+        while (remainOffset >= this._lines[currentLine].length) {
+            remainOffset -= this._lines[currentLine].length;
+            currentLine++;
+            if (currentLine > this.linesCount)
+                throw new Error("Illegal data input.");
+        }
+        return {
+            line: currentLine,
+            offset: remainOffset,
+        }
+    }
+
+    offsetAt(pos: Position): number {
+        if (pos.line === 1 && this.linesCount >= 1) {
+            if (pos.offset < this._lines[1].length)
+                return pos.offset;
+        } else if (pos.line > 1 && pos.line <= this.linesCount 
+                && pos.offset < this._lines[pos.line].length) {
+            let count = 0;
+            for (let i = 1; i < pos.line; i++) {
+                count += this._lines[i].length;
+            }
+            count += pos.offset;
+            return count;
+        }
+        throw new Error("Illegal data input.");
+    }
+
     lineAt(num: number): LineModel {
         if (num <= 0 || num > this.linesCount)
             throw new Error("index out of range");
