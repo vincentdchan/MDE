@@ -185,6 +185,12 @@ export class TextModel implements ITextDocument {
 
         return buf.getStr();
     }
+
+    forEach(_fun: (LineModel)=>void) {
+        for (let i = 1; i < this.linesCount; i++) {
+            _fun(this._lines[i]);
+        }
+    }
     
     get linesCount() {
         return this._lines.length - 1;

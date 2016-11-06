@@ -84,3 +84,7 @@ export class ImmutableArray<T> implements Iterable<T> {
     }
 
 }
+
+export interface IDisposable {
+    dispose(): any;
+}
