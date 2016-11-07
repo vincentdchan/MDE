@@ -22,9 +22,9 @@ export class DocumentView implements IDisposable {
 
         this._lines[0] = null;
         this._model.forEach((line: LineModel) => {
-            var vl = new LineView(line.number);
+            var vl = new LineView();
             this._lines[line.number] = vl;
-            vl.render();
+            vl.render(line.text);
             this._dom.appendChild(vl.element);
         })
 
@@ -41,12 +41,33 @@ export class DocumentView implements IDisposable {
 
     // move lines from after [index] 
     moveLinesBackward(index: number, count: number) {
+        if (index > this.linesCount) {
+            this.appendLines(count);
+            return;
+        }
         let prefix = this._lines.slice(0, index);
         let postfix = this._lines.slice(index);
 
         let new_arr = [];
         new_arr.length = count;
         this._lines = prefix.concat(new_arr).concat(postfix);
+
+        for (let i = index + count - 1; i >= index; i--) {
+            this._lines[i] = new LineView();
+            this._dom.insertBefore(this._lines[i].element, 
+                this._lines[i + 1].element);
+        }
+    }
+
+    appendLines(num: number) {
+        var new_arr: LineView[] = [];
+        new_arr.length = num;
+        for (let i = 0; i < num; i++) {
+            new_arr[i] = new LineView();
+            this._dom.appendChild(new_arr[i].element);
+        }
+
+        this._lines = this._lines.concat(new_arr);
     }
 
     // delete line from [begin] to [end - 1]

@@ -1,3 +1,6 @@
+export {DocumentView} from "./viewDocument"
+export {LineView} from "./viewLine"
+export {WordView} from "./viewWord"
 
 export interface IVirtualNode {
     render(): Node;

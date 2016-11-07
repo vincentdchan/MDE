@@ -68,7 +68,7 @@ export interface ILineStream {
 
 }
 
-class LineStream implements ILineStream {
+export class LineStream implements ILineStream {
 
     _model : TextModel;
     _lineModel: LineModel;

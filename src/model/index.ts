@@ -1,3 +1,7 @@
+export {TextModel} from "./textModel"
+export {LineModel} from "./lineModel"
+export {LineStream, ILineStream} from "./lineStream"
+export {TextEdit, TextEditType} from "./textEdit"
 
 export interface Position {
     line : number;
