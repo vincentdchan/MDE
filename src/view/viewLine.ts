@@ -1,10 +1,9 @@
-import {WordView} from "./wordView"
+import {WordView} from "./viewWord"
 import {IVirtualElement, MarkdownLexerState} from "."
 import {elem} from "../util/dom"
 import {IDisposable} from "../util"
 
-export class LineView 
-    implements IVirtualElement, IDisposable {
+export class LineView implements IDisposable {
 
     private _line: number;
     private _content: string;
@@ -17,12 +16,11 @@ export class LineView
 
         this._state = state? state.clone() : new MarkdownLexerState();
         this._words = words? words : [];
+
+        this._dom = elem("div", "editor-line");
     }
 
     render(): HTMLElement {
-        this.dispose();
-        this._dom = elem("div");
-        this._dom.setAttribute("data-lineId", this._line.toString());
         this._words.forEach((e: WordView)=> {
             this._dom.appendChild(e.render());
         });
@@ -34,6 +32,10 @@ export class LineView
             this._dom.parentNode.removeChild(this._dom);
             this._dom = null;
         }
+    }
+
+    get element() {
+        return this._dom;
     }
 
     get lineNumber() {
