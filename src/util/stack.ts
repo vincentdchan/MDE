@@ -1,3 +1,4 @@
+import {Deque} from "./queue"
 
 export interface IStack<T> {
 
@@ -10,63 +11,32 @@ export interface IStack<T> {
 
 export class FixSizeStack<T> implements IStack<T> {
 
-    private _fix_size : number;
-    private _size : number = 0;
-    private _frame_begin : number = 0;
-    private _frame_end : number = 0;   
-    private _capacity : number = 64;
-    private _arr: T[];
+    private _fix_size;
+    private _deque : Deque<T>;
 
     constructor(_fix_size: number) {
         this._fix_size = _fix_size;
-
-        this._arr = [];
-        this._arr.length = this._capacity;
-    }
-    
-    private realloc(size: number) {
-        this._arr.length = size;
+        this._deque = new Deque<T>();
     }
 
     push(obj: T) {
+        this._deque.push_back(obj);
 
-        if (this._frame_end == this._capacity) {
-            this._capacity *= 2;
-            this.realloc(this._capacity);
-        }
-
-        this._arr[this._frame_end++] = obj;
-
-        if (this._frame_end - this._frame_begin > this._fix_size) {
-            this._frame_begin = this._frame_begin - this._fix_size;
-
-            if (this._frame_begin >= this._capacity) {
-                let shit = this._arr.slice(0, this._frame_begin);
-                this._arr = this._arr.slice(this._frame_begin);
-                this._capacity = this._arr.length;
-
-                this._frame_end = this._frame_end - this._frame_begin;
-                this._frame_begin = 0;
-            }
+        while (this._deque.size() > this._fix_size) {
+            this._deque.pop_front();
         }
     }
 
     pop() : T {
-        if (this._frame_begin == this._frame_end)
-            throw new Error("The stack is empty.");
-        if (this._frame_end <= this._capacity / 4) {
-            this._capacity /= 2;
-            this.realloc(this._capacity);
-        }
-        return this._arr[--this._frame_end]
+        return this._deque.pop_back();
     }
 
     size() : number {
-        return this._frame_end - this._frame_begin;
+        return this._deque.size();
     }
 
     empty() : boolean {
-        return this._frame_begin == this._frame_end;
+        return this._deque.size() == 0;
     }
 
 }

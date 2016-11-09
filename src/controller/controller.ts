@@ -12,6 +12,8 @@ export class MDE implements IDisposable {
 
         this._model = new TextModel(content);
         this._view = new DocumentView(this._model);
+        this._view.render();
+
     }
 
     applyTextEdit(_textEdit: TextEdit) {
@@ -28,7 +30,8 @@ export class MDE implements IDisposable {
                 this._model.deleteText(_textEdit.range);
                 this._view.renderLine(_textEdit.range.begin.line);
                 if (_range.end.line - _range.begin.line >= 1) {
-                    this._view.deleteLines(_range.begin.line + 1, _range.end.line - _range.begin.line);
+                    this._view.deleteLines(_range.begin.line + 1, _range.begin.line + 
+                        _range.end.line - _range.begin.line + 1);
                 }
                 break;
             default:

@@ -9,7 +9,4 @@ let content =
 
 let elem = document.getElementById("frame");
 
-let textModel = new TextModel(content);
-
-Display(textModel);
-
+Display(content);

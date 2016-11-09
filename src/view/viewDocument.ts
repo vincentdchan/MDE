@@ -14,7 +14,7 @@ export class DocumentView implements IDisposable {
 
     constructor(_model) {
         this._lines = [];
-        this._model;
+        this._model = _model;
         this._dom = elem("div", "editor-document");
     }
 
@@ -36,7 +36,9 @@ export class DocumentView implements IDisposable {
     }
 
     renderLine(line: number) {
-
+        if (line <= 0 || line > this.linesCount)
+            throw new Error("index out of range");
+        this._lines[line].render(this._model.lineAt(line).text);
     }
 
     // move lines from after [index] 
@@ -75,7 +77,7 @@ export class DocumentView implements IDisposable {
     deleteLines(begin: number, end?: number) {
         if (begin <= 0)
             throw new Error("Index out of range.");
-        end = end | begin + 1;
+        end = end? end : begin + 1;
 
         let prefix = this._lines.slice(0, begin);
         let middle = this._lines.slice(begin, end);

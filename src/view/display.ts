@@ -1,7 +1,6 @@
-import {TextModel} from "../model/textModel"
-import {TextEdit, TextEditType} from "../model/textEdit"
-import {LineModel} from "../model/lineModel"
+import {LineModel, TextModel, TextEdit, TextEditType} from "../model"
 import {TextModelToDOMGenerator, applyTextEditToDOM} from "../model/domGenerator"
+import {MDE} from "../controller"
 import {diff} from "../virtualDOM/diff"
 
 export interface EditorOption {
@@ -12,12 +11,9 @@ const DEFAULT_OPTION: EditorOption = {
     lineHeight: 18
 }
 
-export function Display(textModel: TextModel) {
+export function Display(content: string) {
 
-    let gen = new TextModelToDOMGenerator(textModel);
-    let realDOM = gen.generate();
-
-    document.body.appendChild(realDOM);
+    let mde = new MDE(content);
 
     const beginLineInput = <HTMLInputElement>document.getElementById("input-begin-line");
     const beginOffsetInput = <HTMLInputElement>document.getElementById("input-begin-offset");
@@ -40,7 +36,7 @@ export function Display(textModel: TextModel) {
             offset: beginOffset
         }, inputText);
 
-        applyTextEditToDOM(textEdit, textModel, realDOM);
+        mde.applyTextEdit(textEdit);
     })
 
     deleteButton.addEventListener("click", (e: MouseEvent) => {
@@ -60,7 +56,9 @@ export function Display(textModel: TextModel) {
             }
         });
 
-        applyTextEditToDOM(textEdit, textModel, realDOM);
+        mde.applyTextEdit(textEdit);
     });
+
+    mde.appendTo(document.body);
 
 }

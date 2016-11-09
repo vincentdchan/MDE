@@ -32,6 +32,7 @@ export class LineView implements IDisposable {
         span.innerText = content;
 
         this._line_content_dom.appendChild(span);
+        this._dom.appendChild(this._line_content_dom);
     }
 
     dispose() {

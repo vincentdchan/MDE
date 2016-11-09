@@ -187,7 +187,7 @@ export class TextModel implements ITextDocument {
     }
 
     forEach(_fun: (LineModel)=>void) {
-        for (let i = 1; i < this.linesCount; i++) {
+        for (let i = 1; i <= this.linesCount; i++) {
             _fun(this._lines[i]);
         }
     }
