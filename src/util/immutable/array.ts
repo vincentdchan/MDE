@@ -25,13 +25,14 @@ export class ImmutableArray<T> implements Iterable<T> {
 
     private _arr : T[];
 
-    constructor(_obj: ImmutableArray<T> | Array<T>) {
+    constructor(_obj?: ImmutableArray<T> | Array<T>) {
         if (_obj instanceof ImmutableArray) {
             this._arr = [..._obj._arr];
         } else if (_obj instanceof Array) {
             this._arr = [..._obj];
-        } else
-            throw new Error("Illegal data.");
+        } else {
+            this._arr = []
+        }
     }
 
     push(_elm: T): ImmutableArray<T> {

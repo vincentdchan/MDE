@@ -4,21 +4,8 @@
     <meta charset="UTF-8">
     <title>Hello World!</title>
     <style>
-
-      .render-line {
+      .editor-line {
         min-height: 1em;
-      }
-
-      .cursor {
-        position: absolute;
-        background: black;
-        width: 0.5em;
-        height: 1em;
-      }
-
-      .input-textarea {
-        position: absolute;
-        height: 1em;
       }
 
     </style>
@@ -53,6 +40,14 @@
       <input id="input-delete-end-line" type="number" />
       <input id="input-delete-end-offset" type="number" />
       <button id="button-delete">Delete</button>
+    </div>
+
+    <h2>Get Coordinate</h2>
+    <div>
+      <label>Line:</label>
+      <input id="input-co-line" type="number"/>
+      <input id="input-co-offset" type="number"/>
+      <button id="button-co">Print</button>
     </div>
   </body>
   

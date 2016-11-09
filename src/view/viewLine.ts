@@ -1,9 +1,9 @@
 import {WordView} from "./viewWord"
-import {IVirtualElement, MarkdownLexerState} from "."
-import {elem} from "../util/dom"
+import {IVirtualElement, Coordinate, MarkdownLexerState} from "."
+import {elem, IDOMWrapper} from "../util/dom"
 import {IDisposable} from "../util"
 
-export class LineView implements IDisposable {
+export class LineView implements IDOMWrapper, IDisposable {
 
     private _content: string;
     private _words: WordView[]; 
@@ -13,7 +13,6 @@ export class LineView implements IDisposable {
 
     constructor() {
         this._state =  new MarkdownLexerState();
-        this._words = [];
 
         this._dom = elem("div", "editor-line");
     }
@@ -23,16 +22,37 @@ export class LineView implements IDisposable {
     }
 
     render(content: string) {
+        this._words = [];
+        content = content.slice(0, content.length - 1);
         if (this._line_content_dom) {
             this._dom.removeChild(this._line_content_dom);
         }
         this._line_content_dom = this.generateContentDom();
 
-        let span = elem("span", "editor-word");
-        span.innerText = content;
+        let wordView = new WordView(content);
+        this._words.push(wordView);
 
-        this._line_content_dom.appendChild(span);
+        this._line_content_dom.appendChild(wordView.element());
         this._dom.appendChild(this._line_content_dom);
+    }
+
+    getCoordinate(offset: number) : Coordinate {
+        let count = 0;
+        for (let i = 0; i < this._words.length; i++) {
+            let word = this._words[i];
+            if (offset < count + word.length) {
+                return word.getCoordinate(offset);
+            }
+            count += word.length;
+        }
+        if (count == offset) {
+            let rect = this._words[this._words.length - 1].element().getBoundingClientRect();
+            return {
+                x: rect.left + rect.width,
+                y: rect.top,
+            }
+        }
+        throw new Error("Index out of Range.");
     }
 
     dispose() {
@@ -42,8 +62,12 @@ export class LineView implements IDisposable {
         }
     }
 
-    get element() {
+    element() {
         return this._dom;
+    }
+
+    on(name: string, callback: EventListenerOrEventListenerObject, useCapture?: boolean) {
+        this._dom.addEventListener(name, callback, useCapture);
     }
 
     get words() {

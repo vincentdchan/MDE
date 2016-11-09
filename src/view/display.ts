@@ -26,7 +26,13 @@ export function Display(content: string) {
     const deleteEndOffsetInput = <HTMLInputElement>document.getElementById("input-delete-end-offset");
     const deleteButton = <HTMLElement>document.getElementById("button-delete");
 
+    const coLineInput = <HTMLInputElement>document.getElementById("input-co-line");
+    const coOffsetInput = <HTMLInputElement>document.getElementById("input-co-offset");
+    const coButton = <HTMLButtonElement>document.getElementById("button-co");
+
     insertButton.addEventListener("click", (e: MouseEvent) => {
+        e.preventDefault();
+
         const beginLine = parseInt(beginLineInput.value);
         const beginOffset = parseInt(beginOffsetInput.value);
         const inputText = insertTextInput.value;
@@ -40,6 +46,8 @@ export function Display(content: string) {
     })
 
     deleteButton.addEventListener("click", (e: MouseEvent) => {
+        e.preventDefault();
+        
         const beginLine = parseInt(deleteBeginLineInput.value);
         const beginOffset = parseInt(deleteBeginOffsetInput.value);
         const endLine = parseInt(deleteEndLineInput.value);
@@ -58,6 +66,17 @@ export function Display(content: string) {
 
         mde.applyTextEdit(textEdit);
     });
+
+    coButton.addEventListener("click", (evt: MouseEvent) => {
+        evt.preventDefault();
+
+        let _line = parseInt(coLineInput.value);
+        let _offset = parseInt(coOffsetInput.value);
+        console.log(mde.view.documentView.getCoordinate({
+            line: _line,
+            offset: _offset,
+        }));
+    })
 
     mde.appendTo(document.body);
 

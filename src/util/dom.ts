@@ -20,3 +20,10 @@ export interface IElement {
     getElement() : HTMLElement;
 
 }
+
+export interface IDOMWrapper {
+
+    element() : HTMLElement;
+    on(name: string, _fun: EventListenerOrEventListenerObject, useCapture?: boolean);
+
+}

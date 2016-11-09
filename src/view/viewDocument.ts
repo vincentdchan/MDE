@@ -1,12 +1,11 @@
 
 import {LineView} from "./viewLine"
-import {IVirtualElement} from "."
-import {TextModel} from "../model/textModel"
-import {LineModel} from "../model/lineModel"
-import {elem} from "../util/dom"
+import {IVirtualElement, Coordinate} from "."
+import {TextModel, LineModel, Position} from "../model"
+import {elem, IDOMWrapper} from "../util/dom"
 import {IDisposable} from "../util"
 
-export class DocumentView implements IDisposable {
+export class DocumentView implements IDOMWrapper, IDisposable {
 
     private _model: TextModel;
     private _lines: LineView[];
@@ -25,10 +24,16 @@ export class DocumentView implements IDisposable {
             var vl = new LineView();
             this._lines[line.number] = vl;
             vl.render(line.text);
-            this._dom.appendChild(vl.element);
+            this._dom.appendChild(vl.element());
         })
 
         return this._dom;
+    }
+
+    getCoordinate(pos: Position) : Coordinate {
+        if (pos.line <= 0 || pos.line > this.linesCount)
+            throw new Error("Index out of range.");
+        return this._lines[pos.line].getCoordinate(pos.offset);
     }
 
     justifyLineNumber() {
@@ -56,8 +61,8 @@ export class DocumentView implements IDisposable {
 
         for (let i = index + count - 1; i >= index; i--) {
             this._lines[i] = new LineView();
-            this._dom.insertBefore(this._lines[i].element, 
-                this._lines[i + 1].element);
+            this._dom.insertBefore(this._lines[i].element(), 
+                this._lines[i + 1].element());
         }
     }
 
@@ -66,7 +71,7 @@ export class DocumentView implements IDisposable {
         new_arr.length = num;
         for (let i = 0; i < num; i++) {
             new_arr[i] = new LineView();
-            this._dom.appendChild(new_arr[i].element);
+            this._dom.appendChild(new_arr[i].element());
         }
 
         this._lines = this._lines.concat(new_arr);
@@ -96,6 +101,14 @@ export class DocumentView implements IDisposable {
         }
     }
 
+    element() {
+        return this._dom;
+    }
+
+    on(name: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean) {
+        this._dom.addEventListener(name, listener, useCapture);
+    }
+
     get lines() {
         return this._lines;
     }
@@ -110,10 +123,6 @@ export class DocumentView implements IDisposable {
 
     set model(_model: TextModel) {
         this._model = _model;
-    }
-
-    get element() {
-        return this._dom;
     }
 
 }

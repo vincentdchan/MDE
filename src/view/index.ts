@@ -1,6 +1,9 @@
 export {DocumentView} from "./viewDocument"
 export {LineView} from "./viewLine"
 export {WordView} from "./viewWord"
+export {CursorView} from "./viewCursor"
+export {EditorView} from "./viewEditor"
+export {InputerView} from "./viewInputer"
 
 export interface IVirtualNode {
     render(): Node;
@@ -8,6 +11,11 @@ export interface IVirtualNode {
 
 export interface IVirtualElement {
     render(): HTMLElement;
+}
+
+export interface Coordinate {
+    x: number;
+    y: number;
 }
 
 export class MarkdownLexerState {
