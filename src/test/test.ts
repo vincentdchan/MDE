@@ -1,1 +1,2 @@
+require("./lineModelTest");
 require("./textModelTest");

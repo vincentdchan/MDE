@@ -141,7 +141,7 @@ console.log("Inserting testing...");
 
 })();
 
-console.log("Delect text testing...");
+console.log("Delete text testing...");
 (() => {
     let tm1 = new TextModel(testText1);
 

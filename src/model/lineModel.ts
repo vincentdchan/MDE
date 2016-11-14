@@ -39,6 +39,8 @@ export class LineModel {
     }
 
     delete(begin : number, end : number) {
+        if (this._text[this._text.length - 1] == '\n' && end >= this._text.length)
+            throw new Error("You can not delete the linebreak");
         let before = this._text.slice(0, begin);
         let deleted = this._text.slice(begin, end);
         let after = this._text.slice(end);
@@ -47,7 +49,13 @@ export class LineModel {
     }
 
     deleteToEnd(offset : number) {
-        this._text = this._text.slice(0, offset);
+        if (offset >= this._text.length)
+            throw new Error("Index out of range.");
+        if (this._text[this._text.length - 1] == '\n') {
+            this._text = this._text.slice(0, offset) + '\n';
+        } else {
+            this._text = this._text.slice(0, offset);
+        }
     }
 
     report() {

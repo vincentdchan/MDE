@@ -99,7 +99,7 @@ console.log("Inserting testing...");
     tm1.insertText(tm1.positionAt(testText1.length - 1), "(insert)");
     assert(/(insert)/.test(tm1.lineAt(tm1.linesCount).text));
 })();
-console.log("Delect text testing...");
+console.log("Delete text testing...");
 (() => {
     let tm1 = new model_1.TextModel(testText1);
     tm1.deleteText({
