@@ -1,0 +1,15 @@
+"use strict";
+function hd(arr) {
+    return arr[0];
+}
+exports.hd = hd;
+function tl(arr) {
+    return arr.slice(1);
+}
+exports.tl = tl;
+function last(arr) {
+    return arr[arr.length - 1];
+}
+exports.last = last;
+
+//# sourceMappingURL=data:application/json;charset=utf8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi4uL3NyYy91dGlsL2ZuLnRzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7QUFDQSxZQUFzQixHQUFRO0lBQzFCLE1BQU0sQ0FBQyxHQUFHLENBQUMsQ0FBQyxDQUFDLENBQUM7QUFDbEIsQ0FBQztBQUZlLFVBQUUsS0FFakIsQ0FBQTtBQUVELFlBQXNCLEdBQVE7SUFDMUIsTUFBTSxDQUFDLEdBQUcsQ0FBQyxLQUFLLENBQUMsQ0FBQyxDQUFDLENBQUM7QUFDeEIsQ0FBQztBQUZlLFVBQUUsS0FFakIsQ0FBQTtBQUVELGNBQXdCLEdBQVE7SUFDNUIsTUFBTSxDQUFDLEdBQUcsQ0FBQyxHQUFHLENBQUMsTUFBTSxHQUFHLENBQUMsQ0FBQyxDQUFDO0FBQy9CLENBQUM7QUFGZSxZQUFJLE9BRW5CLENBQUEiLCJmaWxlIjoidXRpbC9mbi5qcyIsInNvdXJjZVJvb3QiOiJzcmMvIn0=

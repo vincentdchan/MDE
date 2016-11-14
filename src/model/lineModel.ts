@@ -19,12 +19,19 @@ export class LineModel {
     }
 
     insert(index : number, content : string) {
-        if (index < 0 || index >= this._text.length)
+        if (index < 0 || index > this._text.length)
             throw new Error("Illegal input data when inserting text to LineModel");
-        let before = this._text.slice(0, index);
-        let after = this._text.slice(index);
+        if (index === this._text.length) {
+            if (this._text[this._text.length - 1] == '\n') {
+                throw new Error("You cannot add charactors after linebreaker.");
+            }
+            this._text = this._text + content;
+        } else {
+            let before = this._text.slice(0, index);
+            let after = this._text.slice(index);
 
-        this._text = before + content + after;
+            this._text = before + content + after;
+        }
     }
 
     append(content : string) {
@@ -44,7 +51,7 @@ export class LineModel {
     }
 
     report() {
-        return this._text + "\n";
+        return this._text;
     }
 
     get firstChar(): string {

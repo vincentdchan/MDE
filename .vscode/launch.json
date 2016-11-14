@@ -31,6 +31,28 @@
             "outDir": "${workspaceRoot}/build"
         },
         {
+            "name": "Test",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceRoot}/build/test/test.js",
+            "stopOnEntry": false,
+            "args": [],
+            "cwd": "${workspaceRoot}",
+            "preLaunchTask": null,
+            "runtimeExecutable": null,
+            "runtimeArgs": [
+                "--nolazy",
+                "--es_staging",
+                "--harmony-proxies"
+            ],
+            "env": {
+                "Node_ENV": "development"
+            },
+            "port": 13872,
+            "sourceMaps": true,
+            "outDir": "${workspaceRoot}/build"
+        },
+        {
             "name": "Attach",
             "type": "node",
             "request": "attach",

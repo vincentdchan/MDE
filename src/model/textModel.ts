@@ -4,6 +4,12 @@ import {parseTextToLines} from "../util/text"
 import {LineModel} from "./LineModel"
 import {EventEmitter} from "events"
 import {Position, Range, isPosition, isRange} from "."
+import {hd, tl, last} from "../util/fn"
+
+
+function isEndOfLineBreaker(str: string) : boolean {
+    return str[str.length - 1] == "\n";
+}
 
 export interface ITextDocument {
     reportAll(): string;
@@ -31,26 +37,6 @@ export class TextModel implements ITextDocument {
         }
 
     }
-    
-    /*
-    setFromRawText(_string : string) {
-
-        this._lines = new Array<LineModel>();
-        
-        let lc = 1;
-        
-        var buf = new StringBuffer();
-
-        var lines = parseTextToLines(_string);
-
-        this._lines.length = lc;
-        for (let i = 0; i < lines.length; i++) {
-            var lm = new LineModel(lc, lines[i]);            
-            this._lines[lc++] = lm;
-        }
-
-    }
-    */
 
     positionAt(offset: number): Position {
         let currentLine = 1;
@@ -102,32 +88,61 @@ export class TextModel implements ITextDocument {
     }
 
     insertText(pos : Position, _content : string) {
-        var lines = parseTextToLines(_content);
+        if (_content.length === 0) return;
+
+        let lines = parseTextToLines(_content);
 
         if (pos.line <= 0 || pos.line > this.linesCount)
             throw new Error("data illegal when inserting text to TextModel");
-        if (lines.length > 0) {
-            var firstLineStr = lines[0];
 
-            var firstLineLm = this._lines[pos.line];
-            firstLineLm.insert(pos.offset, firstLineStr);
+        let linesHead = hd(lines);
+        let linesTail = tl(lines);
 
-            var extendLineCount = lines.length - 1;
+        if (linesTail.length === 0) { // it also means that this line will not endswith '\n'
 
-            // make n lines forward
-            if (extendLineCount > 0) {
-                for (let i = this.linesCount + extendLineCount; i > pos.line + extendLineCount; i--) {
-                    this._lines[i] = this._lines[i - extendLineCount];
+            this._lines[pos.line].insert(pos.offset, linesHead);
+
+        } else {
+
+            let prefix = this._lines[pos.line].text.slice(0, pos.offset);
+            let postfix = this._lines[pos.line].text.slice(pos.offset);
+
+            this._lines[pos.line] = new LineModel(pos.line, prefix + linesHead);
+
+            // if this line is the last line of document
+            if (pos.line === this.linesCount) {
+                let linesCount = this.linesCount + 1;
+                let lineModels: LineModel[] = [];
+                linesTail.forEach((lineStr: string) => {
+                    lineModels.push(new LineModel(linesCount++, lineStr));
+                });
+
+                this._lines = this._lines.concat(lineModels);
+
+                // insert postfix at the last line
+                let lastLineModel = this._lines[linesCount - 1];
+                lastLineModel.insert(lastLineModel.length, postfix);
+            } else {
+                let suffixLines = this._lines.slice(0, pos.line + 1);
+                let postfixLines = this._lines.slice(pos.line + 1);
+
+                let lineModels: LineModel[] = [];
+                let lineCounter = pos.line + 1;
+                linesTail.forEach((lineStr: string) => {
+                    lineModels.push(new LineModel(lineCounter++, lineStr));
+                })
+
+                this._lines = suffixLines.concat(lineModels).concat(postfixLines);
+                let insertLineModel = this._lines[lineCounter - 1];
+                insertLineModel.insert(insertLineModel.length, postfix);
+
+                for (let i = lineCounter; i <= this.linesCount; i++) {
                     this._lines[i].number = i;
                 }
             }
 
-            // fill the line
-            for (let i = 1; i < lines.length; i++) {
-                this._lines[pos.line + i] = new LineModel(pos.line + i, lines[i]);
-            }
-
         }
+
     }
 
     deleteText(_range: Range) {
