@@ -1,5 +1,5 @@
 {
-    "version": "0.1.0",
+    "version": "0.2.0",
     "configurations": [
         {
             "name": "Launch Exporter",
@@ -11,8 +11,7 @@
         {
             "name": "Launch",
             "type": "node",
-            "request": "launch",
-            "program": "${workspaceRoot}/build/index.js",
+            "program": "${workspaceRoot}/src/index.ts",
             "stopOnEntry": false,
             "args": [],
             "cwd": "${workspaceRoot}",
@@ -28,7 +27,9 @@
             },
             "port": 13872,
             "sourceMaps": true,
-            "outDir": "${workspaceRoot}/build"
+            "outFiles": [
+                "${workspaceRoot}/build/**/*.js"
+            ]
         },
         {
             "name": "Test",
@@ -50,7 +51,9 @@
             },
             "port": 13872,
             "sourceMaps": true,
-            "outDir": "${workspaceRoot}/build"
+            "outFiles": [
+                "${workspaceRoot}/build/**/*.js"
+            ]
         },
         {
             "name": "Attach",

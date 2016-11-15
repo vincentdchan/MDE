@@ -62,6 +62,10 @@ export class LineModel {
         return this._text;
     }
 
+    isEndswithLinebreak(): boolean {
+        return this._text[this._text.length - 1] == '\n';
+    }
+
     get firstChar(): string {
         return this._text.charAt(0);
     }

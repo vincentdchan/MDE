@@ -11,7 +11,7 @@ export class TextEdit {
     private _range : Range
     private _position : Position;
     private _text: string;
-    private _lines: string[]
+    private _linesThunk: () => string[];
 
     constructor(_type: TextEditType, _rp: Range | Position, _text?: string) {
         this._type = _type;
@@ -20,7 +20,18 @@ export class TextEdit {
         else
         {
             this._text = _text;
-            this._lines = parseTextToLines(_text);
+
+            let _parseLines : string[] = null;
+
+            this._linesThunk = ()=> {
+                if (_parseLines === null) {
+                    _parseLines = parseTextToLines(_text);
+                } else {
+                    return _parseLines;
+                }
+
+            }
+
         }
 
         if (_type == TextEditType.InsertText && isPosition(_rp)) {
@@ -52,7 +63,7 @@ export class TextEdit {
     }
 
     get lines() {
-        return this._lines;
+        return this._linesThunk();
     }
 
 }

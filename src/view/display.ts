@@ -17,7 +17,7 @@ export function Display(content: string) {
 
     const beginLineInput = <HTMLInputElement>document.getElementById("input-begin-line");
     const beginOffsetInput = <HTMLInputElement>document.getElementById("input-begin-offset");
-    const insertTextInput = <HTMLInputElement>document.getElementById("input-insert-text");
+    const insertTextArea = <HTMLTextAreaElement>document.getElementById("textarea-insert-text");
     const insertButton = <HTMLButtonElement>document.getElementById("button-insert");
 
     const deleteBeginLineInput = <HTMLInputElement>document.getElementById("input-delete-begin-line");
@@ -35,7 +35,7 @@ export function Display(content: string) {
 
         const beginLine = parseInt(beginLineInput.value);
         const beginOffset = parseInt(beginOffsetInput.value);
-        const inputText = insertTextInput.value;
+        const inputText = insertTextArea.value;
 
         let textEdit = new TextEdit(TextEditType.InsertText, {
             line: beginLine,
