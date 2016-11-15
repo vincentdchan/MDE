@@ -7,7 +7,7 @@ export class InputerView implements IDOMWrapper {
     private _focused: boolean;
 
     constructor() {
-        this._dom = <HTMLTextAreaElement>elem("textarea", "eidtor-inputer");
+        this._dom = <HTMLTextAreaElement>elem("textarea", "mde-inputer");
         this._dom.style.position = "absolute";
         this._dom.style.height = "1em";
         this._dom.style.opacity = "0.3";

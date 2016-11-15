@@ -7,7 +7,7 @@ export class CursorView implements IDOMWrapper, IDisposable {
     private _dom : HTMLElement;
 
     constructor() {
-        this._dom = elem("div", "editor-cursor");
+        this._dom = elem("div", "mde-cursor");
         this._dom.style.position = "absolute";
         this._dom.style.height = "1em";
         this._dom.style.width = "0.2em";

@@ -14,11 +14,11 @@ export class LineView implements IDOMWrapper, IDisposable {
     constructor() {
         this._state =  new MarkdownLexerState();
 
-        this._dom = elem("div", "editor-line");
+        this._dom = elem("div", "mde-line");
     }
 
     private generateContentDom() : HTMLElement {
-        return elem("div", "editor-line-content");
+        return elem("div", "mde-line-content");
     }
 
     render(content: string) {

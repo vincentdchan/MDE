@@ -67,3 +67,9 @@ export class TextEdit {
     }
 
 }
+
+export interface TextEditApplier {
+
+    applyTextEdit(textEdit: TextEdit);
+
+}

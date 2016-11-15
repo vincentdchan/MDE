@@ -14,7 +14,7 @@ export class DocumentView implements IDOMWrapper, IDisposable {
     constructor(_model) {
         this._lines = [];
         this._model = _model;
-        this._dom = elem("div", "editor-document");
+        this._dom = elem("div", "mde-document");
     }
 
     render(): HTMLElement {
@@ -34,10 +34,6 @@ export class DocumentView implements IDOMWrapper, IDisposable {
         if (pos.line <= 0 || pos.line > this.linesCount)
             throw new Error("Index out of range.");
         return this._lines[pos.line].getCoordinate(pos.offset);
-    }
-
-    justifyLineNumber() {
-
     }
 
     renderLine(line: number) {

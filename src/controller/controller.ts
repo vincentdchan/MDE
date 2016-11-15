@@ -1,4 +1,4 @@
-import {TextModel, LineModel, TextEdit, TextEditType, Position} from "../model"
+import {TextModel, LineModel, TextEdit, TextEditType, TextEditApplier, Position} from "../model"
 import {EditorView, Coordinate} from "../view"
 import {IDisposable} from "../util"
 
@@ -6,7 +6,7 @@ function lastCharactor(str: string) {
     return str[str.length - 1];
 }
 
-export class MDE implements IDisposable {
+export class MDE implements IDisposable, TextEditApplier {
 
     private _model : TextModel;
     private _view : EditorView;
