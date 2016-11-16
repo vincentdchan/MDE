@@ -3,7 +3,7 @@ import {StringBuffer} from "../util/StringBuffer"
 import {parseTextToLines} from "../util/text"
 import {LineModel} from "./LineModel"
 import {EventEmitter} from "events"
-import {Position, Range, isPosition, isRange} from "."
+import {Position, Range, isPosition, isRange, TextEdit, TextEditType, TextEditApplier} from "."
 import {hd, tl, last} from "../util/fn"
 
 
@@ -16,7 +16,7 @@ export interface ITextDocument {
     report(range: Range): string;
 }
 
-export class TextModel implements ITextDocument {
+export class TextModel implements TextEditApplier, ITextDocument {
 
     protected _lines : LineModel[];
 
@@ -71,7 +71,7 @@ export class TextModel implements ITextDocument {
 
     lineAt(num: number): LineModel {
         if (num <= 0 || num > this.linesCount)
-            throw new Error("index out of range");
+            throw new Error("<Index out of range> line:" + num + " LinesCount:" + this.linesCount);
         return this._lines[num];
     }
 
@@ -85,6 +85,19 @@ export class TextModel implements ITextDocument {
         if (this._lines.length === 0)
             throw new Error("No lines found.");
         return this._lines[this._lines.length - 1];
+    }
+
+    applyTextEdit(textEdit: TextEdit) {
+
+        switch(textEdit.type) {
+            case TextEditType.InsertText:
+                this.insertText(textEdit.position, textEdit.text);
+                break;
+            case TextEditType.DeleteText:
+                this.deleteText(textEdit.range);
+                break;
+        }
+
     }
 
     insertText(pos : Position, _content : string) {

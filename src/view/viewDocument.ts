@@ -38,7 +38,7 @@ export class DocumentView implements IDOMWrapper, IDisposable {
 
     renderLine(line: number) {
         if (line <= 0 || line > this.linesCount)
-            throw new Error("index out of range");
+            throw new Error("<index out of range> line:" + line + " LinesCount:" + this.linesCount);
         this._lines[line].render(this._model.lineAt(line).text);
     }
 

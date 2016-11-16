@@ -18,7 +18,7 @@ export class MDE implements IDisposable, TextEditApplier {
         this._model = new TextModel(content);
         this._view = new EditorView(this._model);
 
-        this._view.documentView.on("click", this.handleClienEvent.bind(this));
+        this._view.documentView.on("click", this.handleClientEvent.bind(this));
         this._view.inputerView.on("keydown", this.handleInputerKeyDown.bind(this));
 
     }
@@ -42,7 +42,7 @@ export class MDE implements IDisposable, TextEditApplier {
                     let textEdit = new TextEdit(TextEditType.InsertText, this._position, value);
 
                     this.applyTextEdit(textEdit);
-                    this.updatePosition(textEdit);
+                    // this.updatePosition(textEdit);
                     let cursorCo = this._view.documentView.getCoordinate(this._position);
 
                     this._view.cursorView.setPostition(cursorCo);
@@ -78,7 +78,7 @@ export class MDE implements IDisposable, TextEditApplier {
 
     }
 
-    private handleClienEvent(evt: MouseEvent) {
+    private handleClientEvent(evt: MouseEvent) {
         let _range = document.caretRangeFromPoint(evt.pageX, evt.pageY);
 
         // let _line_elem = this.findLineAncestor(_range.startContainer);
@@ -89,7 +89,7 @@ export class MDE implements IDisposable, TextEditApplier {
 
         for (let i = 1; i <= linesCount; i++) {
             let lineView = this._view.documentView.lines[i];
-            let rect = lineView.element().getBoundingClientRect();
+            let rect = lineView.element().firstElementChild.getBoundingClientRect();
             if (evt.pageY >= rect.top && evt.pageY <= rect.top + rect.height) {
                 line_number = i;
                 break;
@@ -138,16 +138,29 @@ export class MDE implements IDisposable, TextEditApplier {
 
     applyTextEdit(_textEdit: TextEdit) {
         let _range = _textEdit.range;
+        this._model.applyTextEdit(_textEdit)
+
         switch(_textEdit.type) {
             case TextEditType.InsertText:
-                this._model.insertText(_textEdit.position, _textEdit.text);
-                for (let i = _textEdit.position.line; 
-                    i <= _textEdit.position.line + _textEdit.lines.length - 1; i++) {
-                    this._view.documentView.renderLine(i);
+                this._view.documentView.renderLine(_textEdit.position.line);
+                if (_textEdit.lines.length > 1) {
+
+                    let srcLinesCount = this._view.documentView.linesCount
+                    for (let i = _textEdit.position.line + 1; 
+                        i <= srcLinesCount; i++) {
+                        this._view.documentView.renderLine(i);
+                    }
+
+                    let init_length = this._view.documentView.lines.length - 1;
+                    this.view.documentView.appendLines(_textEdit.lines.length - 1);
+                    for (let i = 1; i < _textEdit.lines.length; i++) {
+                        this._view.documentView.renderLine(init_length + i);
+                    }
+
+
                 }
                 break;
             case TextEditType.DeleteText:
-                this._model.deleteText(_textEdit.range);
                 this._view.documentView.renderLine(_textEdit.range.begin.line);
                 if (_range.end.line - _range.begin.line >= 1) {
                     this._view.documentView.deleteLines(_range.begin.line + 1, _range.begin.line + 

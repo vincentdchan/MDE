@@ -26,6 +26,7 @@ export class TextEdit {
             this._linesThunk = ()=> {
                 if (_parseLines === null) {
                     _parseLines = parseTextToLines(_text);
+                    return _parseLines;
                 } else {
                     return _parseLines;
                 }

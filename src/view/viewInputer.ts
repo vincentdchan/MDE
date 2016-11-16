@@ -10,6 +10,7 @@ export class InputerView implements IDOMWrapper {
         this._dom = <HTMLTextAreaElement>elem("textarea", "mde-inputer");
         this._dom.style.position = "absolute";
         this._dom.style.height = "1em";
+        this._dom.style.width = "1px";
         this._dom.style.opacity = "0.3";
 
         this._dom.addEventListener("focus", (evt: FocusEvent) => {
