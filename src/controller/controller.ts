@@ -1,6 +1,9 @@
 import {TextModel, LineModel, TextEdit, TextEditType, TextEditApplier, Position} from "../model"
 import {EditorView, Coordinate} from "../view"
 import {IDisposable} from "../util"
+import {generateMenu} from "./menu"
+import {remote} from "electron"
+const {Menu, MenuItem} = remote
 
 function lastCharactor(str: string) {
     return str[str.length - 1];
@@ -11,6 +14,7 @@ export class MDE implements IDisposable, TextEditApplier {
     private _model : TextModel;
     private _view : EditorView;
     private _position: Position;
+    private _menu: Electron.Menu;
 
     constructor(content? : string) {
         content = content? content : "";
@@ -21,6 +25,8 @@ export class MDE implements IDisposable, TextEditApplier {
         this._view.documentView.on("click", this.handleClientEvent.bind(this));
         this._view.inputerView.on("keydown", this.handleInputerKeyDown.bind(this));
 
+        this._menu = generateMenu();
+        Menu.setApplicationMenu(this._menu);
     }
 
     private findLineAncestor(node: Node) : HTMLElement {
