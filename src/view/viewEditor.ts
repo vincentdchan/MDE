@@ -26,6 +26,17 @@ export class EditorView implements IDOMWrapper, IDisposable {
         this._dom.appendChild(this._cursor.element());
         this._dom.appendChild(this._inputer.element());
         this._dom.appendChild(this._document.element());
+
+        this._inputer.on("focus", this.handleInputerFocused.bind(this));
+        this._inputer.on("blur", this.handleInputerBlur.bind(this));
+    }
+
+    private handleInputerFocused(evt : FocusEvent) {
+        this._cursor.excite();
+    }
+
+    private handleInputerBlur(evt : FocusEvent) {
+        this._cursor.setOff();
     }
 
     element() {

@@ -162,19 +162,18 @@ export class TextModel implements TextEditApplier, ITextDocument {
         if (_range.begin.line === _range.end.line) {
             this._lines[_range.begin.line].delete(_range.begin.offset, _range.end.offset);
         } else if (_range.begin.line < _range.end.line) {
-            this._lines[_range.begin.line].deleteToEnd(_range.begin.offset);
+            let remain = this._lines[_range.end.line].text.slice(_range.end.offset);
 
-            var suffixStr = this._lines[_range.end.line].text.slice(_range.end.offset);
+            let oldLineModel = this._lines[_range.begin.line];
+            this._lines[_range.begin.line] = new LineModel(_range.begin.line,
+                oldLineModel.text.slice(0, _range.begin.offset) + remain);
 
-            var shrinkLinesCount = _range.end.line - _range.begin.line
+            oldLineModel = null;
 
-            for (let i = _range.begin.line + 1; i < this._lines.length - shrinkLinesCount; i++) {
-                this._lines[i] = this._lines[i + shrinkLinesCount];
-                this._lines[i].number = i;
-            }
+            let suffix = this._lines.slice(0, _range.begin.line + 1);
+            let postffix = this._lines.slice(_range.end.line + 1);
 
-            this._lines.length -= shrinkLinesCount;
-            this._lines[_range.begin.line].append(suffixStr);
+            this._lines = suffix.concat(postffix);
 
         } else {
             throw new Error("Illegal data.");

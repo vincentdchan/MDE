@@ -26,7 +26,7 @@ export class MDE implements IDisposable, TextEditApplier {
         this._view.inputerView.on("keydown", this.handleInputerKeyDown.bind(this));
 
         this._menu = generateMenu();
-        Menu.setApplicationMenu(this._menu);
+        // Menu.setApplicationMenu(this._menu);
     }
 
     private findLineAncestor(node: Node) : HTMLElement {
@@ -108,8 +108,13 @@ export class MDE implements IDisposable, TextEditApplier {
             case 40: // down
                 if (pos.line < this._model.linesCount) {
                     this._position.line++;
-                    if (this._model.lineAt(this._position.line).length < this._position.offset)
-                        this._position.offset = this._model.lineAt(this._position.line).length;
+                    let newLineText = this._model.lineAt(this._position.line).text;
+                    if (lastCharactor(newLineText) == '\n') {
+                        if (this._position.offset >= this._model.lineAt(this._position.line).length - 1)
+                            this._position.offset = this._model.lineAt(this._position.line).length - 1;
+                    } else if (newLineText.length == 0) {
+                        this._position.offset = 0;
+                    }
                     this.updateCursor(this._position);
                 }
                 break;
@@ -246,11 +251,11 @@ export class MDE implements IDisposable, TextEditApplier {
                 }
                 break;
             case TextEditType.DeleteText:
-                this._view.documentView.renderLine(_textEdit.range.begin.line);
-                if (_range.end.line - _range.begin.line >= 1) {
-                    this._view.documentView.deleteLines(_range.begin.line + 1, _range.begin.line + 
-                        _range.end.line - _range.begin.line + 1);
+                if (_range.end.line > _range.begin.line) {
+                    this._view.documentView.deleteLines(_range.begin.line + 1, _range.end.line + 1);
                 }
+                for (let i = _range.begin.line; i <= this._model.linesCount; i++)
+                    this._view.documentView.renderLine(i);
                 break;
             default:
                 throw new Error("Error text edit type.");

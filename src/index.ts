@@ -2,10 +2,11 @@ import {Display} from "./view/display"
 import {TextModel} from "./model/textModel"
 
 let content = 
-"# title \n" +
-"\n" +
-"content\n" +
-"something else\n"
+`# title
+
+content
+something else
+`
 
 let elem = document.getElementById("frame");
 

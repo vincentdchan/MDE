@@ -45,6 +45,11 @@ export class CursorView implements IDOMWrapper, IDisposable {
         this.setInterval();
     }
 
+    setOff() {
+        this.clearInterval();
+        this._dom.style.opacity = "0"
+    }
+
     setPostition(coordinate: Coordinate) {
         this._dom.style.left = coordinate.x + "px";
         this._dom.style.top = coordinate.y + "px";

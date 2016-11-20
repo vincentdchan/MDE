@@ -155,4 +155,17 @@ console.log("Delete text testing...");
 
 })();
 
+(() => {
+    let tm1 = new TextModel(testText1);
+
+    tm1.deleteText({
+        begin: {line: 1, offset: 1},
+        end: {line:4, offset: 4}
+    });
+
+    assert(tm1.lineAt(1).text == "#thing else\n", tm1.lineAt(1).text);
+    assert(tm1.lineAt(2).text == "\n", tm1.lineAt(2).text);
+    assert(tm1.lineAt(3).text == "- first line\n", tm1.lineAt(3).text);
+})();
+
 console.log("All test done.");
