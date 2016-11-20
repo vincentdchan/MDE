@@ -5,6 +5,7 @@ import {Coordinate} from "."
 export class CursorView implements IDOMWrapper, IDisposable {
 
     private _dom : HTMLElement;
+    private _internal : NodeJS.Timer;
 
     constructor() {
         this._dom = elem("div", "mde-cursor");
@@ -17,9 +18,13 @@ export class CursorView implements IDOMWrapper, IDisposable {
     }
 
     private initializeBlinking() {
+        this.setInterval();
+    }
+
+    private setInterval() {
 
         let showed = true;
-        setInterval(()=> {
+        this._internal = setInterval(()=> {
             if (showed) {
                 this._dom.style.opacity = "1";
             } else {
@@ -28,6 +33,16 @@ export class CursorView implements IDOMWrapper, IDisposable {
             showed = !showed;
         }, 500);
 
+    }
+
+    private clearInterval() {
+        clearInterval(this._internal);
+    }
+
+    excite() {
+        this.clearInterval();
+        this._dom.style.opacity = "1";
+        this.setInterval();
     }
 
     setPostition(coordinate: Coordinate) {

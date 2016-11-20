@@ -42,46 +42,95 @@ export class MDE implements IDisposable, TextEditApplier {
     }
 
     private handleInputerKeyDown(evt: KeyboardEvent) {
-            setTimeout(() => {
-                let value = this.view.inputerView.value;
-                if (value.length > 0) {
-                    let textEdit = new TextEdit(TextEditType.InsertText, this._position, value);
-
-                    this.applyTextEdit(textEdit);
-                    // this.updatePosition(textEdit);
-                    let cursorCo = this._view.documentView.getCoordinate(this._position);
-
-                    this._view.cursorView.setPostition(cursorCo);
-                    this._view.inputerView.setPostition(cursorCo);
-
-                    this.view.inputerView.clearContent();
+        let pos = this._position
+        switch(evt.which) {
+            case 37: // left
+                if (pos.offset == 0) {
+                    if (pos.line > 1) {
+                        this._position = {
+                            line: pos.line - 1,
+                            offset: this._model.lineAt(pos.line - 1).length - 1,
+                        }
+                    }
+                } else {
+                    this._position.offset--;
                 }
-            }, 20);
+                this.updateCursor(this._position);
+                break;
+            case 38: // up
+                if (pos.line > 1) {
+                    this._position.line--;
+                    if (this._model.lineAt(this._position.line).length < this._position.offset)
+                        this._position.offset = this._model.lineAt(this._position.line).length - 1;
+                    this.updateCursor(this._position);
+                }
+                break;
+            case 39: // right
+                if (pos.offset >= this._model.lineAt(pos.line).length - 1) {
+                    if (pos.line < this._model.linesCount) {
+                        this._position = {
+                            line: this._position.line + 1,
+                            offset: 0
+                        }
+                        this.updateCursor(this._position);
+                    }
+                } else {
+                    this._position.offset++;
+                    this.updateCursor(this._position);
+                }
+                break;
+            case 40: // down
+                if (pos.line < this._model.linesCount) {
+                    this._position.line++;
+                    if (this._model.lineAt(this._position.line).length < this._position.offset)
+                        this._position.offset = this._model.lineAt(this._position.line).length;
+                    this.updateCursor(this._position);
+                }
+                break;
+            default:
+                setTimeout(() => {
+                    let value = this.view.inputerView.value;
+                    if (value.length > 0) {
+                        let textEdit = new TextEdit(TextEditType.InsertText, this._position, value);
+
+                        this.applyTextEdit(textEdit);
+                        this.updatePosition(textEdit);
+                        let cursorCo = this._view.documentView.getCoordinate(this._position);
+
+                        this._view.cursorView.setPostition(cursorCo);
+                        this._view.inputerView.setPostition(cursorCo);
+
+                        this.view.inputerView.clearContent();
+                    }
+                }, 20);
+        }
     }
 
     private updatePosition(textEdit: TextEdit) {
         switch(textEdit.type) {
             case TextEditType.InsertText:
                 if (textEdit.lines.length == 1) {
-                    if (lastCharactor(textEdit.lines[0]) == "\n") {
-                        throw new Error("Not implemented.");
-                    } else {
-                        /*
-                        this._position = {
-                            line: this._position.line,
-                            offset: this._position.offset + textEdit.lines[0].length,
-                        }
-                        */
-                        this._position.offset += textEdit.lines[0].length;
-                    }
+                    this._position.offset += textEdit.lines[0].length;
                 } else {
-                        throw new Error("Not implemented.");
+                    this._position = {
+                        line: this._position.line + textEdit.lines.length - 1,
+                        offset: textEdit.lines[textEdit.lines.length - 1].length,
+                    };
                 }
                 break;
             case TextEditType.DeleteText:
                 break;
         }
 
+    }
+
+    private updateCursor(pos: Position) {
+        let cursorCo = this._view.documentView.getCoordinate(pos);
+
+        this._view.cursorView.setPostition(cursorCo);
+        this._view.inputerView.setPostition(cursorCo);
+
+        this._view.cursorView.excite();
     }
 
     private handleClientEvent(evt: MouseEvent) {
