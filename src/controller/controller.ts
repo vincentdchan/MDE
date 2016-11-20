@@ -43,7 +43,33 @@ export class MDE implements IDisposable, TextEditApplier {
 
     private handleInputerKeyDown(evt: KeyboardEvent) {
         let pos = this._position
-        switch(evt.which) {
+        switch(evt.keyCode) {
+            case 8: // backspace
+                if (this._position.offset > 0) {
+                    let textEdit = new TextEdit(TextEditType.DeleteText, {
+                        begin: {
+                            line: this._position.line,
+                            offset: this._position.offset - 1,
+                        },
+                        end: {
+                            line: this._position.line,
+                            offset: this._position.offset,
+                        }
+                    })
+                    this.applyTextEdit(textEdit);
+                    this._position.offset--;
+                    this.updateCursor(this._position);
+                }
+                break;
+            case 35: //end
+                this._position.offset = 
+                    this._model.lineAt(this._position.line).length - 1
+                this.updateCursor(this._position);
+                break;
+            case 36: // home
+                this._position.offset = 0;
+                this.updateCursor(this._position);
+                break;
             case 37: // left
                 if (pos.offset == 0) {
                     if (pos.line > 1) {
@@ -87,6 +113,10 @@ export class MDE implements IDisposable, TextEditApplier {
                     this.updateCursor(this._position);
                 }
                 break;
+            case 45: // insert
+                break;
+            case 46:
+                break; // delete
             default:
                 setTimeout(() => {
                     let value = this.view.inputerView.value;
