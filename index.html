@@ -8,6 +8,10 @@
         min-height: 1em;
       }
 
+      .mde-line-content {
+        margin: 0;
+      }
+
     </style>
   </head>
   <body>
@@ -34,6 +38,19 @@
       <input id="input-delete-end-line" type="number" />
       <input id="input-delete-end-offset" type="number" />
       <button id="button-delete">Delete</button>
+    </div>
+
+    <h2>Replace</h2>
+    <div>
+      <label>Begin Position</label>
+      <input id="input-replace-begin-line" type="number" />
+      <input id="input-replace-begin-offset" type="number" />
+      <label>End Position</label>
+      <input id="input-replace-end-line" type="number" />
+      <input id="input-replace-end-offset" type="number" />
+
+      <textarea id="textarea-replace-text"></textarea>
+      <button id="replace-button">Replace</button>
     </div>
 
     <h2>Get Coordinate</h2>

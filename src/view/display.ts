@@ -26,6 +26,13 @@ export function Display(content: string) {
     const deleteEndOffsetInput = <HTMLInputElement>document.getElementById("input-delete-end-offset");
     const deleteButton = <HTMLElement>document.getElementById("button-delete");
 
+    const replaceBeginLineInput = <HTMLInputElement>document.getElementById("input-replace-begin-line");
+    const replaceBeginOffsetInput = <HTMLInputElement>document.getElementById("input-replace-begin-offset");
+    const replaceEndLineInput = <HTMLInputElement>document.getElementById("input-replace-end-line");
+    const replaceEndOffsetInput = <HTMLInputElement>document.getElementById("input-replace-end-offset");
+    const replaceTextArea = <HTMLTextAreaElement>document.getElementById("textarea-replace-text");
+    const replaceButton = <HTMLButtonElement>document.getElementById("replace-button");
+
     const coLineInput = <HTMLInputElement>document.getElementById("input-co-line");
     const coOffsetInput = <HTMLInputElement>document.getElementById("input-co-offset");
     const coButton = <HTMLButtonElement>document.getElementById("button-co");
@@ -63,6 +70,24 @@ export function Display(content: string) {
                 offset: endOffset
             }
         });
+
+        mde.applyTextEdit(textEdit);
+    });
+
+    replaceButton.addEventListener("click", (evt: MouseEvent) => {
+        evt.preventDefault();
+
+        let beginLine = parseInt(replaceBeginLineInput.value),
+            beginOffset = parseInt(replaceBeginOffsetInput.value),
+            endLine = parseInt(replaceEndLineInput.value),
+            endOffset = parseInt(replaceEndOffsetInput.value);
+        
+        let content = replaceTextArea.value;
+
+        let textEdit = new TextEdit(TextEditType.ReplaceText, {
+            begin: {line: beginLine, offset: beginOffset},
+            end: {line: endLine, offset: endOffset}
+        }, content);
 
         mde.applyTextEdit(textEdit);
     });

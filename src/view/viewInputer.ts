@@ -4,7 +4,8 @@ import {Coordinate} from "."
 export class InputerView implements IDOMWrapper {
 
     private _dom: HTMLTextAreaElement;
-    private _focused: boolean;
+    private _focused: boolean = false;
+    private _isCompositing: boolean = false;;
 
     constructor() {
         this._dom = <HTMLTextAreaElement>elem("textarea", "mde-inputer");
@@ -21,6 +22,14 @@ export class InputerView implements IDOMWrapper {
             this._focused = false;
         })
 
+        this._dom.addEventListener("compositionstart", (evt: Event) => {
+            this._isCompositing = true;
+        });
+
+        this._dom.addEventListener("compositionend", (evt: Event) => {
+            this._isCompositing = false;
+        })
+
     }
 
     clearContent() {
@@ -34,6 +43,10 @@ export class InputerView implements IDOMWrapper {
 
     isFosused() {
         return this._focused;
+    }
+
+    isCompositioning() {
+        return this._isCompositing;
     }
 
     on(name: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean) {

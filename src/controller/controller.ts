@@ -9,12 +9,22 @@ function lastCharactor(str: string) {
     return str[str.length - 1];
 }
 
+function clonePosition(pos: Position) : Position {
+    return {
+        line: pos.line,
+        offset: pos.offset
+    };
+}
+
 export class MDE implements IDisposable, TextEditApplier {
 
     private _model : TextModel;
     private _view : EditorView;
     private _position: Position;
     private _menu: Electron.Menu;
+
+    private _composition_start_pos : Position;
+    private _composition_update_pos : Position;
 
     constructor(content? : string) {
         content = content? content : "";
@@ -24,6 +34,10 @@ export class MDE implements IDisposable, TextEditApplier {
 
         this._view.documentView.on("click", this.handleClientEvent.bind(this));
         this._view.inputerView.on("keydown", this.handleInputerKeyDown.bind(this));
+
+        this._view.inputerView.on("compositionstart", this.handleInputerCompositionStart.bind(this));
+        this._view.inputerView.on("compositionend", this.handleInputerCompositionEnd.bind(this));
+        this._view.inputerView.on("compositionupdate", this.handleInputerCompositionUpdate.bind(this));
 
         this._menu = generateMenu();
         // Menu.setApplicationMenu(this._menu);
@@ -41,107 +55,127 @@ export class MDE implements IDisposable, TextEditApplier {
         }
     }
 
+    private handleInputerCompositionStart(evt: Event) {
+        this._composition_start_pos = clonePosition(this._position);
+    }
+
+    private handleInputerCompositionUpdate(evt: Event) {
+        this._composition_update_pos = clonePosition(this._position);
+    }
+
+    private handleInputerCompositionEnd(evt: Event) {
+
+    }
+
+    private isInputerCompositing() {
+        return this._view.inputerView.isCompositioning();
+    }
+
     private handleInputerKeyDown(evt: KeyboardEvent) {
-        let pos = this._position
-        switch(evt.keyCode) {
-            case 8: // backspace
-                if (this._position.offset == 0 && this._position.line > 1) {
-                    let lastOffset = this._model.lineAt(this._position.line - 1).length - 1;
-                    let textEdit = new TextEdit(TextEditType.DeleteText, {
-                        begin: {
-                            line: this._position.line - 1,
-                            offset: lastOffset,
-                        },
-                        end: {
-                            line: this._position.line,
-                            offset: 0,
-                        }
-                    });
+        setTimeout(() => {
 
-                    this.applyTextEdit(textEdit);
-                    this._position.line--;
-                    this._position.offset = lastOffset;
-                    this.updateCursor(this._position);
+            if (this.isInputerCompositing()) return;
 
-                } else if (this._position.offset > 0) {
-                    let textEdit = new TextEdit(TextEditType.DeleteText, {
-                        begin: {
-                            line: this._position.line,
-                            offset: this._position.offset - 1,
-                        },
-                        end: {
-                            line: this._position.line,
-                            offset: this._position.offset,
-                        }
-                    })
-                    this.applyTextEdit(textEdit);
-                    this._position.offset--;
-                    this.updateCursor(this._position);
-                }
-                break;
-            case 35: //end
-                this._position.offset = 
-                    this._model.lineAt(this._position.line).length - 1
-                this.updateCursor(this._position);
-                break;
-            case 36: // home
-                this._position.offset = 0;
-                this.updateCursor(this._position);
-                break;
-            case 37: // left
-                if (pos.offset == 0) {
-                    if (pos.line > 1) {
-                        this._position = {
-                            line: pos.line - 1,
-                            offset: this._model.lineAt(pos.line - 1).length - 1,
-                        }
+            let pos = this._position;
+            switch (evt.keyCode) {
+                case 8: // backspace
+                    if (this._position.offset == 0 && this._position.line > 1) {
+                        let lastOffset = this._model.lineAt(this._position.line - 1).length - 1;
+                        let textEdit = new TextEdit(TextEditType.DeleteText, {
+                            begin: {
+                                line: this._position.line - 1,
+                                offset: lastOffset,
+                            },
+                            end: {
+                                line: this._position.line,
+                                offset: 0,
+                            }
+                        });
+
+                        this.applyTextEdit(textEdit);
+                        this._position.line--;
+                        this._position.offset = lastOffset;
+                        this.updateCursor(this._position);
+
+                    } else if (this._position.offset > 0) {
+                        let textEdit = new TextEdit(TextEditType.DeleteText, {
+                            begin: {
+                                line: this._position.line,
+                                offset: this._position.offset - 1,
+                            },
+                            end: {
+                                line: this._position.line,
+                                offset: this._position.offset,
+                            }
+                        })
+                        this.applyTextEdit(textEdit);
+                        this._position.offset--;
+                        this.updateCursor(this._position);
                     }
-                } else {
-                    this._position.offset--;
-                }
-                this.updateCursor(this._position);
-                break;
-            case 38: // up
-                if (pos.line > 1) {
-                    this._position.line--;
-                    if (this._model.lineAt(this._position.line).length < this._position.offset)
-                        this._position.offset = this._model.lineAt(this._position.line).length - 1;
+                    break;
+                case 35: //end
+                    this._position.offset =
+                        this._model.lineAt(this._position.line).length - 1
                     this.updateCursor(this._position);
-                }
-                break;
-            case 39: // right
-                if (pos.offset >= this._model.lineAt(pos.line).length - 1) {
+                    break;
+                case 36: // home
+                    this._position.offset = 0;
+                    this.updateCursor(this._position);
+                    break;
+                case 37: // left
+                    if (pos.offset == 0) {
+                        if (pos.line > 1) {
+                            this._position = {
+                                line: pos.line - 1,
+                                offset: this._model.lineAt(pos.line - 1).length - 1,
+                            }
+                        }
+                    } else {
+                        this._position.offset--;
+                    }
+                    this.updateCursor(this._position);
+                    break;
+                case 38: // up
+                    if (pos.line > 1) {
+                        this._position.line--;
+                        if (this._model.lineAt(this._position.line).length < this._position.offset)
+                            this._position.offset = this._model.lineAt(this._position.line).length - 1;
+                        this.updateCursor(this._position);
+                    }
+                    break;
+                case 39: // right
+                    if (pos.offset >= this._model.lineAt(pos.line).length - 1) {
+                        if (pos.line < this._model.linesCount) {
+                            this._position = {
+                                line: this._position.line + 1,
+                                offset: 0
+                            }
+                            this.updateCursor(this._position);
+                        }
+                    } else {
+                        this._position.offset++;
+                        this.updateCursor(this._position);
+                    }
+                    break;
+                case 40: // down
                     if (pos.line < this._model.linesCount) {
-                        this._position = {
-                            line: this._position.line + 1,
-                            offset: 0
+                        this._position.line++;
+                        let newLineText = this._model.lineAt(this._position.line).text;
+                        if (lastCharactor(newLineText) == '\n') {
+                            if (this._position.offset >= this._model.lineAt(this._position.line).length - 1)
+                                this._position.offset = this._model.lineAt(this._position.line).length - 1;
+                        } else if (newLineText.length == 0) {
+                            this._position.offset = 0;
                         }
                         this.updateCursor(this._position);
                     }
-                } else {
-                    this._position.offset++;
-                    this.updateCursor(this._position);
-                }
-                break;
-            case 40: // down
-                if (pos.line < this._model.linesCount) {
-                    this._position.line++;
-                    let newLineText = this._model.lineAt(this._position.line).text;
-                    if (lastCharactor(newLineText) == '\n') {
-                        if (this._position.offset >= this._model.lineAt(this._position.line).length - 1)
-                            this._position.offset = this._model.lineAt(this._position.line).length - 1;
-                    } else if (newLineText.length == 0) {
-                        this._position.offset = 0;
-                    }
-                    this.updateCursor(this._position);
-                }
-                break;
-            case 45: // insert
-                break;
-            case 46:
-                break; // delete
-            default:
-                setTimeout(() => {
+                    break;
+                case 45: // insert
+                    break;
+                case 46:
+                    break; // delete
+                default:
+
                     let value = this.view.inputerView.value;
                     if (value.length > 0) {
                         let textEdit = new TextEdit(TextEditType.InsertText, this._position, value);
@@ -155,8 +189,10 @@ export class MDE implements IDisposable, TextEditApplier {
 
                         this.view.inputerView.clearContent();
                     }
-                }, 20);
-        }
+            }
+
+        }, 20);
+
     }
 
     private updatePosition(textEdit: TextEdit) {
@@ -274,6 +310,22 @@ export class MDE implements IDisposable, TextEditApplier {
                 }
                 for (let i = _range.begin.line; i <= this._model.linesCount; i++)
                     this._view.documentView.renderLine(i);
+                break;
+            case TextEditType.ReplaceText:
+                let linesDelta = _range.begin.line - _range.end.line;
+                linesDelta += _textEdit.lines.length - 1;
+
+                this._view.documentView.renderLine(_range.begin.line);
+
+                if (linesDelta > 0 ) {
+                    this._view.documentView.appendLines(linesDelta);
+                } else if (linesDelta < 0) {
+                    this._view.documentView.deleteLines(_range.begin.line + 1, _range.begin.line - linesDelta + 1);
+                }
+
+                for (let i = _range.begin.line; i <= this._model.linesCount; i++)
+                    this._view.documentView.renderLine(i);
+
                 break;
             default:
                 throw new Error("Error text edit type.");

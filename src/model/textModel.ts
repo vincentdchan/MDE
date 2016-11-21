@@ -96,6 +96,9 @@ export class TextModel implements TextEditApplier, ITextDocument {
             case TextEditType.DeleteText:
                 this.deleteText(textEdit.range);
                 break;
+            case TextEditType.ReplaceText:
+                this.replaceText(textEdit.range, textEdit.text);
+                break;
         }
 
     }
@@ -178,6 +181,11 @@ export class TextModel implements TextEditApplier, ITextDocument {
         } else {
             throw new Error("Illegal data.");
         }
+    }
+
+    replaceText(_range: Range, text: string) {
+        this.deleteText(_range);
+        this.insertText(_range.begin, text);
     }
     
     getLineFromNum(_line_num : number) : LineModel {
