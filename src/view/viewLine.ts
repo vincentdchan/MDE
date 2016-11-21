@@ -18,7 +18,7 @@ export class LineView implements IDOMWrapper, IDisposable {
     }
 
     private generateContentDom() : HTMLElement {
-        return elem("div", "mde-line-content");
+        return elem("pre", "mde-line-content");
     }
 
     render(content: string) {

@@ -10,7 +10,7 @@ class LineView {
         this._dom = dom_1.elem("div", "mde-line");
     }
     generateContentDom() {
-        return dom_1.elem("div", "mde-line-content");
+        return dom_1.elem("pre", "mde-line-content");
     }
     render(content) {
         this._words = [];

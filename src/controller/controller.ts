@@ -45,7 +45,25 @@ export class MDE implements IDisposable, TextEditApplier {
         let pos = this._position
         switch(evt.keyCode) {
             case 8: // backspace
-                if (this._position.offset > 0) {
+                if (this._position.offset == 0 && this._position.line > 1) {
+                    let lastOffset = this._model.lineAt(this._position.line - 1).length - 1;
+                    let textEdit = new TextEdit(TextEditType.DeleteText, {
+                        begin: {
+                            line: this._position.line - 1,
+                            offset: lastOffset,
+                        },
+                        end: {
+                            line: this._position.line,
+                            offset: 0,
+                        }
+                    });
+
+                    this.applyTextEdit(textEdit);
+                    this._position.line--;
+                    this._position.offset = lastOffset;
+                    this.updateCursor(this._position);
+
+                } else if (this._position.offset > 0) {
                     let textEdit = new TextEdit(TextEditType.DeleteText, {
                         begin: {
                             line: this._position.line,
