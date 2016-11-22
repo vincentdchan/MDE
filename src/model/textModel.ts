@@ -184,8 +184,13 @@ export class TextModel implements TextEditApplier, ITextDocument {
     }
 
     replaceText(_range: Range, text: string) {
-        this.deleteText(_range);
-        this.insertText(_range.begin, text);
+        if (_range.end.line > _range.begin.line || 
+            (_range.end.line === _range.begin.line && _range.end.offset >= _range.begin.offset)) {
+
+            this.deleteText(_range);
+            this.insertText(_range.begin, text);
+
+        }
     }
     
     getLineFromNum(_line_num : number) : LineModel {

@@ -57,14 +57,48 @@ export class MDE implements IDisposable, TextEditApplier {
 
     private handleInputerCompositionStart(evt: Event) {
         this._composition_start_pos = clonePosition(this._position);
-    }
-
-    private handleInputerCompositionUpdate(evt: Event) {
         this._composition_update_pos = clonePosition(this._position);
     }
 
-    private handleInputerCompositionEnd(evt: Event) {
+    private handleInputerCompositionUpdate(evt: any) {
+        let updateData : string = evt.data;
 
+        updateData = updateData.replace("\n", "");
+
+        let textEdit = new TextEdit(TextEditType.ReplaceText, {
+            begin: this._composition_start_pos,
+            end: this._composition_update_pos,
+        }, updateData);
+
+        this.applyTextEdit(textEdit);
+
+        this._composition_update_pos = clonePosition(this._composition_start_pos);
+        this._composition_update_pos.offset += updateData.length
+
+        this.updateCursor(this._composition_update_pos);
+
+    }
+
+    private handleInputerCompositionEnd(evt: any) {
+        let updateData : string = evt.data;
+
+        updateData = updateData.replace("\n", "");
+
+        /*
+
+        let textEdit = new TextEdit(TextEditType.ReplaceText, {
+            begin: this._composition_start_pos,
+            end: this._composition_update_pos,
+        }, updateData);
+
+        this.applyTextEdit(textEdit);
+        */
+
+        this._view.inputerView.element().value = "";
+
+        this._position = clonePosition(this._composition_start_pos);
+        this._position.offset += updateData.length
+        this.updateCursor(this._position);
     }
 
     private isInputerCompositing() {

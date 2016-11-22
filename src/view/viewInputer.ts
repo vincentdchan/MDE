@@ -27,7 +27,9 @@ export class InputerView implements IDOMWrapper {
         });
 
         this._dom.addEventListener("compositionend", (evt: Event) => {
-            this._isCompositing = false;
+            setTimeout(() => {
+                this._isCompositing = false;
+            },20);
         })
 
     }
