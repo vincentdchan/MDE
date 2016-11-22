@@ -63,4 +63,8 @@ export class InputerView implements IDOMWrapper {
         return this._dom.value;
     }
 
+    set value(content: string) {
+        this._dom.value = content;
+    }
+
 }
