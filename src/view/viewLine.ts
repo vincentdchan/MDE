@@ -1,7 +1,27 @@
 import {WordView} from "./viewWord"
-import {IVirtualElement, Coordinate, MarkdownLexerState} from "."
+import {IVirtualElement, Coordinate, MarkdownLexerState, 
+    HighlightingRange, HighlightingType} from "."
 import {elem, IDOMWrapper} from "../util/dom"
 import {IDisposable} from "../util"
+import {Deque} from "../util/queue"
+
+function getItem<T>(arr : T[], index: number) : T {
+    if (arr === undefined || index >= arr.length || index < 0) return null;
+    return arr[index];
+}
+
+function mergeSet<T>(a: Set<T>, b: Set<T>) {
+    let result = new Set<T>();
+
+    function addToResult(e : T) {
+        result.add(e);
+    }
+
+    a.forEach(addToResult);
+    b.forEach(addToResult);
+
+    return result;
+}
 
 export class LineView implements IDOMWrapper, IDisposable {
 
@@ -21,7 +41,97 @@ export class LineView implements IDOMWrapper, IDisposable {
         return elem("pre", "mde-line-content");
     }
 
-    render(content: string) {
+    private static splitArr(hlr_arr : HighlightingRange[]) {
+
+        let result : HighlightingRange[] = [];
+
+        hlr_arr.sort((a : HighlightingRange, b : HighlightingRange) => {
+            return a.begin - b.begin;
+        });
+
+        let deque = new Deque<HighlightingRange>(hlr_arr);
+
+        while(!deque.empty()) {
+            let first = deque.pop_front();
+            if (deque.empty()) {
+                result.push(first);
+                break;
+            }
+            else {
+                let second = deque.pop_front();
+
+                if (first.begin === second.begin) {
+                    if (first.end > second.end) {
+
+                        let pushOne : HighlightingRange = {
+                            begin: first.begin,
+                            end: second.end,
+                            types: mergeSet(first.types, second.types),
+                        },
+                        returnOne : HighlightingRange = {
+                            begin: second.end,
+                            end: first.end,
+                            types: first.types,
+                        };
+
+                        result.push(pushOne);
+                        deque.push_front(returnOne);
+                    } else if (first.end < second.end) {
+
+                        let pushOne : HighlightingRange = {
+                            begin: first.begin,
+                            end: first.end,
+                            types: mergeSet(first.types, second.types),
+                        },
+                        returnOne : HighlightingRange = {
+                            begin: first.end,
+                            end: second.end,
+                            types: second.types,
+                        };
+
+                        result.push(pushOne);
+                        deque.push_front(returnOne);
+
+                    } else { // first.end === second.end
+
+                        result.push({
+                            begin: first.begin,
+                            end: first.end,
+                            types: mergeSet(first.types, second.types),
+                        });
+
+                    }
+                } else { // first.begin > second.begin
+
+                    if (first.end <= second.begin) {
+                        result.push(first);
+                        deque.push_front(second);
+                    } else {
+
+                        result.push({
+                            begin: first.begin,
+                            end: second.begin,
+                            types: first.types,
+                        })
+
+                        deque.push_front({
+                            begin: second.begin,
+                            end: first.end,
+                            types: first.types,
+                        })
+
+                    }
+
+                }
+            }
+        }
+
+        return result;
+    }
+
+    render(content: string, hlr_arr? : HighlightingRange[]) {
+        hlr_arr = hlr_arr ? LineView.splitArr(hlr_arr) : [];
+
         this._words = [];
         content = content.slice(0, content.length - 1);
         if (this._line_content_dom) {
@@ -29,11 +139,54 @@ export class LineView implements IDOMWrapper, IDisposable {
         }
         this._line_content_dom = this.generateContentDom();
 
-        let wordView = new WordView(content);
-        this._words.push(wordView);
+        if (hlr_arr.length == 0) {
+            let wordView = new WordView(content);
+            this._words.push(wordView);
+            this._line_content_dom.appendChild(wordView.element());
+        } else {
 
-        this._line_content_dom.appendChild(wordView.element());
+            function arrayStream<T>(arr: T[]) {
+                let index = 0;
+                return function () {
+                    if (index >= length)
+                        return null;
+                    else
+                        return arr[index++];
+                }
+            }
+
+            let stream = arrayStream(hlr_arr);
+
+            let nextSlice = stream();
+
+            let pos = 0;
+            while (pos < content.length) {
+                if (nextSlice === null) {
+                    let _slice = content.slice(pos);
+                    this.appendWord(_slice);
+                    pos = content.length;
+                } else if (pos < nextSlice.begin) {
+                    let _slice = content.slice(pos, nextSlice.begin);
+                    this.appendWord(_slice);
+                    pos = nextSlice.begin;
+                    nextSlice = stream();
+                } else if (pos === nextSlice.begin) {
+                    let _slice = content.slice(nextSlice.begin, nextSlice.end);
+                    this.appendWord(_slice, nextSlice.types)
+                    pos = nextSlice.end;
+                    nextSlice = stream();
+                }
+            }
+
+        }
+
         this._dom.appendChild(this._line_content_dom);
+    }
+
+    private appendWord(content: string, ranges? : Set<HighlightingType>) {
+        let wordView = new WordView(content, ranges);
+        this._words.push(wordView);
+        this._line_content_dom.appendChild(wordView.element());
     }
 
     getCoordinate(offset: number) : Coordinate {

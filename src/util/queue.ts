@@ -15,7 +15,6 @@ class DequeNode<T> {
     private _value : T;
     
     constructor() {
-
     }
     
     set value(v : T) {
@@ -50,7 +49,13 @@ export class Deque<T> implements IDeque<T> {
     private end : DequeNode<T> = null;
     private _size : number = 0;
     
-    constructor() {
+    constructor(arr?: T[]) {
+
+        if (arr) {
+            arr.forEach((obj: T) => {
+                this.push_back(obj);
+            })
+        }
         
     }
     
@@ -117,8 +122,29 @@ export class Deque<T> implements IDeque<T> {
     }
     
     size() : number {
-        
         return this._size;
+    }
+
+    empty() : boolean {
+        return this._size == 0;
+    }
+
+}
+
+export class PopAllQueue<T> extends Deque<T> {
+
+    constructor() {
+        super();
+    }
+
+    popAll() : T[] {
+        let arr = new Array<T>();
+
+        while(!this.empty()) {
+            arr.push(this.pop_back());
+        }
+
+        return arr;
     }
 
 }

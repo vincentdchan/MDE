@@ -61,3 +61,13 @@ export class MarkdownLexerState {
     }
 
 }
+
+export enum HighlightingType {
+    Bold, Underline, Italic
+}
+
+export interface HighlightingRange {
+    begin : number;
+    end: number;
+    types: Set<HighlightingType>;
+}

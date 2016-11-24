@@ -1,20 +1,23 @@
 
 import {LineView} from "./viewLine"
-import {IVirtualElement, Coordinate} from "."
+import {IVirtualElement, Coordinate, HighlightingRange, HighlightingType} from "."
 import {TextModel, LineModel, Position} from "../model"
 import {elem, IDOMWrapper} from "../util/dom"
 import {IDisposable} from "../util"
+import {PopAllQueue} from "../util/queue"
 
 export class DocumentView implements IDOMWrapper, IDisposable {
 
     private _model: TextModel;
     private _lines: LineView[];
     private _dom: HTMLElement = null;
+    private _highlightingRanges: PopAllQueue<HighlightingRange>[];
 
     constructor(_model) {
         this._lines = [];
         this._model = _model;
         this._dom = elem("div", "mde-document");
+        this._highlightingRanges = [];
     }
 
     render(): HTMLElement {
@@ -22,7 +25,10 @@ export class DocumentView implements IDOMWrapper, IDisposable {
         this._lines[0] = null;
         this._model.forEach((line: LineModel) => {
             var vl = new LineView();
+
             this._lines[line.number] = vl;
+            this._highlightingRanges[line.number] = new PopAllQueue<HighlightingRange>();
+
             vl.render(line.text);
             this._dom.appendChild(vl.element());
         })
@@ -39,7 +45,7 @@ export class DocumentView implements IDOMWrapper, IDisposable {
     renderLine(line: number) {
         if (line <= 0 || line > this.linesCount)
             throw new Error("<index out of range> line:" + line + " LinesCount:" + this.linesCount);
-        this._lines[line].render(this._model.lineAt(line).text);
+        this._lines[line].render(this._model.lineAt(line).text, this._highlightingRanges[line].popAll());
     }
 
     // move lines from after [index] 
@@ -48,12 +54,19 @@ export class DocumentView implements IDOMWrapper, IDisposable {
             this.appendLines(count);
             return;
         }
-        let prefix = this._lines.slice(0, index);
-        let postfix = this._lines.slice(index);
+        let _lines_prefix = this._lines.slice(0, index);
+        let _lines_postfix = this._lines.slice(index);
 
-        let new_arr = [];
-        new_arr.length = count;
-        this._lines = prefix.concat(new_arr).concat(postfix);
+        let _new_lines_arr = [];
+        _new_lines_arr.length = count;
+        this._lines = _lines_prefix.concat(_new_lines_arr).concat(_lines_postfix);
+
+        let _queues_prefix = this._highlightingRanges.slice(0, index);
+        let _queues_postfix = this._highlightingRanges.slice(index);
+
+        let _new_queues_arr = [];
+        _new_queues_arr.length = count;
+        this._highlightingRanges = _queues_prefix.concat(_new_queues_arr).concat(_queues_postfix);
 
         for (let i = index + count - 1; i >= index; i--) {
             this._lines[i] = new LineView();
@@ -63,14 +76,19 @@ export class DocumentView implements IDOMWrapper, IDisposable {
     }
 
     appendLines(num: number) {
-        var new_arr: LineView[] = [];
-        new_arr.length = num;
+        let _new_lines_arr: LineView[] = [];
+        let _new_queues_arr: PopAllQueue<HighlightingRange>[] = [];
+
+        _new_lines_arr.length = num;
+        _new_queues_arr.length = num;
         for (let i = 0; i < num; i++) {
-            new_arr[i] = new LineView();
-            this._dom.appendChild(new_arr[i].element());
+            _new_lines_arr[i] = new LineView();
+            _new_queues_arr[i] = new PopAllQueue<HighlightingRange>();
+            this._dom.appendChild(_new_lines_arr[i].element());
         }
 
-        this._lines = this._lines.concat(new_arr);
+        this._lines = this._lines.concat(_new_lines_arr);
+        this._highlightingRanges = this._highlightingRanges.concat(_new_queues_arr);
     }
 
     // delete line from [begin] to [end - 1]
@@ -80,12 +98,17 @@ export class DocumentView implements IDOMWrapper, IDisposable {
             throw new Error("Index out of range.");
         end = end? end : begin + 1;
 
-        let prefix = this._lines.slice(0, begin);
-        let middle = this._lines.slice(begin, end);
-        let postfix = this._lines.slice(end);
+        let _lines_prefix = this._lines.slice(0, begin),
+            _lines_middle = this._lines.slice(begin, end),
+            _lines_postfix = this._lines.slice(end);
 
-        this._lines = prefix.concat(postfix);
-        middle.forEach((e: LineView) => {
+        let _queues_prefix = this._highlightingRanges.slice(0, begin),
+            _queues_postfix = this._highlightingRanges.slice(end);
+
+        this._lines = _lines_prefix.concat(_lines_postfix);
+        this._highlightingRanges = _queues_prefix.concat(_queues_postfix)
+
+        _lines_middle.forEach((e: LineView) => {
             e.dispose();
         });
     }

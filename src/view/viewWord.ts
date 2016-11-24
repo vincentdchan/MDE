@@ -1,30 +1,41 @@
 
 import {ImmutableArray} from "../util"
-import {IVirtualElement, Coordinate} from "."
+import {IVirtualElement, Coordinate, HighlightingType} from "."
 import {elem} from "../util/dom"
 import {IDisposable} from "../util"
 
-// Immutable
 export class WordView implements IDisposable {
 
-    private _classList: ImmutableArray<string>
+    private _classList: Set<HighlightingType>;
     private _text: string;
     private _dom: HTMLSpanElement = null;
 
-    constructor(_text: string | WordView, _classList?: ImmutableArray<string>) {
+    constructor(_text: string | WordView, _classList?: Set<HighlightingType>) {
         if (typeof _text == "string")
             this._text = _text;
         else if (_text instanceof WordView) {
             this._text = _text._text;
-            this._classList = new ImmutableArray(_text._classList);
+            this._classList = _text._classList;
         }
 
-        this._classList = _classList? _classList : new ImmutableArray<string>();
+        this._classList = _classList? new Set(_classList) : new Set<HighlightingType>();
 
         this._dom = elem("span");
         this._dom.innerText = this._text;
-        this._classList.forEach((e: string)=> {
-            this._dom.classList.add(e);
+
+        this._classList.forEach((e: HighlightingType)=> {
+            switch(e) {
+                case HighlightingType.Bold:
+                    this._dom.classList.add("mde-word-bold");
+                    break;
+                case HighlightingType.Underline:
+                    this._dom.classList.add("mde-word-underline");
+                    break;
+                case HighlightingType.Italic:
+                    this._dom.classList.add("mde-word-italic");
+                    break;
+            }
+            this._dom.classList.add(e.toString());
         })
     }
 
