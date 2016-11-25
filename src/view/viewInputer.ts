@@ -39,8 +39,9 @@ export class InputerView implements IDOMWrapper {
     }
 
     setPostition(coordinate: Coordinate) {
+        let scrollTop = document.body.scrollTop;
         this._dom.style.left = coordinate.x + "px";
-        this._dom.style.top = coordinate.y + "px";
+        this._dom.style.top = coordinate.y + scrollTop + "px";
     }
 
     isFosused() {

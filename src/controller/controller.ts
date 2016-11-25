@@ -289,18 +289,18 @@ export class MDE implements IDisposable, TextEditApplier {
     }
 
     private handleClientEvent(evt: MouseEvent) {
-        let _range = document.caretRangeFromPoint(evt.pageX, evt.pageY);
+        let _range = document.caretRangeFromPoint(evt.clientX, evt.clientY);
 
-        // let _line_elem = this.findLineAncestor(_range.startContainer);
-        // console.log(_range.startContainer);
         let line_number: number,
             absolute_offset: number,
             linesCount = this._view.documentView.linesCount;
 
         for (let i = 1; i <= linesCount; i++) {
             let lineView = this._view.documentView.lines[i];
-            let rect = lineView.element().firstElementChild.getBoundingClientRect();
-            if (evt.pageY >= rect.top && evt.pageY <= rect.top + rect.height) {
+            // let rect = lineView.element().firstElementChild.getBoundingClientRect();
+            let rect = lineView.element().getBoundingClientRect();
+
+            if (evt.clientY >= rect.top && evt.clientY <= rect.top + rect.height) {
                 line_number = i;
                 break;
             }
