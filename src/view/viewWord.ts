@@ -1,8 +1,6 @@
-
 import {ImmutableArray} from "../util"
 import {IVirtualElement, Coordinate, HighlightingType} from "."
-import {elem} from "../util/dom"
-import {IDisposable} from "../util"
+import {IDisposable, DomHelper} from "../util"
 
 export class WordView implements IDisposable {
 
@@ -20,7 +18,7 @@ export class WordView implements IDisposable {
 
         this._classList = _classList? new Set(_classList) : new Set<HighlightingType>();
 
-        this._dom = elem("span");
+        this._dom = DomHelper.elem("span");
         this._dom.innerText = this._text;
 
         this._classList.forEach((e: HighlightingType)=> {

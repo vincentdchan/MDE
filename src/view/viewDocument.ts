@@ -2,21 +2,19 @@
 import {LineView} from "./viewLine"
 import {IVirtualElement, Coordinate, HighlightingRange, HighlightingType} from "."
 import {TextModel, LineModel, Position} from "../model"
-import {elem, IDOMWrapper} from "../util/dom"
-import {IDisposable} from "../util"
+import {IDisposable, DomHelper} from "../util"
 import {PopAllQueue} from "../util/queue"
 
-export class DocumentView implements IDOMWrapper, IDisposable {
+export class DocumentView extends DomHelper.AppendableDomWrapper implements IDisposable {
 
     private _model: TextModel;
     private _lines: LineView[];
-    private _dom: HTMLElement = null;
     private _highlightingRanges: PopAllQueue<HighlightingRange>[];
 
     constructor(_model) {
+        super("div", "mde-document");
         this._lines = [];
         this._model = _model;
-        this._dom = elem("div", "mde-document");
         this._highlightingRanges = [];
     }
 
@@ -118,14 +116,6 @@ export class DocumentView implements IDOMWrapper, IDisposable {
             this._dom.parentNode.removeChild(this._dom);
             this._dom = null;
         }
-    }
-
-    element() {
-        return this._dom;
-    }
-
-    on(name: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean) {
-        this._dom.addEventListener(name, listener, useCapture);
     }
 
     get lines() {

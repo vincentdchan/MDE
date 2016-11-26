@@ -1,6 +1,8 @@
 export {ImmutableArray} from "./immutable/array"
 export {StringBuffer} from "./stringBuffer"
 export {mergeSet} from "./set"
+export {DomHelper} from "./dom"
+export {Deque} from "./queue"
 
 export interface IDisposable {
     dispose(): any;

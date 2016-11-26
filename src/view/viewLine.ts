@@ -1,8 +1,7 @@
 import {WordView} from "./viewWord"
 import {IVirtualElement, Coordinate, MarkdownLexerState, 
     HighlightingRange, HighlightingType} from "."
-import {elem, IDOMWrapper} from "../util/dom"
-import {IDisposable} from "../util"
+import {IDisposable, DomHelper} from "../util"
 import {Deque} from "../util/queue"
 
 function getItem<T>(arr : T[], index: number) : T {
@@ -23,22 +22,21 @@ function mergeSet<T>(a: Set<T>, b: Set<T>) {
     return result;
 }
 
-export class LineView implements IDOMWrapper, IDisposable {
+export class LineView extends DomHelper.AppendableDomWrapper implements IDisposable {
 
     private _content: string;
     private _words: WordView[]; 
     private _state: MarkdownLexerState;
-    private _dom: HTMLElement = null;
     private _line_content_dom: HTMLElement = null;
 
     constructor() {
-        this._state =  new MarkdownLexerState();
+        super("div", "mde-line");
 
-        this._dom = elem("div", "mde-line");
+        this._state =  new MarkdownLexerState();
     }
 
     private generateContentDom() : HTMLElement {
-        return elem("pre", "mde-line-content");
+        return DomHelper.elem("pre", "mde-line-content");
     }
 
     private static splitArr(hlr_arr : HighlightingRange[]) {
@@ -213,14 +211,6 @@ export class LineView implements IDOMWrapper, IDisposable {
             this._dom.parentNode.removeChild(this._dom);
             this._dom = null;
         }
-    }
-
-    element() {
-        return this._dom;
-    }
-
-    on(name: string, callback: EventListenerOrEventListenerObject, useCapture?: boolean) {
-        this._dom.addEventListener(name, callback, useCapture);
     }
 
     get words() {

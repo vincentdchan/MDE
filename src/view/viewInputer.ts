@@ -1,14 +1,14 @@
-import {elem, IDOMWrapper} from "../util/dom"
+import {DomHelper, IDisposable} from "../util"
 import {Coordinate} from "."
 
-export class InputerView implements IDOMWrapper {
+export class InputerView implements DomHelper.IDOMWrapper, IDisposable {
 
     private _dom: HTMLTextAreaElement;
     private _focused: boolean = false;
     private _isCompositing: boolean = false;;
 
     constructor() {
-        this._dom = <HTMLTextAreaElement>elem("textarea", "mde-inputer");
+        this._dom = <HTMLTextAreaElement>DomHelper.elem("textarea", "mde-inputer");
         this._dom.style.position = "absolute";
         this._dom.style.height = "1em";
         this._dom.style.width = "1px";
@@ -39,9 +39,9 @@ export class InputerView implements IDOMWrapper {
     }
 
     setPostition(coordinate: Coordinate) {
-        let scrollTop = document.body.scrollTop;
+        let scrollY = window.scrollY;
         this._dom.style.left = coordinate.x + "px";
-        this._dom.style.top = coordinate.y + scrollTop + "px";
+        this._dom.style.top = coordinate.y + scrollY + "px";
     }
 
     isFosused() {
@@ -52,12 +52,23 @@ export class InputerView implements IDOMWrapper {
         return this._isCompositing;
     }
 
-    on(name: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean) {
+    addEventListener(name: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean) {
         this._dom.addEventListener(name, listener, useCapture);
     }
 
     element() {
         return this._dom;
+    }
+
+    appendTo(elem: HTMLElement) {
+        elem.appendChild(this._dom);
+    }
+
+    dispose() {
+        if (this._dom != null) {
+            this._dom.parentElement.removeChild(this._dom);
+            this._dom = null;
+        }
     }
 
     get value() {

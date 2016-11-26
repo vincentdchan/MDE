@@ -32,19 +32,22 @@ export class MDE implements IDisposable, TextEditApplier {
         this._model = new TextModel(content);
         this._view = new EditorView(this._model);
 
-        this._view.documentView.on("click", this.handleClientEvent.bind(this));
+        this._view.documentView.addEventListener("click", this.handleClientEvent.bind(this));
 
         // this._view.inputerView.on("keydown", this.handleInputerKeyDown.bind(this));
 
-        this._view.inputerView.on("keydown", (evt: KeyboardEvent) => {
+        this._view.inputerView.addEventListener("keydown", (evt: KeyboardEvent) => {
             setTimeout(() => {
                 this.handleInputerKeyDown(evt);
             }, 20);
         });
 
-        this._view.inputerView.on("compositionstart", this.handleInputerCompositionStart.bind(this));
-        this._view.inputerView.on("compositionend", this.handleInputerCompositionEnd.bind(this));
-        this._view.inputerView.on("compositionupdate", this.handleInputerCompositionUpdate.bind(this));
+        this._view.inputerView.addEventListener("compositionstart", 
+            this.handleInputerCompositionStart.bind(this), false);
+        this._view.inputerView.addEventListener("compositionend", 
+            this.handleInputerCompositionEnd.bind(this), false);
+        this._view.inputerView.addEventListener("compositionupdate", 
+            this.handleInputerCompositionUpdate.bind(this), false);
 
         this._menu = generateMenu();
         // Menu.setApplicationMenu(this._menu);

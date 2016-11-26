@@ -1,20 +1,19 @@
-import {elem, IDOMWrapper} from "../util/dom"
-import {IDisposable} from "../util"
+import {IDisposable, DomHelper} from "../util"
 import {DocumentView} from "./viewDocument"
 import {CursorView} from "./viewCursor"
 import {InputerView} from "./viewInputer"
 import {TextModel} from "../model"
 
-export class EditorView implements IDOMWrapper, IDisposable {
+export class EditorView extends DomHelper.AppendableDomWrapper implements IDisposable {
 
-    private _dom: HTMLElement;
+    public static readonly PxPerLine = 16;
     private _model: TextModel;
     private _document: DocumentView;
     private _cursor: CursorView;
     private _inputer: InputerView;
 
     constructor(_model: TextModel) {
-        this._dom = elem("div", "mde-editor");
+        super("div", "mde-editor");
 
         this._model = _model;
         this._document = new DocumentView(_model);
@@ -27,8 +26,16 @@ export class EditorView implements IDOMWrapper, IDisposable {
         this._dom.appendChild(this._inputer.element());
         this._dom.appendChild(this._document.element());
 
-        this._inputer.on("focus", this.handleInputerFocused.bind(this));
-        this._inputer.on("blur", this.handleInputerBlur.bind(this));
+        this.stylish();
+
+        this._inputer.addEventListener("focus", this.handleInputerFocused.bind(this));
+        this._inputer.addEventListener("blur", this.handleInputerBlur.bind(this));
+    }
+
+    private stylish()
+    {
+        this._dom.style.fontSize = EditorView.PxPerLine + "px";
+        this._dom.style.fontFamily = "Consolas";
     }
 
     private handleInputerFocused(evt : FocusEvent) {
@@ -37,14 +44,6 @@ export class EditorView implements IDOMWrapper, IDisposable {
 
     private handleInputerBlur(evt : FocusEvent) {
         this._cursor.setOff();
-    }
-
-    element() {
-        return this._dom;
-    }
-
-    on(name: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean) {
-        this._dom.addEventListener(name, listener);
     }
 
     get inputerView() : InputerView {
@@ -57,6 +56,28 @@ export class EditorView implements IDOMWrapper, IDisposable {
 
     get cursorView() : CursorView  {
         return this._cursor;
+    }
+
+    get width() : number {
+        let rect = this._dom.getBoundingClientRect();
+        return rect.width;
+    }
+
+    get height() : number {
+        let rect = this._dom.getBoundingClientRect();
+        return rect.height;
+    }
+
+    set width(w : number) {
+        this._dom.style.width = w + "px";
+    }
+
+    set height(h : number) {
+        this._dom.style.height = h + "px";
+    }
+
+    set fontFamily(fm: string) {
+        this._dom.style.fontFamily = fm;
     }
 
     dispose() {

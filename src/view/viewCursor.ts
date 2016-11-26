@@ -1,14 +1,12 @@
-import {IDOMWrapper, elem} from "../util/dom"
-import {IDisposable} from "../util"
+import {IDisposable, DomHelper} from "../util"
 import {Coordinate} from "."
 
-export class CursorView implements IDOMWrapper, IDisposable {
+export class CursorView extends DomHelper.AppendableDomWrapper implements IDisposable {
 
-    private _dom : HTMLElement;
     private _internal : NodeJS.Timer;
 
     constructor() {
-        this._dom = elem("div", "mde-cursor");
+        super("div", "mde-cursor");
         this._dom.style.position = "absolute";
         this._dom.style.height = "1em";
         this._dom.style.width = "0.2em";
@@ -51,17 +49,9 @@ export class CursorView implements IDOMWrapper, IDisposable {
     }
 
     setPostition(coordinate: Coordinate) {
-        let scrollTop = document.body.scrollTop;
+        let scrollY  = window.scrollY
         this._dom.style.left = coordinate.x + "px";
-        this._dom.style.top = coordinate.y + scrollTop + "px";
-    }
-
-    element() {
-        return this._dom;
-    }
-
-    on(name: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean) {
-        this._dom.addEventListener(name, listener, useCapture);
+        this._dom.style.top = coordinate.y + scrollY + "px";
     }
 
     dispose() {
