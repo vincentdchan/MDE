@@ -18,13 +18,17 @@ export class EditorView extends DomHelper.AppendableDomWrapper implements IDispo
         this._model = _model;
         this._document = new DocumentView(_model);
         this._document.render();
-        this._cursor = new CursorView();
 
-        this._inputer = new InputerView();
+        let thk = () => {
+            return this.scrollTop;
+        }
+        this._cursor = new CursorView(thk);
 
-        this._dom.appendChild(this._cursor.element());
-        this._dom.appendChild(this._inputer.element());
-        this._dom.appendChild(this._document.element());
+        this._inputer = new InputerView(thk);
+
+        this._cursor.appendTo(this._dom);
+        this._inputer.appendTo(this._dom);
+        this._document.appendTo(this._dom);
 
         this.stylish();
 
@@ -34,6 +38,8 @@ export class EditorView extends DomHelper.AppendableDomWrapper implements IDispo
 
     private stylish()
     {
+        this._dom.style.position = "fixed";
+        this._dom.style.overflowY = "scroll"
         this._dom.style.fontSize = EditorView.PxPerLine + "px";
         this._dom.style.fontFamily = "Consolas";
     }
@@ -44,6 +50,10 @@ export class EditorView extends DomHelper.AppendableDomWrapper implements IDispo
 
     private handleInputerBlur(evt : FocusEvent) {
         this._cursor.setOff();
+    }
+
+    get scrollTop() {
+        return this._dom.scrollTop;
     }
 
     get inputerView() : InputerView {

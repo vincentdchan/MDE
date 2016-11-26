@@ -1,5 +1,6 @@
-import {TextModel, LineModel, TextEdit, TextEditType, TextEditApplier, Position} from "../model"
-import {EditorView, Coordinate} from "../view"
+import {TextModel, LineModel, TextEdit, TextEditType, 
+    TextEditApplier, Position} from "../model"
+import {EditorView, Coordinate, WindowView} from "../view"
 import {IDisposable} from "../util"
 import {generateMenu} from "./menu"
 import {remote} from "electron"
@@ -19,9 +20,9 @@ function clonePosition(pos: Position) : Position {
 export class MDE implements IDisposable, TextEditApplier {
 
     private _model : TextModel;
-    private _view : EditorView;
     private _position: Position;
     private _menu: Electron.Menu;
+    private _view: WindowView;
 
     private _composition_start_pos : Position;
     private _composition_update_pos : Position;
@@ -30,23 +31,24 @@ export class MDE implements IDisposable, TextEditApplier {
         content = content? content : "";
 
         this._model = new TextModel(content);
-        this._view = new EditorView(this._model);
 
-        this._view.documentView.addEventListener("click", this.handleClientEvent.bind(this));
+        this._view = new WindowView(this._model);
+
+        this.documentView.addEventListener("click", this.handleClientEvent.bind(this));
 
         // this._view.inputerView.on("keydown", this.handleInputerKeyDown.bind(this));
 
-        this._view.inputerView.addEventListener("keydown", (evt: KeyboardEvent) => {
+        this.inputerView.addEventListener("keydown", (evt: KeyboardEvent) => {
             setTimeout(() => {
                 this.handleInputerKeyDown(evt);
             }, 20);
         });
 
-        this._view.inputerView.addEventListener("compositionstart", 
+        this.inputerView.addEventListener("compositionstart", 
             this.handleInputerCompositionStart.bind(this), false);
-        this._view.inputerView.addEventListener("compositionend", 
+        this.inputerView.addEventListener("compositionend", 
             this.handleInputerCompositionEnd.bind(this), false);
-        this._view.inputerView.addEventListener("compositionupdate", 
+        this.inputerView.addEventListener("compositionupdate", 
             this.handleInputerCompositionUpdate.bind(this), false);
 
         this._menu = generateMenu();
@@ -107,7 +109,7 @@ export class MDE implements IDisposable, TextEditApplier {
         */
 
         setTimeout(() => {
-            this._view.inputerView.value = "";
+            this.inputerView.value = "";
         }, 20);
 
         this._position = clonePosition(this._composition_start_pos);
@@ -116,12 +118,12 @@ export class MDE implements IDisposable, TextEditApplier {
     }
 
     private isInputerCompositing() {
-        return this._view.inputerView.isCompositioning();
+        return this.inputerView.isCompositioning();
     }
 
     private handleCompositionKeydown(evt: KeyboardEvent) {
 
-        let updateData : string = this._view.inputerView.element().value;
+        let updateData : string = this.inputerView.element().value;
 
         updateData = updateData.replace("\n", "");
 
@@ -246,18 +248,16 @@ export class MDE implements IDisposable, TextEditApplier {
                 break; // delete
             default:
 
-                let value = this.view.inputerView.value;
+                let value = this.inputerView.value;
                 if (value.length > 0) {
                     let textEdit = new TextEdit(TextEditType.InsertText, this._position, value);
 
                     this.applyTextEdit(textEdit);
                     this.updatePosition(textEdit);
-                    let cursorCo = this._view.documentView.getCoordinate(this._position);
 
-                    this._view.cursorView.setPostition(cursorCo);
-                    this._view.inputerView.setPostition(cursorCo);
+                    this.updateCursor(this._position);
 
-                    this.view.inputerView.clearContent();
+                    this.inputerView.clearContent();
                 }
         }
 
@@ -283,12 +283,18 @@ export class MDE implements IDisposable, TextEditApplier {
     }
 
     private updateCursor(pos: Position) {
-        let cursorCo = this._view.documentView.getCoordinate(pos);
+        let cursorCo = this.documentView.getCoordinate(pos);
 
-        this._view.cursorView.setPostition(cursorCo);
-        this._view.inputerView.setPostition(cursorCo);
+        this.updateCoursorByCoordinate(cursorCo);
+    }
 
-        this._view.cursorView.excite();
+    private updateCoursorByCoordinate(co: Coordinate) {
+        co.x -= this._view.leftPanelView.width;
+
+        this.cursorView.setPostition(co);
+        this.inputerView.setPostition(co);
+
+        this.cursorView.excite();
     }
 
     private handleClientEvent(evt: MouseEvent) {
@@ -296,10 +302,10 @@ export class MDE implements IDisposable, TextEditApplier {
 
         let line_number: number,
             absolute_offset: number,
-            linesCount = this._view.documentView.linesCount;
+            linesCount = this.documentView.linesCount;
 
         for (let i = 1; i <= linesCount; i++) {
-            let lineView = this._view.documentView.lines[i];
+            let lineView = this.documentView.lines[i];
             // let rect = lineView.element().firstElementChild.getBoundingClientRect();
             let rect = lineView.element().getBoundingClientRect();
 
@@ -312,7 +318,7 @@ export class MDE implements IDisposable, TextEditApplier {
         if (line_number === undefined)
             throw new Error("Not in range.");
 
-        let lineView = this._view.documentView.lines[line_number];
+        let lineView = this.documentView.lines[line_number];
         let lineElm = lineView.element();
 
         absolute_offset = 0;
@@ -343,10 +349,9 @@ export class MDE implements IDisposable, TextEditApplier {
                 y: rect.top,
             }
         }
-        this._view.inputerView.setPostition(coordinate);
-        this._view.cursorView.setPostition(coordinate);
+        this.updateCoursorByCoordinate(coordinate);
 
-        this._view.inputerView.element().focus();
+        this.inputerView.element().focus();
     }
 
     applyTextEdit(_textEdit: TextEdit) {
@@ -355,19 +360,19 @@ export class MDE implements IDisposable, TextEditApplier {
 
         switch(_textEdit.type) {
             case TextEditType.InsertText:
-                this._view.documentView.renderLine(_textEdit.position.line);
+                this.documentView.renderLine(_textEdit.position.line);
                 if (_textEdit.lines.length > 1) {
 
-                    let srcLinesCount = this._view.documentView.linesCount
+                    let srcLinesCount = this.documentView.linesCount
                     for (let i = _textEdit.position.line + 1; 
                         i <= srcLinesCount; i++) {
-                        this._view.documentView.renderLine(i);
+                        this.documentView.renderLine(i);
                     }
 
-                    let init_length = this._view.documentView.lines.length - 1;
-                    this.view.documentView.appendLines(_textEdit.lines.length - 1);
+                    let init_length = this.documentView.lines.length - 1;
+                    this.documentView.appendLines(_textEdit.lines.length - 1);
                     for (let i = 1; i < _textEdit.lines.length; i++) {
-                        this._view.documentView.renderLine(init_length + i);
+                        this.documentView.renderLine(init_length + i);
                     }
 
 
@@ -375,25 +380,25 @@ export class MDE implements IDisposable, TextEditApplier {
                 break;
             case TextEditType.DeleteText:
                 if (_range.end.line > _range.begin.line) {
-                    this._view.documentView.deleteLines(_range.begin.line + 1, _range.end.line + 1);
+                    this.documentView.deleteLines(_range.begin.line + 1, _range.end.line + 1);
                 }
                 for (let i = _range.begin.line; i <= this._model.linesCount; i++)
-                    this._view.documentView.renderLine(i);
+                    this.documentView.renderLine(i);
                 break;
             case TextEditType.ReplaceText:
                 let linesDelta = _range.begin.line - _range.end.line;
                 linesDelta += _textEdit.lines.length - 1;
 
-                this._view.documentView.renderLine(_range.begin.line);
+                this.documentView.renderLine(_range.begin.line);
 
                 if (linesDelta > 0 ) {
-                    this._view.documentView.appendLines(linesDelta);
+                    this.documentView.appendLines(linesDelta);
                 } else if (linesDelta < 0) {
-                    this._view.documentView.deleteLines(_range.begin.line + 1, _range.begin.line - linesDelta + 1);
+                    this.documentView.deleteLines(_range.begin.line + 1, _range.begin.line - linesDelta + 1);
                 }
 
                 for (let i = _range.begin.line; i <= this._model.linesCount; i++)
-                    this._view.documentView.renderLine(i);
+                    this.documentView.renderLine(i);
 
                 break;
             default:
@@ -409,6 +414,22 @@ export class MDE implements IDisposable, TextEditApplier {
         this._model = null;
         this._view.dispose();
         this._view = null;
+    }
+
+    get editorView() {
+        return this._view.editorView;
+    }
+
+    get documentView() {
+        return this._view.editorView.documentView;
+    }
+
+    get inputerView() {
+        return this._view.editorView.inputerView;
+    }
+
+    get cursorView() {
+        return this._view.editorView.cursorView;
     }
 
     get view() {

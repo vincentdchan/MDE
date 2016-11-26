@@ -4,13 +4,17 @@ import {Coordinate} from "."
 export class CursorView extends DomHelper.AppendableDomWrapper implements IDisposable {
 
     private _internal : NodeJS.Timer;
+    private _scrollTopThunk : () => number;
 
-    constructor() {
+    constructor(scrollTopThunk: () => number) {
         super("div", "mde-cursor");
+        this._scrollTopThunk = scrollTopThunk;
+
         this._dom.style.position = "absolute";
         this._dom.style.height = "1em";
         this._dom.style.width = "0.2em";
         this._dom.style.background = "black";
+
 
         this.initializeBlinking();
     }
@@ -49,9 +53,8 @@ export class CursorView extends DomHelper.AppendableDomWrapper implements IDispo
     }
 
     setPostition(coordinate: Coordinate) {
-        let scrollY  = window.scrollY
         this._dom.style.left = coordinate.x + "px";
-        this._dom.style.top = coordinate.y + scrollY + "px";
+        this._dom.style.top = coordinate.y + this._scrollTopThunk() + "px";
     }
 
     dispose() {

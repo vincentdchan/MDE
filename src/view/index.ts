@@ -4,6 +4,8 @@ export {WordView} from "./viewWord"
 export {CursorView} from "./viewCursor"
 export {EditorView} from "./viewEditor"
 export {InputerView} from "./viewInputer"
+export {LeftPanelView} from "./viewLeftPanel"
+export {WindowView} from "./viewWindow"
 
 export interface IVirtualNode {
     render(): Node;

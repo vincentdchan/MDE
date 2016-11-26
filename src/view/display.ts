@@ -15,6 +15,7 @@ export function Display(content: string) {
 
     let mde = new MDE(content);
 
+    /*
     const beginLineInput = <HTMLInputElement>document.getElementById("input-begin-line");
     const beginOffsetInput = <HTMLInputElement>document.getElementById("input-begin-offset");
     const insertTextArea = <HTMLTextAreaElement>document.getElementById("textarea-insert-text");
@@ -103,6 +104,7 @@ export function Display(content: string) {
         }));
     })
 
+    */
     mde.appendTo(document.body);
 
 }

@@ -7,7 +7,11 @@ export class InputerView implements DomHelper.IDOMWrapper, IDisposable {
     private _focused: boolean = false;
     private _isCompositing: boolean = false;;
 
-    constructor() {
+    private _scrollTopThunk : () => number;
+
+    constructor(scrollTopThunk : () => number) {
+        this._scrollTopThunk = scrollTopThunk;
+
         this._dom = <HTMLTextAreaElement>DomHelper.elem("textarea", "mde-inputer");
         this._dom.style.position = "absolute";
         this._dom.style.height = "1em";
@@ -41,7 +45,7 @@ export class InputerView implements DomHelper.IDOMWrapper, IDisposable {
     setPostition(coordinate: Coordinate) {
         let scrollY = window.scrollY;
         this._dom.style.left = coordinate.x + "px";
-        this._dom.style.top = coordinate.y + scrollY + "px";
+        this._dom.style.top = coordinate.y + this._scrollTopThunk() + "px";
     }
 
     isFosused() {
