@@ -19,7 +19,13 @@ export class WordView implements IDisposable {
         this._classList = _classList? new Set(_classList) : new Set<HighlightingType>();
 
         this._dom = DomHelper.elem("span");
-        this._dom.innerText = this._text;
+
+        /// This is important
+        /// Without this, the space cannot show.
+        this._dom.style.whiteSpace = "pre-wrap";
+
+        // this._dom.innerHTML = this._text.replace(/ /g, "&nbsp;");
+        this._dom.innerHTML = this._text;
 
         this._classList.forEach((e: HighlightingType)=> {
             switch(e) {

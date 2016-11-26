@@ -50,7 +50,7 @@ export class EditorView extends DomHelper.AppendableDomWrapper implements IDispo
         this._dom.style.position = "fixed";
         this._dom.style.overflowY = "scroll"
         this._dom.style.fontSize = EditorView.PxPerLine + "px";
-        this._dom.style.fontFamily = "Consolas";
+        this._dom.style.fontFamily = "微软雅黑";
     }
 
     private handleInputerFocused(evt : FocusEvent) {

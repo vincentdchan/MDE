@@ -36,7 +36,7 @@ export class LineView extends DomHelper.AppendableDomWrapper implements IDisposa
     }
 
     private generateContentDom() : HTMLElement {
-        return DomHelper.elem("pre", "mde-line-content");
+        return DomHelper.elem("p", "mde-line-content");
     }
 
     private static splitArr(hlr_arr : HighlightingRange[]) {

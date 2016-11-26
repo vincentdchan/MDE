@@ -1,7 +1,7 @@
 import {TextModel} from "./textModel"
 import {TextEdit, TextEditType} from "./textEdit"
 import {LineModel} from "./lineModel"
-import {elem} from "../util/dom"
+import {DomHelper} from "../util"
 import {IGenerator} from "../util/generator"
 
 export class LineModelToDOMGenerator implements IGenerator<HTMLElement> {
@@ -13,9 +13,9 @@ export class LineModelToDOMGenerator implements IGenerator<HTMLElement> {
     }
 
     generate() : HTMLElement{
-        let div = elem("div", "editor-line");
+        let div = DomHelper.elem("div", "editor-line");
 
-        let span = elem("span");
+        let span = DomHelper.elem("span");
         span.innerText = this._lineModel.text;
 
         div.appendChild(span);
@@ -35,7 +35,7 @@ export class TextModelToDOMGenerator implements IGenerator<HTMLElement>{
 
     generate(): HTMLElement {
 
-        let frame = elem("div", "editor-frame");
+        let frame = DomHelper.elem("div", "editor-frame");
 
         for (let i = 1; i <= this._textModel.linesCount; i++) {
             let lm = this._textModel.lineAt(i);
