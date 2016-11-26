@@ -10,12 +10,14 @@ export class DocumentView extends DomHelper.AppendableDomWrapper implements IDis
     private _model: TextModel;
     private _lines: LineView[];
     private _highlightingRanges: PopAllQueue<HighlightingRange>[];
+    private _showLineNumber: boolean;
 
-    constructor(_model) {
+    constructor(_model, _showLineNumber = true) {
         super("div", "mde-document");
         this._lines = [];
         this._model = _model;
         this._highlightingRanges = [];
+        this._showLineNumber = _showLineNumber;
     }
 
     render(): HTMLElement {
@@ -116,6 +118,15 @@ export class DocumentView extends DomHelper.AppendableDomWrapper implements IDis
             this._dom.parentNode.removeChild(this._dom);
             this._dom = null;
         }
+    }
+
+    get marginLeft() {
+        let str = this._dom.style.marginLeft;
+        return str == "" ? 0 : parseInt(str);
+    }
+
+    set marginLeft(n : number) {
+        this._dom.style.marginLeft = n + "px";
     }
 
     get lines() {

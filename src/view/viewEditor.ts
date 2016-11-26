@@ -1,5 +1,6 @@
 import {IDisposable, DomHelper} from "../util"
 import {DocumentView} from "./viewDocument"
+import {LineMarginView} from "./viewLineMargin"
 import {CursorView} from "./viewCursor"
 import {InputerView} from "./viewInputer"
 import {TextModel} from "../model"
@@ -7,8 +8,11 @@ import {TextModel} from "../model"
 export class EditorView extends DomHelper.AppendableDomWrapper implements IDisposable {
 
     public static readonly PxPerLine = 16;
+    public static readonly DefaultLineMarginWidth = 40;
+
     private _model: TextModel;
     private _document: DocumentView;
+    private _margin: LineMarginView;
     private _cursor: CursorView;
     private _inputer: InputerView;
 
@@ -17,7 +21,11 @@ export class EditorView extends DomHelper.AppendableDomWrapper implements IDispo
 
         this._model = _model;
         this._document = new DocumentView(_model);
+        this._document.marginLeft = EditorView.DefaultLineMarginWidth;
         this._document.render();
+
+        this._margin = new LineMarginView();
+        this._margin.width = EditorView.DefaultLineMarginWidth;
 
         let thk = () => {
             return this.scrollTop;
@@ -28,6 +36,7 @@ export class EditorView extends DomHelper.AppendableDomWrapper implements IDispo
 
         this._cursor.appendTo(this._dom);
         this._inputer.appendTo(this._dom);
+        this._margin.appendTo(this._dom);
         this._document.appendTo(this._dom);
 
         this.stylish();

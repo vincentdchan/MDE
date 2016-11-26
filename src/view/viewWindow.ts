@@ -21,9 +21,12 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
         this.requestWindowSize();
 
         window.addEventListener("resize", (e : Event) => {
-            this.requestWindowSize();
 
-            this.updateLayout();
+            setTimeout(() => {
+                this.requestWindowSize();
+                this.updateLayout();
+            }, 20);
+
         });
 
         this._model = _model;
