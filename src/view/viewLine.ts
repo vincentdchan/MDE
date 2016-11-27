@@ -214,7 +214,7 @@ export class LineView extends DomHelper.AppendableDomWrapper implements IDisposa
 
     dispose() {
         if (this._dom) {
-            this._dom.parentNode.removeChild(this._dom);
+            this._dom.remove();
             this._dom = null;
         }
     }

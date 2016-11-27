@@ -5,9 +5,10 @@ import {TextModel, LineModel, Position} from "../model"
 import {IDisposable, DomHelper} from "../util"
 import {PopAllQueue} from "../util/queue"
 
-export class DocumentView extends DomHelper.AppendableDomWrapper implements IDisposable {
+export class DocumentView extends DomHelper.FixedElement implements IDisposable {
 
     private _model: TextModel;
+    private _container: HTMLDivElement;
     private _lines: LineView[];
     private _highlightingRanges: PopAllQueue<HighlightingRange>[];
     private _showLineNumber: boolean;
@@ -18,6 +19,12 @@ export class DocumentView extends DomHelper.AppendableDomWrapper implements IDis
         this._model = _model;
         this._highlightingRanges = [];
         this._showLineNumber = _showLineNumber;
+
+        this._container = <HTMLDivElement>DomHelper.elem("div", "mde-document-container");
+        this._dom.appendChild(this._container);
+
+        this._dom.style.overflowY = "scroll";
+        this._dom.style.overflowX = "auto";
     }
 
     render(): HTMLElement {
@@ -30,7 +37,7 @@ export class DocumentView extends DomHelper.AppendableDomWrapper implements IDis
             this._highlightingRanges[line.number] = new PopAllQueue<HighlightingRange>();
 
             vl.render(line.text);
-            this._dom.appendChild(vl.element());
+            this._container.appendChild(vl.element());
         })
 
         return this._dom;
@@ -70,7 +77,7 @@ export class DocumentView extends DomHelper.AppendableDomWrapper implements IDis
 
         for (let i = index + count - 1; i >= index; i--) {
             this._lines[i] = new LineView();
-            this._dom.insertBefore(this._lines[i].element(), 
+            this._container.insertBefore(this._lines[i].element(), 
                 this._lines[i + 1].element());
         }
     }
@@ -84,7 +91,7 @@ export class DocumentView extends DomHelper.AppendableDomWrapper implements IDis
         for (let i = 0; i < num; i++) {
             _new_lines_arr[i] = new LineView();
             _new_queues_arr[i] = new PopAllQueue<HighlightingRange>();
-            this._dom.appendChild(_new_lines_arr[i].element());
+            this._container.appendChild(_new_lines_arr[i].element());
         }
 
         this._lines = this._lines.concat(_new_lines_arr);
@@ -115,36 +122,13 @@ export class DocumentView extends DomHelper.AppendableDomWrapper implements IDis
 
     dispose() {
         if (this._dom) {
-            this._dom.parentNode.removeChild(this._dom);
+            this._dom.remove();
             this._dom = null;
         }
     }
 
-    get width() {
-        let w = this._dom.style.width;
-        return w == "" ? 0 : parseInt(w);
-    }
-
-    get height() {
-        let h = this._dom.style.height;
-        return h == "" ? 0 : parseInt(h);
-    }
-
-    set width(w : number) {
-        this._dom.style.width = w + "px";
-    }
-
-    set height(h : number) {
-        this._dom.style.height = h + "px";
-    }
-
-    get marginLeft() {
-        let str = this._dom.style.marginLeft;
-        return str == "" ? 0 : parseInt(str);
-    }
-
-    set marginLeft(n : number) {
-        this._dom.style.marginLeft = n + "px";
+    get scrollTop() {
+        return this._dom.scrollTop;
     }
 
     get lines() {

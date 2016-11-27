@@ -4,6 +4,7 @@ import {LineMarginView} from "./viewLineMargin"
 import {ScrollBarView} from "./viewScrollBar"
 import {CursorView} from "./viewCursor"
 import {InputerView} from "./viewInputer"
+import {ToolbarView} from "./viewToolbar"
 import {TextModel} from "../model"
 
 export class EditorView extends DomHelper.FixedElement implements IDisposable {
@@ -14,6 +15,7 @@ export class EditorView extends DomHelper.FixedElement implements IDisposable {
     private _model: TextModel;
     private _document: DocumentView;
     private _scrollbar: ScrollBarView;
+    private _toolbar: ToolbarView;
     private _marginMargin: LineMarginView;
     private _cursor: CursorView;
     private _inputer: InputerView;
@@ -21,20 +23,26 @@ export class EditorView extends DomHelper.FixedElement implements IDisposable {
     constructor(_model: TextModel) {
         super("div", "mde-editor");
 
+        this._toolbar = new ToolbarView();
+        this._toolbar.top = 0;
+
         this._model = _model;
         this._document = new DocumentView(_model);
+        this._document.top = this._toolbar.height;
         this._document.marginLeft = EditorView.DefaultLineMarginWidth;
         this._document.render();
 
         this._marginMargin = new LineMarginView();
+        this._marginMargin.top = this._toolbar.height;
         this._marginMargin.width = EditorView.DefaultLineMarginWidth;
 
         this._scrollbar = new ScrollBarView();
-        this._scrollbar.top = 0;
+        this._scrollbar.top = this._toolbar.height;
         this._scrollbar.right = 0;
 
+
         let thk = () => {
-            return this.scrollTop;
+            return this._document.scrollTop;
         }
         this._cursor = new CursorView(thk);
 
@@ -42,6 +50,7 @@ export class EditorView extends DomHelper.FixedElement implements IDisposable {
 
         this._cursor.appendTo(this._dom);
         this._inputer.appendTo(this._dom);
+        this._toolbar.appendTo(this._dom);
         this._marginMargin.appendTo(this._dom);
         this._document.appendTo(this._dom);
         this._scrollbar.appendTo(this._dom);
@@ -55,7 +64,7 @@ export class EditorView extends DomHelper.FixedElement implements IDisposable {
     private stylish()
     {
         this._dom.style.position = "fixed";
-        this._dom.style.overflowY = "scroll"
+        this._dom.style.overflowY = "hidden"
         this._dom.style.fontSize = EditorView.PxPerLine + "px";
         this._dom.style.fontFamily = "微软雅黑";
     }
@@ -66,10 +75,6 @@ export class EditorView extends DomHelper.FixedElement implements IDisposable {
 
     private handleInputerBlur(evt : FocusEvent) {
         this._cursor.setOff();
-    }
-
-    get scrollTop() {
-        return this._dom.scrollTop;
     }
 
     get inputerView() : InputerView {
@@ -87,14 +92,17 @@ export class EditorView extends DomHelper.FixedElement implements IDisposable {
     set width(w : number) {
         super.width = w;
 
+        this._toolbar.width = w;
         this._document.width = w - this._marginMargin.width - this._scrollbar.width;
     }
 
     set height(h : number) {
         super.height = h
 
-        this._document.height = h;
-        this._scrollbar.height = h;
+        let v = h - this._toolbar.height;
+        this._marginMargin.height = v; 
+        this._document.height = v;
+        this._scrollbar.height = v;
     }
 
     set fontFamily(fm: string) {

@@ -5,7 +5,7 @@ import {TextModel} from "../model"
 
 export class WindowView extends DomHelper.AppendableDomWrapper implements IDisposable {
 
-    public static readonly leftPadWidth = 250;
+    public static readonly leftPadWidth = 220;
 
     private _model : TextModel;
 

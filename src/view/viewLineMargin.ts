@@ -1,11 +1,13 @@
 import {DomHelper, IDisposable} from "../util"
 
-export class LineMarginView extends DomHelper.AppendableDomWrapper implements IDisposable {
+export class LineMarginView extends DomHelper.FixedElement implements IDisposable {
+
+    public static readonly DefaultWidth = 30;
 
     constructor() {
         super("div", "mde-line-margin");
 
-        this._dom.style.width = 30 + "px";
+        this.width = LineMarginView.DefaultWidth;
     }
 
     dispose() {
@@ -13,15 +15,6 @@ export class LineMarginView extends DomHelper.AppendableDomWrapper implements ID
             this._dom.remove();
             this._dom = null;
         }
-    }
-
-    get width() {
-        let str = this._dom.style.width;
-        return str == "" ? 0 : parseInt(str);
-    }
-
-    set width(w : number) {
-        this._dom.style.width = w + "px";
     }
 
 }
