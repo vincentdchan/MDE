@@ -120,6 +120,24 @@ export class DocumentView extends DomHelper.AppendableDomWrapper implements IDis
         }
     }
 
+    get width() {
+        let w = this._dom.style.width;
+        return w == "" ? 0 : parseInt(w);
+    }
+
+    get height() {
+        let h = this._dom.style.height;
+        return h == "" ? 0 : parseInt(h);
+    }
+
+    set width(w : number) {
+        this._dom.style.width = w + "px";
+    }
+
+    set height(h : number) {
+        this._dom.style.height = h + "px";
+    }
+
     get marginLeft() {
         let str = this._dom.style.marginLeft;
         return str == "" ? 0 : parseInt(str);

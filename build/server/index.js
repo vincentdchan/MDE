@@ -1,0 +1,61 @@
+"use strict";
+const Electron = require("electron");
+const fs = require("fs");
+function initializeFileService() {
+    Electron.ipcMain.on("file-open", (event, path, flags, mode) => {
+        fs.open(path, flags, mode, (err, fd) => {
+            if (err) {
+                event.sender.send("file-open-error", err);
+            }
+            else {
+                event.sender.send("file-open-success", fd);
+            }
+        });
+    });
+    Electron.ipcMain.on("file-readFile", (event, filename, encoding) => {
+        fs.readFile(filename, encoding, (err, data) => {
+            if (err)
+                event.sender.send("file-readFile-error", err);
+            else
+                event.sender.send("file-readFile-success", data);
+        });
+    });
+    Electron.ipcMain.on("file-read", (event, fd, buffer, offset, length, position) => {
+        fs.read(fd, buffer, offset, length, position, (err, bytesRead, buffer) => {
+            if (err)
+                event.sender.send("file-read-error", err);
+            else
+                event.sender.send("file-read-success", bytesRead, buffer);
+        });
+    });
+    Electron.ipcMain.on("file-writeFile", (event, filename, data, options) => {
+        function callback(err) {
+            if (err)
+                event.sender.send("file-wirteFile-error", err);
+            else
+                event.sender.send("file-writeFile-success");
+        }
+        if (options) {
+            fs.writeFile("filename", data, options, callback);
+        }
+    });
+    Electron.ipcMain.on("file-write-string", (event, fd, data, position, encoding) => {
+        fs.write(fd, data, position, (err, bytes, str) => {
+            if (err)
+                event.sender.send("file-write-string-error", err);
+            else
+                event.sender.send("file-write-string-success", bytes, str);
+        });
+    });
+    Electron.ipcMain.on("file-write-buffer", (event, fd, data, offset, length, position) => {
+        fs.write(fd, data, offset, length, position, (err, bytes, buffer) => {
+            if (err)
+                event.sender.send("file-wirte-buffer-error", err);
+            else
+                event.sender.send("file-write-buffer-success", bytes, buffer);
+        });
+    });
+}
+exports.initializeFileService = initializeFileService;
+
+//# sourceMappingURL=data:application/json;charset=utf8;base64,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

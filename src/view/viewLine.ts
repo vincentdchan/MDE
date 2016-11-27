@@ -36,7 +36,13 @@ export class LineView extends DomHelper.AppendableDomWrapper implements IDisposa
     }
 
     private generateContentDom() : HTMLElement {
-        return DomHelper.elem("p", "mde-line-content");
+        let elem = DomHelper.elem("p", "mde-line-content");
+        elem.style.width = "100%";
+        elem.style.display = "block";
+        elem.style.boxSizing = "border-box";
+        elem.style.paddingTop = "5px";
+        elem.style.paddingBottom = "5px";
+        return elem;
     }
 
     private static splitArr(hlr_arr : HighlightingRange[]) {

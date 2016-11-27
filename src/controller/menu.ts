@@ -54,6 +54,23 @@ const menuTemplate : Electron.MenuItemOptions[] = [
             },
             {
                 role: "selectall"
+            },
+        ]
+    },
+    {
+        label: "View",
+        submenu: [
+            {
+                label: "Toggle dev tools",
+                click() {
+                    console.log("toogle dev tools");
+                }
+            },
+            {
+                label: "Reload",
+                click() {
+                    console.log("reloadk");
+                }
             }
         ]
     }

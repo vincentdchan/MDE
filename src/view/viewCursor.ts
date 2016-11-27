@@ -11,10 +11,9 @@ export class CursorView extends DomHelper.AppendableDomWrapper implements IDispo
         this._scrollTopThunk = scrollTopThunk;
 
         this._dom.style.position = "absolute";
-        this._dom.style.height = "1em";
-        this._dom.style.width = "0.2em";
+        this._dom.style.height = "22px";
+        this._dom.style.width = "2px";
         this._dom.style.background = "black";
-
 
         this.initializeBlinking();
     }

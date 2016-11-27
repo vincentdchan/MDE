@@ -1,6 +1,7 @@
 import {IDisposable, DomHelper} from "../util"
 import {DocumentView} from "./viewDocument"
 import {LineMarginView} from "./viewLineMargin"
+import {ScrollBarView} from "./viewScrollBar"
 import {CursorView} from "./viewCursor"
 import {InputerView} from "./viewInputer"
 import {TextModel} from "../model"
@@ -12,9 +13,13 @@ export class EditorView extends DomHelper.AppendableDomWrapper implements IDispo
 
     private _model: TextModel;
     private _document: DocumentView;
+    private _scrollbar: ScrollBarView;
     private _margin: LineMarginView;
     private _cursor: CursorView;
     private _inputer: InputerView;
+
+    private _width: number = 0;
+    private _height: number = 0;
 
     constructor(_model: TextModel) {
         super("div", "mde-editor");
@@ -27,6 +32,10 @@ export class EditorView extends DomHelper.AppendableDomWrapper implements IDispo
         this._margin = new LineMarginView();
         this._margin.width = EditorView.DefaultLineMarginWidth;
 
+        this._scrollbar = new ScrollBarView();
+        this._scrollbar.top = 0;
+        this._scrollbar.right = 0;
+
         let thk = () => {
             return this.scrollTop;
         }
@@ -38,6 +47,7 @@ export class EditorView extends DomHelper.AppendableDomWrapper implements IDispo
         this._inputer.appendTo(this._dom);
         this._margin.appendTo(this._dom);
         this._document.appendTo(this._dom);
+        this._scrollbar.appendTo(this._dom);
 
         this.stylish();
 
@@ -61,6 +71,10 @@ export class EditorView extends DomHelper.AppendableDomWrapper implements IDispo
         this._cursor.setOff();
     }
 
+    private updateLayout() {
+
+    }
+
     get scrollTop() {
         return this._dom.scrollTop;
     }
@@ -78,21 +92,30 @@ export class EditorView extends DomHelper.AppendableDomWrapper implements IDispo
     }
 
     get width() : number {
-        let rect = this._dom.getBoundingClientRect();
-        return rect.width;
+        return this._width;
     }
 
     get height() : number {
-        let rect = this._dom.getBoundingClientRect();
-        return rect.height;
+        return this._width;
     }
 
     set width(w : number) {
-        this._dom.style.width = w + "px";
+        if (this._width !== w) {
+            this._width = w;
+            this._dom.style.width = w + "px";
+
+            this._document.width = w - this._margin.width - this._scrollbar.width;
+        }
     }
 
     set height(h : number) {
-        this._dom.style.height = h + "px";
+        if (this._height !== h) {
+            this._height = h;
+            this._dom.style.height = h + "px";
+
+            this._document.height = h;
+            this._scrollbar.height = h;
+        }
     }
 
     set fontFamily(fm: string) {

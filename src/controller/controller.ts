@@ -52,7 +52,7 @@ export class MDE implements IDisposable, TextEditApplier {
             this.handleInputerCompositionUpdate.bind(this), false);
 
         this._menu = generateMenu();
-        // Menu.setApplicationMenu(this._menu);
+        Menu.setApplicationMenu(this._menu);
     }
 
     private findLineAncestor(node: Node) : HTMLElement {

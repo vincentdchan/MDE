@@ -1,5 +1,6 @@
 
 import {app, BrowserWindow} from "electron"
+import {initializeFileService} from "./server"
 
 let win;
 
@@ -9,6 +10,8 @@ function createWindow() {
     win.loadURL("file://" + __dirname + "/../index.html");
     
     win.webContents.openDevTools();
+
+    initializeFileService();
     
     win.on('closed', ()=> {
         win = null;
