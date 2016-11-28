@@ -25,6 +25,10 @@ export class DocumentView extends DomHelper.FixedElement implements IDisposable 
 
         this._dom.style.overflowY = "scroll";
         this._dom.style.overflowX = "auto";
+
+        this._dom.style.wordBreak = "normal";
+        this._dom.style.wordWrap = "break-word";
+        this._dom.style.whiteSpace = "pre-wrap";
     }
 
     render(): HTMLElement {

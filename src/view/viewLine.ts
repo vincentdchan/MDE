@@ -30,18 +30,23 @@ export class LineView extends DomHelper.AppendableDomWrapper implements IDisposa
     private _line_content_dom: HTMLElement = null;
 
     constructor() {
-        super("div", "mde-line");
+        super("p", "mde-line");
+
+        this._dom.style.whiteSpace = "pre-wrap";
+        this._dom.style.position = "relative";
+        this._dom.style.width = "inherit";
+        this._dom.style.paddingTop = "5px";
+        this._dom.style.paddingBottom = "5px";
+        this._dom.style.margin = "0";
+        this._dom.style.cursor = "text";
 
         this._state =  new MarkdownLexerState();
     }
 
     private generateContentDom() : HTMLElement {
-        let elem = DomHelper.elem("p", "mde-line-content");
+        let elem = DomHelper.elem("span", "mde-line-content");
         elem.style.width = "100%";
         elem.style.display = "block";
-        elem.style.boxSizing = "border-box";
-        elem.style.paddingTop = "5px";
-        elem.style.paddingBottom = "5px";
         return elem;
     }
 

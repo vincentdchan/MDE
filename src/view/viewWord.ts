@@ -20,10 +20,6 @@ export class WordView implements IDisposable {
 
         this._dom = DomHelper.elem("span");
 
-        /// This is important
-        /// Without this, the space cannot show.
-        this._dom.style.whiteSpace = "pre-wrap";
-
         // this._dom.innerHTML = this._text.replace(/ /g, "&nbsp;");
         this._dom.innerHTML = this._text;
 
@@ -65,8 +61,10 @@ export class WordView implements IDisposable {
     }
 
     dispose() {
-        this._dom.parentElement.removeChild(this._dom);
-        this._dom = null;
+        if (this._dom !== null) {
+            this._dom.remove();
+            this._dom = null;
+        }
     }
 
     element() {
