@@ -4,8 +4,31 @@ import {LineMarginView} from "./viewLineMargin"
 import {ScrollBarView} from "./viewScrollBar"
 import {CursorView} from "./viewCursor"
 import {InputerView} from "./viewInputer"
-import {ToolbarView} from "./viewToolbar"
+import {ToolbarView, ButtonOption} from "./viewToolbar"
 import {TextModel} from "../model"
+
+let toolbarButtons : ButtonOption[] = [
+    {
+        name: "bold",
+        tag: "B",
+    },
+    {
+        name: "italic",
+        tag: "I",
+    }, 
+    {
+        name: "underline",
+        tag: "U",
+    },
+    {
+        name: "orderedlist",
+        tag: "L",
+    }, 
+    {
+        name: "unorderedlist",
+        tag: "Unordered List"
+    }
+]
 
 export class EditorView extends DomHelper.FixedElement implements IDisposable {
 
@@ -23,7 +46,7 @@ export class EditorView extends DomHelper.FixedElement implements IDisposable {
     constructor(_model: TextModel) {
         super("div", "mde-editor");
 
-        this._toolbar = new ToolbarView();
+        this._toolbar = new ToolbarView(toolbarButtons);
         this._toolbar.top = 0;
 
         this._model = _model;

@@ -1,14 +1,28 @@
 import {DomHelper, IDisposable} from "../util"
 
-export class AbsoluteButton extends DomHelper.AbsoluteElement implements IDisposable {
+export class ButtonView extends DomHelper.AppendableDomWrapper implements IDisposable {
+
+    private _width : number = -1;
+    private _height : number;
+
+    private _container: HTMLDivElement;
 
     constructor(width: number, height: number) {
         super("div", "mde-button");
 
-        this.width = width;
-        this.height = height;
         this._dom.style.display = "inline-block";
         this._dom.style.cursor = "pointer";
+        this._dom.style.overflow = "hidden";
+
+        this._container = <HTMLDivElement>DomHelper.elem("div", "mde-button-container");
+        this._dom.appendChild(this._container);
+
+        this._container.style.display = "flex";
+        this._container.style.justifyContent = "center";
+        this._container.style.alignItems = "center";
+
+        this.width = width;
+        this.height = height;
     }
 
     setText(content: string) {
@@ -18,15 +32,15 @@ export class AbsoluteButton extends DomHelper.AbsoluteElement implements IDispos
     }
 
     setContent(elem: HTMLSpanElement) {
-        if (this._dom.children.length > 0) {
-            this._dom.firstElementChild.remove();
+        if (this._container.children.length > 0) {
+            this._container.firstElementChild.remove();
         }
-        this._dom.appendChild(elem);
+        this._container.appendChild(elem);
     }
 
     get spanContent() {
-        if (this._dom.children.length > 0) {
-            return <HTMLSpanElement>this._dom.firstElementChild;
+        if (this._container.children.length > 0) {
+            return <HTMLSpanElement>this._container.firstElementChild;
         }
         throw new Error("There no span content.");
     }
@@ -37,6 +51,36 @@ export class AbsoluteButton extends DomHelper.AbsoluteElement implements IDispos
 
     set background(content: string) {
         this._dom.style.background = content;
+    }
+
+    get height() {
+        return this._height;
+    }
+
+    set height(h : number) {
+        if (h !== this._height) {
+            this._height = h;
+
+            if (h < 0)
+                this._container.style.height = "";
+            else
+                this._container.style.height = h + "px";
+        }
+    }
+
+    get width() {
+        return this._width;
+    }
+
+    set width(w : number) {
+        if (w !== this._width) {
+            this._width = w;
+
+            if (w < 0)
+                this._container.style.width = "";
+            else
+                this._container.style.width = w + "px";
+        }
     }
 
     dispose() {

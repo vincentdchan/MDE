@@ -15,6 +15,10 @@ body {
     text-decoration: underline;
 }
 
+.mde-toolbar::-webkit-scrollbar {
+    display: none;
+}
+
 .mde-document::-webkit-scrollbar {
     display: none;
 }
