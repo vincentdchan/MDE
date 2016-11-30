@@ -22,3 +22,12 @@ body {
 .mde-document::-webkit-scrollbar {
     display: none;
 }
+
+.mde-button {
+    color: white;
+    opacity: 0.6;
+}
+
+.mde-button:hover {
+    opacity: 1;
+}

@@ -10,23 +10,28 @@ import {TextModel} from "../model"
 let toolbarButtons : ButtonOption[] = [
     {
         name: "bold",
-        tag: "B",
+        text: "Bold",
+        icon: "fa fa-bold",
     },
     {
         name: "italic",
-        tag: "I",
+        text: "Italic",
+        icon: "fa fa-italic",
     }, 
     {
         name: "underline",
-        tag: "U",
+        text: "Underline",
+        icon: "fa fa-underline",
     },
     {
         name: "orderedlist",
-        tag: "L",
+        text: "Ordered List",
+        icon: "fa fa-list-ol",
     }, 
     {
         name: "unorderedlist",
-        tag: "Unordered List"
+        text: "Unordered List",
+        icon: "fa fa-list-ul",
     }
 ]
 

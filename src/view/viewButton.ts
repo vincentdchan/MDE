@@ -21,6 +21,8 @@ export class ButtonView extends DomHelper.AppendableDomWrapper implements IDispo
         this._container.style.justifyContent = "center";
         this._container.style.alignItems = "center";
 
+        this._container.setAttribute("title","tooltip");
+
         this.width = width;
         this.height = height;
     }
@@ -36,6 +38,18 @@ export class ButtonView extends DomHelper.AppendableDomWrapper implements IDispo
             this._container.firstElementChild.remove();
         }
         this._container.appendChild(elem);
+    }
+
+    setIcon(content: string) {
+        if (this._container.children.length > 0) {
+            this._container.firstElementChild.remove();
+        }
+        let i = DomHelper.elem("i", content);
+        this._container.appendChild(i);
+    }
+
+    setTooltip(content: string) {
+        this._container.setAttribute("title", content);
     }
 
     get spanContent() {
