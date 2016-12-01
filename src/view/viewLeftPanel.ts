@@ -85,6 +85,7 @@ class ContentContainer extends DomHelper.AbsoluteElement implements IDisposable 
 
 export class LeftPanelView extends DomHelper.FixedElement implements IDisposable {
 
+    public static readonly MinWidth = 100;
     private _nav_view : NavigationView = null;
     private _container : ContentContainer = null;
     private _collapsed : boolean = false;

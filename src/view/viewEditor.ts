@@ -40,6 +40,7 @@ export class EditorView extends DomHelper.FixedElement implements IDisposable {
 
     public static readonly PxPerLine = 16;
     public static readonly DefaultLineMarginWidth = 40;
+    public static readonly MinWidth = 100;
 
     private _model: TextModel;
     private _document: DocumentView;
