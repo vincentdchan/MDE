@@ -18,18 +18,6 @@ export class SplitterView extends DomHelper.FixedElement implements IDisposable 
         this._dom.style.cursor = "col-resize";
     }
 
-    onMouseDown(evt: MouseEventListener) {
-        this._dom.addEventListener("mousedown", (e: MouseEvent) => {
-            evt.call(this._dom, this, e);
-        }, false);
-    }
-
-    onMouseUp(evt: MouseEventListener) {
-        this._dom.addEventListener("mouseup", (e: MouseEvent) => {
-            evt.call(this._dom, this, e);
-        }, false);
-    }
-
     dispose() {
         if (this._dom !== null) {
             this._dom.remove();

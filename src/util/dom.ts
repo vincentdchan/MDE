@@ -55,8 +55,16 @@ export namespace DomHelper {
             elem.appendChild(this._dom);
         }
 
+        on(name: string, _fun: EventListener) {
+            this._dom.addEventListener(name, _fun, false);
+        }
+
         addEventListener(name: string, _fun: EventListenerOrEventListenerObject, useCapture?: boolean) {
             this._dom.addEventListener(name, _fun, useCapture);
+        }
+
+        removeEventListener(name: string, _fun: EventListenerOrEventListenerObject, useCapture?: boolean) {
+            this._dom.removeEventListener(name, _fun, useCapture);
         }
 
     }

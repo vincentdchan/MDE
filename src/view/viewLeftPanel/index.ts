@@ -1,6 +1,6 @@
-import {DomHelper, IDisposable} from "../util"
-import {ButtonView} from "./viewButton"
-import {ButtonOption} from "."
+import {DomHelper, IDisposable} from "../../util"
+import {ButtonView} from "./../viewButton"
+import {ButtonOption} from "../"
 
 const DefaultLeftPanelButtonOptions : ButtonOption[] = [
     {
@@ -14,6 +14,10 @@ const DefaultLeftPanelButtonOptions : ButtonOption[] = [
         icon: "fa fa-cog",
     }
 ];
+
+interface PanelEventListener {
+    (elem: DomHelper.IDOMWrapper, evt: Event) : void;
+}
 
 class NavigationView extends DomHelper.AbsoluteElement implements IDisposable {
 
@@ -83,6 +87,16 @@ class ContentContainer extends DomHelper.AbsoluteElement implements IDisposable 
 
 }
 
+class CollapseEvent {
+
+}
+
+///
+/// Event:
+/// 
+/// - collapsed
+/// - expanded
+///
 export class LeftPanelView extends DomHelper.FixedElement implements IDisposable {
 
     public static readonly MinWidth = 100;
@@ -107,6 +121,7 @@ export class LeftPanelView extends DomHelper.FixedElement implements IDisposable
 
         this.width = width;
         this.height = height;
+
     }
 
     get collapsed() {
@@ -122,9 +137,15 @@ export class LeftPanelView extends DomHelper.FixedElement implements IDisposable
                 this.width = this._nav_view.width;
 
                 this._container.element().style.display = "none";
+
+                let evt = new Event("collapsed");
+                this._dom.dispatchEvent(evt);
             } else {
                 this.width = this._remember_width;
                 this._container.element().style.display = "block";
+
+                let evt = new Event("expanded");
+                this._dom.dispatchEvent(evt);
             }
         }
     }
@@ -146,6 +167,10 @@ export class LeftPanelView extends DomHelper.FixedElement implements IDisposable
 
     get height() {
         return super.height;
+    }
+
+    get navView() {
+        return this._nav_view;
     }
 
     dispose() {

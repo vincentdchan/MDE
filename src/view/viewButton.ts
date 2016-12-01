@@ -8,6 +8,7 @@ export class ButtonView extends DomHelper.AppendableDomWrapper implements IDispo
     private _isActive : boolean;
 
     private _container: HTMLDivElement;
+    private _hover: boolean = false;
 
     constructor(width: number, height: number) {
         super("div", "mde-button");

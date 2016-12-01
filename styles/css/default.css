@@ -31,3 +31,7 @@ body {
 .mde-button:hover {
     opacity: 1;
 }
+
+.mde-button .active {
+    opacity: 1;
+}

@@ -8,6 +8,11 @@ export interface IDisposable {
     dispose(): any;
 }
 
+export interface Vector2 {
+    x: number;
+    y: number;
+}
+
 export function insertBreakAtPoint(e : MouseEvent) {
 
     let range = document.caretRangeFromPoint(e.pageX, e.pageY);

@@ -1,13 +1,8 @@
-import {DomHelper, IDisposable} from "../util"
+import {DomHelper, IDisposable, Vector2} from "../util"
 import {LeftPanelView} from "./viewLeftPanel"
 import {EditorView} from "./viewEditor"
 import {SplitterView} from "./viewSplitter"
 import {TextModel} from "../model"
-
-interface ISize {
-    width: number;
-    height: number;
-}
 
 export class WindowView extends DomHelper.AppendableDomWrapper implements IDisposable {
 
@@ -27,13 +22,15 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
 
         this.requestWindowSize();
 
+        let updateLayoutThunk = () => {
+            let size = this.requestWindowSize();
+            this.width = size.x;
+            this.height = size.y;
+        }
+
         window.addEventListener("resize", (e : Event) => {
 
-            setTimeout(() => {
-                let size = this.requestWindowSize();
-                this.height = size.height;
-                this.width = size.width;
-            }, 20);
+            setTimeout(updateLayoutThunk, 20);
 
         });
 
@@ -48,21 +45,45 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
         this._editor = new EditorView(this._model);
         this._editor.appendTo(this._dom);
 
-        let _size = this.requestWindowSize();
-        this.width = _size.width;
-        this.height = _size.height;
+        updateLayoutThunk.call(this);
 
         this._splitter.marginLeft = this._leftPanel.width - this._splitter.width;
         this._splitter.element().style.opacity = "0.5";
-        this._splitter.onMouseDown(this.handleSplitterMouseDown.bind(this));
+        this._splitter.on("mousedown", this.handleSplitterMouseDown.bind(this));
 
         window.addEventListener("mouseup", this.handleWindowMouseUp.bind(this), true);
 
         this._editor.marginLeft = this._leftPanel.width;
+
+        this._leftPanel.on("collapsed", (evt: Event) => {
+            this._splitter.element().style.display = "none";
+        });
+
+        this._leftPanel.on("expanded", (evt: Event) => {
+            this._splitter.element().style.display = "block";
+        });
+
+        this._leftPanel.navView.on("click", (evt: MouseEvent) => {
+            if (this._leftPanel.collapsed) {
+                this._leftPanel.collapsed = false;
+                this._leftPanel.width = WindowView.leftPadWidth;
+
+                let v = this.requestWindowSize();
+                this.forceSetWidth(v.x);
+                this.forceSetHeight(v.y);
+            } else {
+                this._leftPanel.collapsed = true;
+
+                let v = this.requestWindowSize();
+                this.forceSetWidth(v.x);
+                this.forceSetHeight(v.y);
+            }
+        });
     }
 
     private _mouseMoveHandler = null;
-    private handleSplitterMouseDown(id: DomHelper.IDOMWrapper, evt: MouseEvent) {
+    private handleSplitterMouseDown(evt: MouseEvent) {
+        evt.preventDefault();
         this._mouseMoveHandler = this.handleWindowMouseMove.bind(this);
         window.addEventListener("mousemove", this._mouseMoveHandler, true);
     }
@@ -75,7 +96,15 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
 
     private handleWindowMouseMove(evt: MouseEvent) {
         let offsetX = evt.clientX;
-        if (offsetX >= LeftPanelView.MinWidth && offsetX <= this._width - EditorView.MinWidth) {
+
+        if (offsetX < LeftPanelView.MinWidth) {
+            this._leftPanel.collapsed = true;
+
+            this._editor.width = this._width - this._leftPanel.width;
+            this._editor.marginLeft = this._leftPanel.width;
+        } else if (offsetX >= LeftPanelView.MinWidth && offsetX <= this._width - EditorView.MinWidth) {
+            if (this._leftPanel.collapsed)
+                this._leftPanel.collapsed = false;
             this._leftPanel.width = offsetX;
             this._splitter.marginLeft = offsetX - this._splitter.width;
             this._editor.width = this._width - offsetX;
@@ -89,19 +118,16 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
 
     set width(w: number) {
         if (w !== this._width) {
-            this._width = w;
-
-            if (this._width < WindowView.leftPadWidth * 2) {
-                this._leftPanel.collapsed = true;
-                // this._leftPanel.width = 0;
-            } else {
-                this._leftPanel.collapsed = false;
-                // this._leftPanel.width = WindowView.leftPadWidth;
-            }
-            this._editor.width = this._width - this._leftPanel.width;
-            this._editor.marginLeft = this._leftPanel.width;
-            this._splitter.marginLeft = this._leftPanel.width - this._splitter.width;
+            this.forceSetWidth(w);
         }
+    }
+
+    private forceSetWidth(w: number) {
+        this._width = w;
+
+        this._editor.width = this._width - this._leftPanel.width;
+        this._editor.marginLeft = this._leftPanel.width;
+        this._splitter.marginLeft = this._leftPanel.width - this._splitter.width;
     }
 
     get height() {
@@ -110,21 +136,25 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
 
     set height(h: number) {
         if (h !== this._height) {
-            this._height = h;
-            this._leftPanel.height = h;
-            this._splitter.height = h;
-            this._editor.height = h;
+            this.forceSetHeight(h);
         }
+    }
+
+    private forceSetHeight(h: number) {
+        this._height = h;
+        this._leftPanel.height = h;
+        this._splitter.height = h;
+        this._editor.height = h;
     }
 
     get leftPanelView() {
         return this._leftPanel
     }
 
-    private requestWindowSize() : ISize {
+    private requestWindowSize() : Vector2 {
         return {
-            width: document.documentElement.clientWidth,
-            height: document.documentElement.clientHeight,
+            x: document.documentElement.clientWidth,
+            y: document.documentElement.clientHeight,
         }
     }
 
