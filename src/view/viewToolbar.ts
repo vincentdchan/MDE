@@ -1,14 +1,6 @@
 import {DomHelper, IDisposable} from "../util"
 import {ButtonView} from "./viewButton"
-
-export interface ButtonOption {
-    name: string;
-    text?: string;
-    icon?: string;
-    spanClass?: string;
-    onClick?: (e : MouseEvent) => void;
-    onHover?: (e : MouseEvent) => void;
-}
+import {ButtonOption} from "."
 
 export class ToolbarView extends DomHelper.FixedElement implements IDisposable {
 
@@ -35,24 +27,7 @@ export class ToolbarView extends DomHelper.FixedElement implements IDisposable {
         options.forEach((value: ButtonOption, index:number) => {
             let bv = new ButtonView(ToolbarView.DefaultHeight, ToolbarView.DefaultHeight);
 
-            if (value.spanClass) {
-                let span = <HTMLSpanElement>DomHelper.elem("span", value.spanClass);
-                bv.setContent(span);
-
-                if (value.text) {
-                    bv.setTooltip(value.text);
-                }
-            } else if(value.icon) {
-                bv.setIcon(value.icon);
-
-                if (value.text) {
-                    bv.setTooltip(value.text);
-                }
-            } else if (value.text) {
-                bv.setText(value.text);
-            } else {
-                bv.setText(value.name);
-            }
+            bv.setContentFromOption(value);
 
             this.buttonViews.push(bv);
             this.buttonNamesMap.set(value.name, index);

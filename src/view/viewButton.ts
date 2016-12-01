@@ -1,9 +1,11 @@
 import {DomHelper, IDisposable} from "../util"
+import {ButtonOption} from "."
 
 export class ButtonView extends DomHelper.AppendableDomWrapper implements IDisposable {
 
     private _width : number = -1;
     private _height : number;
+    private _isActive : boolean;
 
     private _container: HTMLDivElement;
 
@@ -38,6 +40,29 @@ export class ButtonView extends DomHelper.AppendableDomWrapper implements IDispo
             this._container.firstElementChild.remove();
         }
         this._container.appendChild(elem);
+    }
+
+    setContentFromOption(option: ButtonOption) {
+
+        if (option.spanClass) {
+            let span = <HTMLSpanElement>DomHelper.elem("span", option.spanClass);
+            this.setContent(span);
+
+            if (option.text) {
+                this.setTooltip(option.text);
+            }
+        } else if(option.icon) {
+            this.setIcon(option.icon);
+
+            if (option.text) {
+                this.setTooltip(option.text);
+            }
+        } else if (option.text) {
+            this.setText(option.text);
+        } else {
+            this.setText(option.name);
+        }
+
     }
 
     setIcon(content: string) {
@@ -79,6 +104,21 @@ export class ButtonView extends DomHelper.AppendableDomWrapper implements IDispo
                 this._container.style.height = "";
             else
                 this._container.style.height = h + "px";
+        }
+    }
+
+    get active() {
+        return this._isActive;
+    }
+
+    set active(v : boolean) {
+        if (v !== this._isActive) {
+            this._isActive = v;
+            if (v) {
+                this._dom.classList.add("active");
+            } else {
+                this._dom.classList.remove("active");
+            }
         }
     }
 

@@ -3,6 +3,11 @@ import {LeftPanelView} from "./viewLeftPanel"
 import {EditorView} from "./viewEditor"
 import {TextModel} from "../model"
 
+interface ISize {
+    width: number;
+    height: number;
+}
+
 export class WindowView extends DomHelper.AppendableDomWrapper implements IDisposable {
 
     public static readonly leftPadWidth = 220;
@@ -23,8 +28,9 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
         window.addEventListener("resize", (e : Event) => {
 
             setTimeout(() => {
-                this.requestWindowSize();
-                this.updateLayout();
+                let size = this.requestWindowSize();
+                this.height = size.height;
+                this.width = size.width;
             }, 20);
 
         });
@@ -36,9 +42,15 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
 
         this._editor = new EditorView(this._model);
         this._editor.appendTo(this._dom);
-        this.updateLayout();
+
+        let _size = this.requestWindowSize();
+        this.width = _size.width;
+        this.height = _size.height;
+
+        this._editor.marginLeft = this._leftPanel.width;
     }
 
+/*
     private updateLayout() {
         if (this._width < WindowView.leftPadWidth * 1.5) {
             this._leftPanel.width = 0;
@@ -49,26 +61,51 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
 
         this._editor.width = (this._width - this._leftPanel.width);
         this._editor.height = this._height;
-        this._editor.element().style.marginLeft = this._leftPanel.width + "px";
+        this._editor.marginLeft = this._leftPanel.width;
     }
+    */
 
     get width() {
         return this._width;
+    }
+
+    set width(w: number) {
+        if (w !== this._width) {
+            this._width = w;
+
+            if (this._width < WindowView.leftPadWidth * 2) {
+                this._leftPanel.collapsed = true;
+                // this._leftPanel.width = 0;
+            } else {
+                this._leftPanel.collapsed = false;
+                // this._leftPanel.width = WindowView.leftPadWidth;
+            }
+            this._editor.width = this._width - this._leftPanel.width;
+            this._editor.marginLeft = this._leftPanel.width;
+        }
     }
 
     get height() {
         return this._height;
     }
 
+    set height(h: number) {
+        if (h !== this._height) {
+            this._height = h;
+            this._leftPanel.height = h;
+            this._editor.height = h;
+        }
+    }
+
     get leftPanelView() {
         return this._leftPanel
     }
 
-    private requestWindowSize() {
-        // this._width = window.innerWidth;
-        // this._height = window.innerHeight;
-        this._width = document.documentElement.clientWidth;
-        this._height = document.documentElement.clientHeight;
+    private requestWindowSize() : ISize {
+        return {
+            width: document.documentElement.clientWidth,
+            height: document.documentElement.clientHeight,
+        }
     }
 
     get editorView() : EditorView {

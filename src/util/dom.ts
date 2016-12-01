@@ -31,6 +31,14 @@ export namespace DomHelper {
 
     }
 
+    export function isIDOMWrapper(object: any) : object is IDOMWrapper {
+        return (typeof object === "object") 
+            && (object.element && object.addEventListener && object.appendTo)
+            && (typeof object.element === "function" 
+                && typeof object.addEventListener === "function"
+                && typeof object.appendTo === "function");
+    }
+
     export class AppendableDomWrapper implements IDOMWrapper {
 
         protected _dom : HTMLElement;

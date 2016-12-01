@@ -4,8 +4,9 @@ import {LineMarginView} from "./viewLineMargin"
 import {ScrollBarView} from "./viewScrollBar"
 import {CursorView} from "./viewCursor"
 import {InputerView} from "./viewInputer"
-import {ToolbarView, ButtonOption} from "./viewToolbar"
+import {ToolbarView} from "./viewToolbar"
 import {TextModel} from "../model"
+import {ButtonOption} from "."
 
 let toolbarButtons : ButtonOption[] = [
     {
@@ -124,6 +125,10 @@ export class EditorView extends DomHelper.FixedElement implements IDisposable {
         this._document.width = w - this._marginMargin.width - this._scrollbar.width;
     }
 
+    get width() {
+        return super.width;
+    }
+
     set height(h : number) {
         super.height = h
 
@@ -131,6 +136,10 @@ export class EditorView extends DomHelper.FixedElement implements IDisposable {
         this._marginMargin.height = v; 
         this._document.height = v;
         this._scrollbar.height = v;
+    }
+
+    get height() {
+        return super.height;
     }
 
     set fontFamily(fm: string) {

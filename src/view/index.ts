@@ -20,6 +20,15 @@ export interface Coordinate {
     y: number;
 }
 
+export interface ButtonOption {
+    name: string;
+    text?: string;
+    icon?: string;
+    spanClass?: string;
+    onClick?: (e : MouseEvent) => void;
+    onHover?: (e : MouseEvent) => void;
+}
+
 export class MarkdownLexerState {
 
     private _inBlob: boolean;
