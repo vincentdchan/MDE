@@ -1,6 +1,7 @@
 import {DomHelper, IDisposable} from "../../util"
 import {ButtonView} from "./../viewButton"
 import {ButtonOption} from "../"
+export {SettingView, SettingItemOption, SettingOptionType} from "./viewSetting"
 
 const DefaultLeftPanelButtonOptions : ButtonOption[] = [
     {

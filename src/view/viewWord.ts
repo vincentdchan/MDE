@@ -1,4 +1,3 @@
-import {ImmutableArray} from "../util"
 import {IVirtualElement, Coordinate, HighlightingType} from "."
 import {IDisposable, DomHelper} from "../util"
 
