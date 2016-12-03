@@ -149,7 +149,11 @@ export class EditorView extends DomHelper.FixedElement implements IDisposable {
 
     dispose() {
         this._document.dispose();
+        this._scrollbar.dispose();
+        this._toolbar.dispose();
+        this._marginMargin.dispose();
         this._cursor.dispose();
+        this._inputer.dispose();
     }
 
 }

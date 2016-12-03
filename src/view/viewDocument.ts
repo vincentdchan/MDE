@@ -121,14 +121,14 @@ export class DocumentView extends DomHelper.FixedElement implements IDisposable 
 
         _lines_middle.forEach((e: LineView) => {
             e.dispose();
+            e.element().remove();
         });
     }
 
     dispose() {
-        if (this._dom) {
-            this._dom.remove();
-            this._dom = null;
-        }
+        this._lines.forEach((e: LineView) => {
+            e.dispose();
+        })
     }
 
     get scrollTop() {

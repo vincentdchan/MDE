@@ -81,6 +81,11 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
         });
     }
 
+    reaload(_model: TextModel) {
+        this._model = _model;
+
+    }
+
     private _mouseMoveHandler = null;
     private handleSplitterMouseDown(evt: MouseEvent) {
         evt.preventDefault();
@@ -167,10 +172,13 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
     }
 
     dispose() {
-        if (this._editor != null) {
-            this._editor.dispose();
-            this._editor = null;
-        }
+        this._leftPanel.dispose();
+        this._splitter.dispose();
+        this._editor.dispose();
+
+        this._leftPanel = null;
+        this._splitter = null;
+        this._editor = null;
     }
 
 }

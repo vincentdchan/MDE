@@ -214,14 +214,10 @@ export class LineView extends DomHelper.AppendableDomWrapper implements IDisposa
                 y: rect.top,
             }
         }
-        throw new Error("Index out of Range.");
+        throw new Error("Index out of Range. offset: " + offset);
     }
 
     dispose() {
-        if (this._dom) {
-            this._dom.remove();
-            this._dom = null;
-        }
     }
 
     get words() {

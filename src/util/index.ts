@@ -2,6 +2,7 @@ export {StringBuffer} from "./stringBuffer"
 export {mergeSet} from "./set"
 export {DomHelper} from "./dom"
 export {Deque} from "./queue"
+export {Host} from "./host"
 
 export interface IDisposable {
     dispose(): any;

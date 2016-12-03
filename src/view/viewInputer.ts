@@ -5,9 +5,10 @@ export class InputerView implements DomHelper.IDOMWrapper, IDisposable {
 
     private _dom: HTMLTextAreaElement;
     private _focused: boolean = false;
-    private _isCompositing: boolean = false;;
+    private _isCompositing: boolean = false;
 
     private _scrollTopThunk : () => number;
+    private _isComposintThunkTimers : NodeJS.Timer[] = [];
 
     constructor(scrollTopThunk : () => number) {
         this._scrollTopThunk = scrollTopThunk;
@@ -31,9 +32,9 @@ export class InputerView implements DomHelper.IDOMWrapper, IDisposable {
         });
 
         this._dom.addEventListener("compositionend", (evt: Event) => {
-            setTimeout(() => {
+            this._isComposintThunkTimers.push(setTimeout(() => {
                 this._isCompositing = false;
-            },20);
+            }, 5));
         })
 
     }
@@ -69,10 +70,9 @@ export class InputerView implements DomHelper.IDOMWrapper, IDisposable {
     }
 
     dispose() {
-        if (this._dom != null) {
-            this._dom.parentElement.removeChild(this._dom);
-            this._dom = null;
-        }
+        this._isComposintThunkTimers.forEach((t: NodeJS.Timer) => {
+            clearTimeout(t);
+        });
     }
 
     get value() {

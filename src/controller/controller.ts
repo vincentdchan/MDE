@@ -2,8 +2,8 @@ import {TextModel, LineModel, TextEdit, TextEditType,
     TextEditApplier, Position} from "../model"
 import {EditorView, Coordinate, WindowView} from "../view"
 import {IDisposable} from "../util"
-import {generateMenu} from "./menu"
-import {remote} from "electron"
+import {menuGenerator} from "./menu"
+import {remote, ipcRenderer} from "electron"
 const {Menu, MenuItem} = remote
 
 function lastCharactor(str: string) {
@@ -19,10 +19,10 @@ function clonePosition(pos: Position) : Position {
 
 export class MDE implements IDisposable, TextEditApplier {
 
-    private _model : TextModel;
+    private _model : TextModel = null;
     private _position: Position;
     private _menu: Electron.Menu;
-    private _view: WindowView;
+    private _view: WindowView = null;
 
     private _composition_start_pos : Position;
     private _composition_update_pos : Position;
@@ -30,13 +30,29 @@ export class MDE implements IDisposable, TextEditApplier {
     constructor(content? : string) {
         content = content? content : "";
 
+        this._menu = menuGenerator(this);
+        Menu.setApplicationMenu(this._menu);
+
+        this.reloadText(content);
+
+        ipcRenderer.on("file-readFile-error", this.handleFileReadError.bind(this));
+        ipcRenderer.on("file-readFile-success", this.handleFileRead.bind(this));
+    }
+
+    reloadText(content: string) {
+        if (this._view !== null) {
+            this._view.dispose();
+            this._view = null;
+        }
+        if (this._model !== null) {
+            this._model = null;
+        }
+
         this._model = new TextModel(content);
 
         this._view = new WindowView(this._model);
 
         this.documentView.addEventListener("click", this.handleClientEvent.bind(this));
-
-        // this._view.inputerView.on("keydown", this.handleInputerKeyDown.bind(this));
 
         this.inputerView.addEventListener("keydown", (evt: KeyboardEvent) => {
             setTimeout(() => {
@@ -51,8 +67,6 @@ export class MDE implements IDisposable, TextEditApplier {
         this.inputerView.addEventListener("compositionupdate", 
             this.handleInputerCompositionUpdate.bind(this), false);
 
-        this._menu = generateMenu();
-        Menu.setApplicationMenu(this._menu);
     }
 
     private findLineAncestor(node: Node) : HTMLElement {
@@ -408,6 +422,18 @@ export class MDE implements IDisposable, TextEditApplier {
 
     appendTo(_elem: HTMLElement) {
         _elem.appendChild(this._view.element());
+    }
+
+    openFile(filename: string) {
+        ipcRenderer.send("file-readFile", filename);
+    }
+
+    handleFileRead(event: Electron.IpcRendererEvent, data: string) {
+        this.reloadText(data);
+    }
+
+    handleFileReadError(event: Electron.IpcRendererEvent, err: NodeJS.ErrnoException) {
+        console.log(err);
     }
 
     dispose() {

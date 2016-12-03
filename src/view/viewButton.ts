@@ -139,10 +139,6 @@ export class ButtonView extends DomHelper.AppendableDomWrapper implements IDispo
     }
 
     dispose() {
-        if (this._dom !== null) {
-            this._dom.remove();
-            this._dom = null;
-        }
     }
 
 }

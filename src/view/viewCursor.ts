@@ -57,10 +57,7 @@ export class CursorView extends DomHelper.AppendableDomWrapper implements IDispo
     }
 
     dispose() {
-        if (this._dom) {
-            this._dom.parentElement.removeChild(this._dom);
-            this._dom = null;
-        }
+        this.clearInterval();
     }
 
 }

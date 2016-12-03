@@ -24,10 +24,6 @@ export class ScrollBarView
     }
 
     dispose() {
-        if (this._dom !== null) {
-            this._dom.remove();
-            this._dom = null;
-        }
     }
 
 }

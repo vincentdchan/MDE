@@ -60,10 +60,6 @@ export class WordView implements IDisposable {
     }
 
     dispose() {
-        if (this._dom !== null) {
-            this._dom.remove();
-            this._dom = null;
-        }
     }
 
     element() {
