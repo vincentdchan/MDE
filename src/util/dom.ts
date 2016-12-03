@@ -67,9 +67,13 @@ export namespace DomHelper {
             this._dom.removeEventListener(name, _fun, useCapture);
         }
 
+        remove() {
+            this._dom.remove();
+        }
+
     }
 
-    class PositionElment extends AppendableDomWrapper {
+    class PositionElement extends AppendableDomWrapper {
 
         private _left = -1;
         private _right = -1;
@@ -252,7 +256,7 @@ export namespace DomHelper {
 
     }
 
-    export class FixedElement extends PositionElment {
+    export class FixedElement extends PositionElement {
 
         constructor(elemName: string, className? : string, props? : any) {
             super(elemName, className, props);
@@ -262,7 +266,7 @@ export namespace DomHelper {
 
     }
 
-    export class AbsoluteElement extends PositionElment {
+    export class AbsoluteElement extends PositionElement {
 
         constructor(elemName: string, className? : string, props? : any) {
             super(elemName, className, props);

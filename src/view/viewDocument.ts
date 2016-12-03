@@ -5,20 +5,18 @@ import {TextModel, LineModel, Position} from "../model"
 import {IDisposable, DomHelper} from "../util"
 import {PopAllQueue} from "../util/queue"
 
-export class DocumentView extends DomHelper.FixedElement implements IDisposable {
+export class DocumentView extends DomHelper.AbsoluteElement implements IDisposable {
 
     private _model: TextModel;
     private _container: HTMLDivElement;
     private _lines: LineView[];
     private _highlightingRanges: PopAllQueue<HighlightingRange>[];
-    private _showLineNumber: boolean;
 
-    constructor(_model, _showLineNumber = true) {
+    constructor(_model) {
         super("div", "mde-document");
         this._lines = [];
         this._model = _model;
         this._highlightingRanges = [];
-        this._showLineNumber = _showLineNumber;
 
         this._container = <HTMLDivElement>DomHelper.elem("div", "mde-document-container");
         this._dom.appendChild(this._container);
@@ -29,6 +27,18 @@ export class DocumentView extends DomHelper.FixedElement implements IDisposable 
         this._dom.style.wordBreak = "normal";
         this._dom.style.wordWrap = "break-word";
         this._dom.style.whiteSpace = "pre-wrap";
+    }
+
+    reload(_model: TextModel) {
+        this.dispose();
+
+        this._lines = [] 
+        this._model = _model;
+        this._highlightingRanges = [];
+
+        this._dom.removeChild(this._container);
+        this._container = <HTMLDivElement>DomHelper.elem("div", "mde-document-container");
+        this._dom.appendChild(this._container);
     }
 
     render(): HTMLElement {
@@ -127,12 +137,18 @@ export class DocumentView extends DomHelper.FixedElement implements IDisposable 
 
     dispose() {
         this._lines.forEach((e: LineView) => {
-            e.dispose();
+            if (e) {
+                e.dispose();
+            }
         })
     }
 
     get scrollTop() {
         return this._dom.scrollTop;
+    }
+
+    set scrollTop(h : number) {
+        this._dom.scrollTop = h;
     }
 
     get lines() {

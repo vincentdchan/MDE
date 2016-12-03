@@ -1,7 +1,7 @@
 import {IDisposable, DomHelper} from "../util"
 import {DocumentView} from "./viewDocument"
 import {LineMarginView} from "./viewLineMargin"
-import {ScrollBarView} from "./viewScrollBar"
+import {ScrollBarView, TrainMoveEvent} from "./viewScrollBar"
 import {CursorView} from "./viewCursor"
 import {InputerView} from "./viewInputer"
 import {ToolbarView} from "./viewToolbar"
@@ -49,6 +49,7 @@ export class EditorView extends DomHelper.FixedElement implements IDisposable {
     private _marginMargin: LineMarginView;
     private _cursor: CursorView;
     private _inputer: InputerView;
+    private _timers: NodeJS.Timer[] = [];
 
     constructor(_model: TextModel) {
         super("div", "mde-editor");
@@ -60,6 +61,7 @@ export class EditorView extends DomHelper.FixedElement implements IDisposable {
         this._document = new DocumentView(_model);
         this._document.top = this._toolbar.height;
         this._document.marginLeft = EditorView.DefaultLineMarginWidth;
+        this._document.on("scroll", this.handleDocumentScroll.bind(this));
         this._document.render();
 
         this._marginMargin = new LineMarginView();
@@ -69,7 +71,6 @@ export class EditorView extends DomHelper.FixedElement implements IDisposable {
         this._scrollbar = new ScrollBarView();
         this._scrollbar.top = this._toolbar.height;
         this._scrollbar.right = 0;
-
 
         let thk = () => {
             return this._document.scrollTop;
@@ -89,14 +90,48 @@ export class EditorView extends DomHelper.FixedElement implements IDisposable {
 
         this._inputer.addEventListener("focus", this.handleInputerFocused.bind(this));
         this._inputer.addEventListener("blur", this.handleInputerBlur.bind(this));
+
+        this._scrollbar.on("trainMove", this.handleScrollBarTrainMove.bind(this));
+
+        this._timers.push(setTimeout(() => {
+            this._scrollbar.trainHeightPercentage = this.getScrollTrainHeightPercentage();
+        }, 10));
+    }
+
+    reload(_model: TextModel) {
+        this.documentView.reload(_model);
+        this.documentView.render();
+
+        this._scrollbar.trainHeightPercentage = this.getScrollTrainHeightPercentage();
     }
 
     private stylish()
     {
-        this._dom.style.position = "fixed";
         this._dom.style.overflowY = "hidden"
         this._dom.style.fontSize = EditorView.PxPerLine + "px";
         this._dom.style.fontFamily = "微软雅黑";
+    }
+
+    private handleScrollBarTrainMove(evt: TrainMoveEvent) {
+        let tmp = this._document.element().scrollHeight - this._document.element().clientHeight;
+        this._document.scrollTop = tmp * evt.percentage;
+    }
+
+    private getScrollPercentage() : number {
+        let scrollTop = this._document.scrollTop,
+            scrollHeight = this._document.element().scrollHeight,
+            clientHeight = this._document.element().clientHeight;
+        return scrollTop / (scrollHeight - clientHeight);
+    }
+
+    private getScrollTrainHeightPercentage() : number {
+        let clientHeight = this._document.element().clientHeight,
+            scrollHeight = this._document.element().scrollHeight;
+        return clientHeight / scrollHeight;
+    }
+
+    private handleDocumentScroll(evt: Event) {
+        this._scrollbar.trainPositionPercentage = this.getScrollPercentage();
     }
 
     private handleInputerFocused(evt : FocusEvent) {
@@ -154,6 +189,10 @@ export class EditorView extends DomHelper.FixedElement implements IDisposable {
         this._marginMargin.dispose();
         this._cursor.dispose();
         this._inputer.dispose();
+
+        this._timers.forEach((e) => {
+            clearTimeout(e);
+        });
     }
 
 }

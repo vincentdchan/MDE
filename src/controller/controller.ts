@@ -33,21 +33,6 @@ export class MDE implements IDisposable, TextEditApplier {
         this._menu = menuGenerator(this);
         Menu.setApplicationMenu(this._menu);
 
-        this.reloadText(content);
-
-        ipcRenderer.on("file-readFile-error", this.handleFileReadError.bind(this));
-        ipcRenderer.on("file-readFile-success", this.handleFileRead.bind(this));
-    }
-
-    reloadText(content: string) {
-        if (this._view !== null) {
-            this._view.dispose();
-            this._view = null;
-        }
-        if (this._model !== null) {
-            this._model = null;
-        }
-
         this._model = new TextModel(content);
 
         this._view = new WindowView(this._model);
@@ -67,6 +52,13 @@ export class MDE implements IDisposable, TextEditApplier {
         this.inputerView.addEventListener("compositionupdate", 
             this.handleInputerCompositionUpdate.bind(this), false);
 
+        ipcRenderer.on("file-readFile-error", this.handleFileReadError.bind(this));
+        ipcRenderer.on("file-readFile-success", this.handleFileRead.bind(this));
+    }
+
+    reloadText(content: string) {
+        this._model = new TextModel(content);
+        this._view.reaload(this._model);
     }
 
     private findLineAncestor(node: Node) : HTMLElement {

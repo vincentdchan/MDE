@@ -83,7 +83,7 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
 
     reaload(_model: TextModel) {
         this._model = _model;
-
+        this._editor.reload(_model);
     }
 
     private _mouseMoveHandler = null;
@@ -179,6 +179,10 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
         this._leftPanel = null;
         this._splitter = null;
         this._editor = null;
+
+        if (this._mouseMoveHandler !== null) {
+            window.removeEventListener("mousemove", this._mouseMoveHandler, true);
+        }
     }
 
 }
