@@ -3,9 +3,7 @@ import {DomHelper, IDisposable} from "../util"
 class ScrollBarTrain extends DomHelper.AbsoluteElement implements IDisposable {
 
     constructor() {
-        super("div", "mde-scrollbar-rect");
-        this._dom.style.background = "grey";
-        this._dom.style.opacity = "0.5"
+        super("div", "mde-scrollbar-train");
     }
 
     dispose() {
@@ -43,7 +41,6 @@ export class ScrollBarView
         this._train = new ScrollBarTrain();
         this._train.appendTo(this._dom);
 
-        this._dom.style.background = "lightgrey";
         this.width = ScrollBarView.DefaultWidth;
 
         let clickOffset: number = 0;

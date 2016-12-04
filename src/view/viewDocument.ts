@@ -5,11 +5,16 @@ import {TextModel, LineModel, Position} from "../model"
 import {IDisposable, DomHelper} from "../util"
 import {PopAllQueue} from "../util/queue"
 
+class NullElement extends DomHelper.ResizableElement {
+
+}
+
 export class DocumentView extends DomHelper.AbsoluteElement implements IDisposable {
 
     private _model: TextModel;
     private _container: HTMLDivElement;
     private _lines: LineView[];
+    private _nullArea: NullElement;
     private _highlightingRanges: PopAllQueue<HighlightingRange>[];
 
     constructor(_model) {
@@ -20,6 +25,12 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
 
         this._container = <HTMLDivElement>DomHelper.elem("div", "mde-document-container");
         this._dom.appendChild(this._container);
+
+        this._nullArea = new NullElement("div", "mde-document-null");
+        this._nullArea.appendTo(this._dom);
+        setTimeout(() => {
+            this._nullArea.height = this._dom.clientHeight / 2;
+        }, 5);
 
         this._dom.style.overflowY = "scroll";
         this._dom.style.overflowX = "auto";
@@ -38,7 +49,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
 
         this._dom.removeChild(this._container);
         this._container = <HTMLDivElement>DomHelper.elem("div", "mde-document-container");
-        this._dom.appendChild(this._container);
+        this._dom.insertBefore(this._container, this._nullArea.element());
     }
 
     render(): HTMLElement {
@@ -131,7 +142,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
 
         _lines_middle.forEach((e: LineView) => {
             e.dispose();
-            e.element().remove();
+            e.remove();
         });
     }
 
@@ -165,6 +176,15 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
 
     set model(_model: TextModel) {
         this._model = _model;
+    }
+
+    set height(h : number) {
+        super.height = h;
+        this._nullArea.height = h / 2;
+    }
+
+    get height() {
+        return super.height;
     }
 
 }

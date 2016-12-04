@@ -37,7 +37,6 @@ class NavigationView extends DomHelper.AbsoluteElement implements IDisposable {
         this.width = width;
         this.height = height;
         this._dom.style.fontSize = NavigationView.DefaultWidth * 0.6 + "px";
-        this._dom.style.background = "grey";
 
         options.forEach((ButtonOption) => {
             let bv = new ButtonView(width, width);
@@ -109,7 +108,6 @@ export class LeftPanelView extends DomHelper.FixedElement implements IDisposable
     constructor(width: number, height: number) {
         super("div", "mde-left-panel");
 
-        this._dom.style.background = "lightgrey";
         this._dom.style.cssFloat = "left";
 
         this._nav_view = new NavigationView(-1, 

@@ -73,18 +73,7 @@ export namespace DomHelper {
 
     }
 
-    class PositionElement extends AppendableDomWrapper {
-
-        private _left = -1;
-        private _right = -1;
-        private _top = -1;
-        private _bottom = -1;
-
-        private _margin = -1;
-        private _marginLeft = -1;
-        private _marginRight = -1;
-        private _marginTop = -1;
-        private _marginBottom = -1;
+    export class ResizableElement extends AppendableDomWrapper {
 
         private _width = -1;
         private _height = -1;
@@ -118,6 +107,21 @@ export namespace DomHelper {
                     this._dom.style.height = v + "px";
             }
         }
+
+    }
+
+    class PositionElement extends ResizableElement {
+
+        private _left = -1;
+        private _right = -1;
+        private _top = -1;
+        private _bottom = -1;
+
+        private _margin = -1;
+        private _marginLeft = -1;
+        private _marginRight = -1;
+        private _marginTop = -1;
+        private _marginBottom = -1;
 
         get left() {
             return this._left;

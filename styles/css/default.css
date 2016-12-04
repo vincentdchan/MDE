@@ -3,6 +3,10 @@ body {
     margin: 0;
 }
 
+.mde-cursor {
+    background: black;
+}
+
 .mde-word-bold {
     font-weight: bold;
 }
@@ -13,6 +17,24 @@ body {
 
 .mde-word-underline {
     text-decoration: underline;
+}
+
+.mde-splitter {
+    background: black;
+    cursor: col-resize;
+}
+
+.mde-toolbar {
+    background: grey;
+}
+
+.mde-scrollbar {
+    background: lightgray;
+}
+
+.mde-scrollbar-train {
+    background: grey;
+    opacity: 0.5;
 }
 
 .mde-toolbar::-webkit-scrollbar {
@@ -34,4 +56,12 @@ body {
 
 .mde-button .active {
     opacity: 1;
+}
+
+.mde-left-panel {
+    background: lightgrey;
+}
+
+.mde-left-panel-nav {
+    background: grey;
 }

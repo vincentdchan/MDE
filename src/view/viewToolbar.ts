@@ -14,7 +14,6 @@ export class ToolbarView extends DomHelper.FixedElement implements IDisposable {
         super("div", "mde-toolbar");
 
         this.height = ToolbarView.DefaultHeight;
-        this._dom.style.background = "grey";
         this._dom.style.overflowX = "scroll";
         this._dom.style.overflowY = "hidden";
         this._dom.style.whiteSpace = "nowrap";

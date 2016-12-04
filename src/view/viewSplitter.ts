@@ -13,9 +13,6 @@ export class SplitterView extends DomHelper.FixedElement implements IDisposable 
 
         width = width >= 0 ? width : SplitterView.DefaultWidth;
         this.width = width;
-
-        this._dom.style.background = "black";
-        this._dom.style.cursor = "col-resize";
     }
 
     dispose() {
