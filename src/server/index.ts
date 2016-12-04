@@ -2,7 +2,19 @@ import * as Electron from "electron"
 import {dialog} from "electron"
 import * as fs from "fs"
 
-export function initializeFileService() {
+export function initializeBrowserWindowService(bw: Electron.BrowserWindow) {
+
+    Electron.ipcMain.on("window-openDevTools", (event: Electron.IpcMainEvent, options?: any) => {
+        bw.webContents.openDevTools(options);
+    });
+
+    Electron.ipcMain.on("window-reload", (event: Electron.IpcMainEvent) => {
+        bw.reload();
+    });
+
+}
+
+export function initializeDialogService() {
 
     Electron.ipcMain.on("dialog-showOpenDialog", (event: Electron.IpcMainEvent, id: any, options: Electron.OpenDialogOptions) => {
 
@@ -27,6 +39,10 @@ export function initializeFileService() {
         });
 
     })
+    
+}
+
+export function initializeFileService() {
 
     Electron.ipcMain.on("file-open", (event: Electron.IpcMainEvent, id: any, path: string, flags: string, mode?: number) => {
 

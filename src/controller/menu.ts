@@ -12,13 +12,14 @@ async function handleOpenFile(mde: MDE) {
             { name: "Text", extensions: ["txt"] },
         ],
     });
-    if (filenames && filenames.length > 0) {
+    if (filenames === undefined || filenames === null) {
+        throw new Error("Can not get the filename you want to open.");
+    }
+    else if (filenames.length > 0) {
         let filename = filenames[0];
         let content = await Host.readFile(filename, "UTF-8");
 
         mde.reloadText(content);
-    } else {
-        throw new Error("Can not get the filename you want to open.");
     }
 }
 
@@ -106,15 +107,15 @@ export function menuGenerator(mde: MDE) : Electron.Menu {
             label: "View",
             submenu: [
                 {
-                    label: "Toggle dev tools",
+                    label: "Open dev tools",
                     click() {
-                        console.log("toogle dev tools");
+                        Host.openDevTools();
                     }
                 },
                 {
                     label: "Reload",
                     click() {
-                        console.log("reloadk");
+                        Host.reload();
                     }
                 }
             ]

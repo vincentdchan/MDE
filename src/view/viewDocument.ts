@@ -62,6 +62,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
             this._highlightingRanges[line.number] = new PopAllQueue<HighlightingRange>();
 
             vl.render(line.text);
+            vl.renderLineNumber(line.number);
             this._container.appendChild(vl.element());
         })
 
@@ -78,6 +79,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         if (line <= 0 || line > this.linesCount)
             throw new Error("<index out of range> line:" + line + " LinesCount:" + this.linesCount);
         this._lines[line].render(this._model.lineAt(line).text, this._highlightingRanges[line].popAll());
+        this._lines[line].renderLineNumber(line);
     }
 
     // move lines from after [index] 

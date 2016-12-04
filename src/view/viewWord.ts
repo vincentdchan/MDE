@@ -20,7 +20,8 @@ export class WordView implements IDisposable {
         this._dom = DomHelper.elem("span");
 
         // this._dom.innerHTML = this._text.replace(/ /g, "&nbsp;");
-        this._dom.innerHTML = this._text;
+        let _node = document.createTextNode(this._text);
+        this._dom.appendChild(_node);
 
         this._classList.forEach((e: HighlightingType)=> {
             switch(e) {
