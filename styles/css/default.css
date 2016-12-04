@@ -19,6 +19,12 @@ body {
     text-decoration: underline;
 }
 
+.mde-line-number {
+    padding: 2px;
+    font-size: 14px;
+    opacity: 0.5;
+}
+
 .mde-splitter {
     background: black;
     cursor: col-resize;

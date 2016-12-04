@@ -91,4 +91,12 @@ export class Host {
         });
     }
 
+    static openDevTools() {
+        ipcRenderer.send("window-openDevTools");
+    }
+
+    static reload() {
+        ipcRenderer.send("window-reload");
+    }
+
 }

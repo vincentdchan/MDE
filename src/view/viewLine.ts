@@ -22,17 +22,50 @@ function mergeSet<T>(a: Set<T>, b: Set<T>) {
     return result;
 }
 
+class LeftMargin extends DomHelper.ResizableElement implements IDisposable {
+
+    constructor(width: number) {
+        super("div", "mde-line-leftMargin");
+
+        this._dom.style.display = "block";
+        this._dom.style.cssFloat = "left";
+        this.width = width;
+    }
+
+    removeChild(node: Node) {
+        this._dom.removeChild(node);
+    }
+
+    clearAll() {
+        while(this._dom.children.length > 0) {
+            this._dom.removeChild(this._dom.lastChild);
+        }
+    }
+
+    dispose() {
+    }
+
+}
+
 export class LineView extends DomHelper.AppendableDomWrapper implements IDisposable {
 
+    public static readonly DefaultLeftMarginWidth = 40;
+
+    private _leftMargin: LeftMargin;
     private _content: string;
     private _words: WordView[]; 
     private _state: MarkdownLexerState;
+    private _rendered_lineNumber: number = 0;
     private _line_content_dom: HTMLElement = null;
 
     constructor() {
         super("p", "mde-line");
 
+        this._leftMargin = new LeftMargin(LineView.DefaultLeftMarginWidth);
+        this._leftMargin.appendTo(this._dom);
+
         this._dom.style.whiteSpace = "pre-wrap";
+        this._dom.style.minHeight = "16px";
         this._dom.style.position = "relative";
         this._dom.style.width = "inherit";
         this._dom.style.paddingTop = "5px";
@@ -45,7 +78,9 @@ export class LineView extends DomHelper.AppendableDomWrapper implements IDisposa
 
     private generateContentDom() : HTMLElement {
         let elem = DomHelper.elem("span", "mde-line-content");
-        elem.style.width = "100%";
+        elem.style.marginLeft = this._leftMargin.width + "px";
+        elem.style.width = "auto";
+        // elem.style.width = "100%";
         elem.style.display = "block";
         return elem;
     }
@@ -138,6 +173,20 @@ export class LineView extends DomHelper.AppendableDomWrapper implements IDisposa
         return result;
     }
 
+    renderLineNumber(num: number) {
+        if (num !== this._rendered_lineNumber) {
+            let span = <HTMLSpanElement>DomHelper.elem("span", "mde-line-number");
+
+            this._leftMargin.clearAll();
+
+            let node = document.createTextNode(num.toString());
+            span.appendChild(node);
+
+            this._leftMargin.element().appendChild(span);
+            this._rendered_lineNumber = num;
+        }
+    }
+
     render(content: string, hlr_arr? : HighlightingRange[]) {
         hlr_arr = hlr_arr ? LineView.splitArr(hlr_arr) : [];
 
@@ -218,6 +267,7 @@ export class LineView extends DomHelper.AppendableDomWrapper implements IDisposa
     }
 
     dispose() {
+        this._leftMargin.dispose();
     }
 
     get words() {

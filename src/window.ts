@@ -1,6 +1,6 @@
 
 import {app, BrowserWindow} from "electron"
-import {initializeFileService} from "./server"
+import * as Server from "./server"
 
 let win;
 
@@ -16,7 +16,9 @@ function createWindow() {
     
     win.webContents.openDevTools();
 
-    initializeFileService();
+    Server.initializeBrowserWindowService(win);
+    Server.initializeDialogService();
+    Server.initializeFileService();
     
     win.on('closed', ()=> {
         win = null;
