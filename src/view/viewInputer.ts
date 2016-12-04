@@ -1,9 +1,9 @@
 import {DomHelper, IDisposable} from "../util"
 import {Coordinate} from "."
 
-export class InputerView implements DomHelper.IDOMWrapper, IDisposable {
+export class InputerView extends 
+DomHelper.Generic.AbsoluteElement<HTMLTextAreaElement> implements IDisposable {
 
-    private _dom: HTMLTextAreaElement;
     private _focused: boolean = false;
     private _isCompositing: boolean = false;
 
@@ -11,12 +11,11 @@ export class InputerView implements DomHelper.IDOMWrapper, IDisposable {
     private _isComposintThunkTimers : NodeJS.Timer[] = [];
 
     constructor(scrollTopThunk : () => number) {
+        super("textarea", "mde-inputer");
         this._scrollTopThunk = scrollTopThunk;
 
-        this._dom = <HTMLTextAreaElement>DomHelper.elem("textarea", "mde-inputer");
-        this._dom.style.position = "absolute";
-        this._dom.style.height = "1em";
-        this._dom.style.width = "1px";
+        this._dom.style.height = "18px";
+        this._dom.style.width = "10px";
         this._dom.style.opacity = "0.3";
 
         this._dom.addEventListener("focus", (evt: FocusEvent) => {
@@ -45,8 +44,8 @@ export class InputerView implements DomHelper.IDOMWrapper, IDisposable {
 
     setPostition(coordinate: Coordinate) {
         let scrollY = window.scrollY;
-        this._dom.style.left = coordinate.x + "px";
-        this._dom.style.top = coordinate.y + this._scrollTopThunk() + "px";
+        this.left = coordinate.x;
+        this.top = coordinate.y + this._scrollTopThunk()
     }
 
     isFosused() {
@@ -55,18 +54,6 @@ export class InputerView implements DomHelper.IDOMWrapper, IDisposable {
 
     isCompositioning() {
         return this._isCompositing;
-    }
-
-    addEventListener(name: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean) {
-        this._dom.addEventListener(name, listener, useCapture);
-    }
-
-    element() {
-        return this._dom;
-    }
-
-    appendTo(elem: HTMLElement) {
-        elem.appendChild(this._dom);
     }
 
     dispose() {

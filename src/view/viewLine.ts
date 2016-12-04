@@ -22,6 +22,38 @@ function mergeSet<T>(a: Set<T>, b: Set<T>) {
     return result;
 }
 
+export class RenderTextEvent extends Event {
+
+    private _text: string;
+
+    constructor(text: string) {
+        super("renderText");
+
+        this._text = text;
+    }
+
+    get text() {
+        return this._text;
+    }
+
+}
+
+export class RenderNumberEvent extends Event {
+
+    private _num: number;
+
+    constructor(num: number) {
+        super("renderNumber");
+
+        this._num = num;
+    }
+
+    get number() {
+        return this._num;
+    }
+
+}
+
 class LeftMargin extends DomHelper.ResizableElement implements IDisposable {
 
     constructor(width: number) {
@@ -184,6 +216,9 @@ export class LineView extends DomHelper.AppendableDomWrapper implements IDisposa
 
             this._leftMargin.element().appendChild(span);
             this._rendered_lineNumber = num;
+
+            let evt = new RenderNumberEvent(num);
+            this._dom.dispatchEvent(evt);
         }
     }
 
@@ -239,6 +274,9 @@ export class LineView extends DomHelper.AppendableDomWrapper implements IDisposa
         }
 
         this._dom.appendChild(this._line_content_dom);
+
+        let evt = new RenderTextEvent(content);
+        this._dom.dispatchEvent(evt);
     }
 
     private appendWord(content: string, ranges? : Set<HighlightingType>) {
@@ -268,6 +306,14 @@ export class LineView extends DomHelper.AppendableDomWrapper implements IDisposa
 
     dispose() {
         this._leftMargin.dispose();
+    }
+
+    get leftMargin() {
+        return this._leftMargin;
+    }
+
+    get contentContainerElement() {
+        return this._line_content_dom;
     }
 
     get words() {
