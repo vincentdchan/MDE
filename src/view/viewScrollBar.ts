@@ -110,10 +110,11 @@ export class ScrollBarView
     }
 
     set height(h: number) {
+        let oldTrainHeightPercentage = this._train.height / this.height,
+            oldTrainTopPercentage = this._train.top / (this.height - this._train.height);
+
         super.height = h;
         if (this.height > 0 && this._train.height > 0 && (this.height - this._train.height) > 0) {
-            let oldTrainHeightPercentage = this._train.height / this.height,
-                oldTrainTopPercentage = this._train.top / (this.height - this._train.height);
 
             this.trainHeightPercentage = oldTrainHeightPercentage;
             this.trainPositionPercentage = oldTrainTopPercentage;
