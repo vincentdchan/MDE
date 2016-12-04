@@ -5,6 +5,7 @@ class ScrollBarTrain extends DomHelper.AbsoluteElement implements IDisposable {
     constructor() {
         super("div", "mde-scrollbar-rect");
         this._dom.style.background = "grey";
+        this._dom.style.opacity = "0.5"
     }
 
     dispose() {
