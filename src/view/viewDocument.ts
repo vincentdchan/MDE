@@ -1,4 +1,3 @@
-
 import {LineView} from "./viewLine"
 import {IVirtualElement, Coordinate, HighlightingRange, HighlightingType} from "."
 import {TextModel, LineModel, Position} from "../model"
@@ -16,6 +15,11 @@ function clonePosition(pos: Position) : Position {
 
 function equalPostion(pos1: Position, pos2: Position) {
     return pos1.line === pos2.line && pos1.offset === pos2.offset;
+}
+
+function greaterPosition(pos1: Position, pos2: Position) {
+    return (pos1.line > pos2.line) || 
+    ((pos1.line === pos2.line) && (pos1.offset > pos2.offset));
 }
 
 function setHeight(elm: HTMLElement, h: number) {
@@ -58,20 +62,26 @@ class SelectionAtom extends DomHelper.AbsoluteElement {
 
 class SelectionManager {
 
-    public static readonly DefalutLineHeight = 18;
+    public static readonly DefalutLineHeight = 24;
 
     private _begin_pos: Position;
     private _end_pos: Position;
 
-    private _posGetter: (pos: Position) => Coordinate;
+    private _lineMargin: number;
+    private _coordinate_offset_thunk: () => Coordinate;
+    private _coGetter: (pos: Position) => Coordinate;
     private _father_dom: HTMLElement;
 
     private _top_atom: SelectionAtom = null;
     private _middle_atom: SelectionAtom = null;
     private _end_atom: SelectionAtom = null;
 
-    constructor(_posGetter: (pos: Position) => Coordinate, begin: Position, end?: Position) {
-        this._posGetter = _posGetter;
+    constructor(coOffsetThunk: ()=>Coordinate, lineMargin: number, coGetter: (pos: Position) => Coordinate, 
+        begin: Position, end?: Position) {
+
+        this._lineMargin = lineMargin;
+        this._coordinate_offset_thunk = coOffsetThunk;
+        this._coGetter = coGetter;
         this._begin_pos = begin;
         this._end_pos = end;
     }
@@ -84,9 +94,14 @@ class SelectionManager {
     resetEnd(end: Position) {
         if (end !== this._end_pos) {
             this._end_pos = end;
-            this.clearAll();
+            // this.clearAll();
             this.paint();
         }
+    }
+
+    repaint() {
+        // this.clearAll();
+        this.paint();
     }
 
     private clearAll() {
@@ -105,46 +120,79 @@ class SelectionManager {
     }
 
     private paint() {
+        let offsetCos = this._coordinate_offset_thunk();
+
         if (this._begin_pos && this._end_pos && 
             !equalPostion(this._begin_pos, this._end_pos)) {
 
-            let beginCo = this._posGetter(this._begin_pos),
-                endCo = this._posGetter(this._end_pos);
+            let begin_pos: Position,
+                end_pos: Position;
+            
+            if (greaterPosition(this._end_pos, this._begin_pos)) {
+                begin_pos = this._begin_pos;
+                end_pos = this._end_pos;
+            } else {
+                begin_pos = this._end_pos;
+                end_pos = this._begin_pos;
+            }
+
+            let beginCo = this._coGetter(begin_pos),
+                endCo = this._coGetter(end_pos);
 
             if (beginCo.y === endCo.y) {
+
+                let rect = this._father_dom.getBoundingClientRect();
                 
-                this._top_atom = new SelectionAtom();
-                this._top_atom.appendTo(this._father_dom);
+                if (this._top_atom === null) {
+                    this._top_atom = new SelectionAtom();
+                    this._top_atom.appendTo(this._father_dom);
+                }
+                if (this._middle_atom !== null) {
+                    this._middle_atom.remove();
+                    this._middle_atom = null;
+                }
+                if (this._end_atom !== null) {
+                    this._end_atom.remove();
+                    this._end_atom = null;
+                }
 
                 this._top_atom.width = endCo.x - beginCo.x;
+                this._top_atom.height = SelectionManager.DefalutLineHeight;
 
-                this._top_atom.marginLeft = beginCo.x;
-                this._top_atom.top = beginCo.y;
+                this._top_atom.marginLeft = beginCo.x - rect.left;
+                this._top_atom.top = beginCo.y + offsetCos.y;
 
             } else {
 
                 let rect = this._father_dom.getBoundingClientRect();
 
-                this._top_atom = new SelectionAtom();
-                this._middle_atom = new SelectionAtom();
-                this._end_atom = new SelectionAtom();
-
-                this._top_atom.appendTo(this._father_dom);
-                this._middle_atom.appendTo(this._father_dom);
-                this._end_atom.appendTo(this._father_dom);
+                if (this._top_atom === null) {
+                    this._top_atom = new SelectionAtom();
+                    this._top_atom.appendTo(this._father_dom);
+                }
+                if (this._middle_atom === null) {
+                    this._middle_atom = new SelectionAtom();
+                    this._middle_atom.appendTo(this._father_dom);
+                }
+                if (this._end_atom === null) {
+                    this._end_atom = new SelectionAtom();
+                    this._end_atom.appendTo(this._father_dom);
+                }
 
                 this._top_atom.height = this._end_atom.height = SelectionManager.DefalutLineHeight;
                 
                 this._top_atom.marginLeft = beginCo.x - rect.left;
                 this._top_atom.width = rect.right - beginCo.x;
-                this._top_atom.top = beginCo.y;
+                this._top_atom.top = beginCo.y + offsetCos.y;
 
-                this._middle_atom.width = rect.right - rect.left;
+                this._middle_atom.width = rect.right - rect.left - this._lineMargin;
                 this._middle_atom.height = endCo.y - beginCo.y - this._top_atom.height;
-                this._middle_atom.top = beginCo.y + this._top_atom.height;
+                this._middle_atom.top = beginCo.y + this._top_atom.height + offsetCos.y;
+                this._middle_atom.marginLeft = this._lineMargin;
 
-                this._end_atom.top = endCo.y;
-                this._end_atom.width = endCo.x - rect.left;
+                this._end_atom.top = endCo.y + offsetCos.y;
+                this._end_atom.width = endCo.x - rect.left - this._lineMargin;
+                this._end_atom.marginLeft = this._lineMargin;
             }
         }
     }
@@ -262,7 +310,14 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         let posGetter = (pos: Position) => {
             return this.getCoordinate(pos);
         }
-        this._focus_selection = new SelectionManager(posGetter, begin_pos);
+
+        let thk = () => {
+            return {
+                x: 0,
+                y: this._dom.scrollTop,
+            }
+        }
+        this._focus_selection = new SelectionManager(thk, LineView.DefaultLeftMarginWidth, posGetter, begin_pos);
         this._focus_selection.binding(this._dom);
     }
 
@@ -533,10 +588,22 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
     set height(h : number) {
         super.height = h;
         this._nullArea.height = h / 2;
+        if (this._focus_selection)
+            this._focus_selection.repaint();
     }
 
     get height() {
         return super.height;
+    }
+
+    set width(w: number) {
+        super.width = w;
+        if (this._focus_selection)
+            this._focus_selection.repaint();
+    }
+
+    get width() {
+        return super.width;
     }
 
 }

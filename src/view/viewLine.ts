@@ -207,7 +207,8 @@ export class LineView extends DomHelper.AppendableDomWrapper implements IDisposa
 
     renderLineNumber(num: number) {
         if (num !== this._rendered_lineNumber) {
-            let span = <HTMLSpanElement>DomHelper.elem("span", "mde-line-number");
+            let span = <HTMLSpanElement>DomHelper.elem("span", 
+                "mde-line-number unselectable");
 
             this._leftMargin.clearAll();
 
