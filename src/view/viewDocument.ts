@@ -1,26 +1,12 @@
 import {LineView} from "./viewLine"
 import {IVirtualElement, Coordinate, HighlightingRange, HighlightingType} from "."
-import {TextModel, LineModel, Position} from "../model"
+import {TextModel, LineModel, Position, PositionUtil} from "../model"
 import {IDisposable, DomHelper} from "../util"
 import {PopAllQueue} from "../util/queue"
 import {InputerView} from "./viewInputer"
 import {CursorView} from "./viewCursor"
+import {SelectionManager} from "./selection"
 
-function clonePosition(pos: Position) : Position {
-    return {
-        line: pos.line,
-        offset: pos.offset
-    };
-}
-
-function equalPostion(pos1: Position, pos2: Position) {
-    return pos1.line === pos2.line && pos1.offset === pos2.offset;
-}
-
-function greaterPosition(pos1: Position, pos2: Position) {
-    return (pos1.line > pos2.line) || 
-    ((pos1.line === pos2.line) && (pos1.offset > pos2.offset));
-}
 
 function setHeight(elm: HTMLElement, h: number) {
     elm.style.height = h + "px";
@@ -51,166 +37,6 @@ class NullElement extends DomHelper.ResizableElement {
 
 }
 
-class SelectionAtom extends DomHelper.AbsoluteElement {
-
-    constructor() {
-        super("div", "mde-document-selection-atom");
-        this._dom.style.zIndex = "-1";
-    }
-
-}
-
-class SelectionManager {
-
-    public static readonly DefalutLineHeight = 24;
-
-    private _begin_pos: Position;
-    private _end_pos: Position;
-
-    private _lineMargin: number;
-    private _coordinate_offset_thunk: () => Coordinate;
-    private _coGetter: (pos: Position) => Coordinate;
-    private _father_dom: HTMLElement;
-
-    private _top_atom: SelectionAtom = null;
-    private _middle_atom: SelectionAtom = null;
-    private _end_atom: SelectionAtom = null;
-
-    constructor(coOffsetThunk: ()=>Coordinate, lineMargin: number, coGetter: (pos: Position) => Coordinate, 
-        begin: Position, end?: Position) {
-
-        this._lineMargin = lineMargin;
-        this._coordinate_offset_thunk = coOffsetThunk;
-        this._coGetter = coGetter;
-        this._begin_pos = begin;
-        this._end_pos = end;
-    }
-
-    binding(_father_dom: HTMLElement) {
-        this._father_dom = _father_dom;
-        this.paint();
-    }
-
-    resetEnd(end: Position) {
-        if (end !== this._end_pos) {
-            this._end_pos = end;
-            // this.clearAll();
-            this.paint();
-        }
-    }
-
-    repaint() {
-        // this.clearAll();
-        this.paint();
-    }
-
-    private clearAll() {
-        if (this._top_atom) {
-            this._top_atom.remove();
-            this._top_atom = null;
-        }
-        if (this._middle_atom) {
-            this._middle_atom.remove();
-            this._middle_atom = null;
-        }
-        if (this._end_atom) {
-            this._end_atom.remove();
-            this._end_atom = null;
-        }
-    }
-
-    private paint() {
-        let offsetCos = this._coordinate_offset_thunk();
-
-        if (this._begin_pos && this._end_pos && 
-            !equalPostion(this._begin_pos, this._end_pos)) {
-
-            let begin_pos: Position,
-                end_pos: Position;
-            
-            if (greaterPosition(this._end_pos, this._begin_pos)) {
-                begin_pos = this._begin_pos;
-                end_pos = this._end_pos;
-            } else {
-                begin_pos = this._end_pos;
-                end_pos = this._begin_pos;
-            }
-
-            let beginCo = this._coGetter(begin_pos),
-                endCo = this._coGetter(end_pos);
-
-            if (beginCo.y === endCo.y) {
-
-                let rect = this._father_dom.getBoundingClientRect();
-                
-                if (this._top_atom === null) {
-                    this._top_atom = new SelectionAtom();
-                    this._top_atom.appendTo(this._father_dom);
-                }
-                if (this._middle_atom !== null) {
-                    this._middle_atom.remove();
-                    this._middle_atom = null;
-                }
-                if (this._end_atom !== null) {
-                    this._end_atom.remove();
-                    this._end_atom = null;
-                }
-
-                this._top_atom.width = endCo.x - beginCo.x;
-                this._top_atom.height = SelectionManager.DefalutLineHeight;
-
-                this._top_atom.marginLeft = beginCo.x - rect.left;
-                this._top_atom.top = beginCo.y + offsetCos.y;
-
-            } else {
-
-                let rect = this._father_dom.getBoundingClientRect();
-
-                if (this._top_atom === null) {
-                    this._top_atom = new SelectionAtom();
-                    this._top_atom.appendTo(this._father_dom);
-                }
-                if (this._middle_atom === null) {
-                    this._middle_atom = new SelectionAtom();
-                    this._middle_atom.appendTo(this._father_dom);
-                }
-                if (this._end_atom === null) {
-                    this._end_atom = new SelectionAtom();
-                    this._end_atom.appendTo(this._father_dom);
-                }
-
-                this._top_atom.height = this._end_atom.height = SelectionManager.DefalutLineHeight;
-                
-                this._top_atom.marginLeft = beginCo.x - rect.left;
-                this._top_atom.width = rect.right - beginCo.x;
-                this._top_atom.top = beginCo.y + offsetCos.y;
-
-                this._middle_atom.width = rect.right - rect.left - this._lineMargin;
-                this._middle_atom.height = endCo.y - beginCo.y - this._top_atom.height;
-                this._middle_atom.top = beginCo.y + this._top_atom.height + offsetCos.y;
-                this._middle_atom.marginLeft = this._lineMargin;
-
-                this._end_atom.top = endCo.y + offsetCos.y;
-                this._end_atom.width = endCo.x - rect.left - this._lineMargin;
-                this._end_atom.marginLeft = this._lineMargin;
-            }
-        }
-    }
-
-    get beginPosition() {
-        return this._begin_pos;
-    }
-
-    get endPosition() {
-        return this._end_pos;
-    }
-
-    remove() {
-        this.clearAll();
-    }
-
-}
-
 /// Event:
 ///
 /// CursorMove
@@ -223,8 +49,8 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
     private _nullArea: NullElement;
     private _highlightingRanges: PopAllQueue<HighlightingRange>[];
 
-    private _cursor: CursorView;
-    private _inputer: InputerView;
+    // private _cursor: CursorView;
+    // private _inputer: InputerView;
 
     private _window_mousemove_handler: EventListener = null;
     private _window_mouseup_handler: EventListener = null;
@@ -245,10 +71,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         this._model = _model;
         this._highlightingRanges = [];
 
-        let thk = () => {
-            return this.scrollTop;
-        }
-
+        /*
         this._cursor = new CursorView(thk);
         this._inputer = new InputerView(thk);
 
@@ -257,6 +80,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
 
         this._inputer.on("focus", this.handleInputerFocused.bind(this));
         this._inputer.on("blur", this.handleInputerBlur.bind(this));
+        */
 
         this._container = <HTMLDivElement>DomHelper.elem("div", "mde-document-container");
         this._dom.appendChild(this._container);
@@ -297,18 +121,25 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         this._mouse_pressed = true;
 
         this._selections.forEach((s: SelectionManager) => {
+            s.dispose();
             s.remove();
         });
 
         if (this._focus_selection) {
+            this._focus_selection.dispose();
             this._focus_selection.remove();
         }
         let begin_pos = this.getPositionFromCoordinate({
             x: evt.clientX,
             y: evt.clientY,
         });
-        let posGetter = (pos: Position) => {
-            return this.getCoordinate(pos);
+
+        let absPosGetter = (pos: Position) => {
+            let clientCo = this.getCoordinate(pos);
+            let rect = this._dom.getBoundingClientRect();
+            clientCo.x -= rect.left;
+            clientCo.y += this._dom.scrollTop;
+            return clientCo;
         }
 
         let thk = () => {
@@ -317,7 +148,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
                 y: this._dom.scrollTop,
             }
         }
-        this._focus_selection = new SelectionManager(thk, LineView.DefaultLeftMarginWidth, posGetter, begin_pos);
+        this._focus_selection = new SelectionManager(LineView.DefaultLeftMarginWidth, this.width, absPosGetter, begin_pos);
         this._focus_selection.binding(this._dom);
     }
 
@@ -325,12 +156,17 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         if (this._mouse_pressed) {
             evt.preventDefault();
 
-            let pos = this.getPositionFromCoordinate({
-                x: evt.clientX,
-                y: evt.clientY,
-            });
+            try {
+                let pos = this.getPositionFromCoordinate({
+                    x: evt.clientX,
+                    y: evt.clientY,
+                });
 
-            this._focus_selection.resetEnd(pos);
+                this._focus_selection.resetEnd(pos);
+            } catch (e) {
+                // not in range. do not handle it.
+            }
+
         }
     }
 
@@ -390,9 +226,10 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         let coordinate = this._lines[this._position.line].getCoordinate(this._position.offset);
         coordinate.y -= docRect.top;
 
-        this.updateCoursorByAbsoluteCoordinate(coordinate, clonePosition(this._position));
+        this.updateCoursorByAbsoluteCoordinate(coordinate, 
+            PositionUtil.clonePosition(this._position));
 
-        this._inputer.element().focus();
+        // this._inputer.element().focus();
     }
 
     reload(_model: TextModel) {
@@ -448,21 +285,23 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         co.x -= rect.left;
         //co.x -= this.marginLeft;
 
+        /*
         this._cursor.setPostition(co);
         this._inputer.setPostition(co);
 
         this._cursor.excite();
+        */
 
         let evt = new CursorMoveEvent(pos, co);
         this._dom.dispatchEvent(evt);
     }
 
     private handleInputerFocused(evt : FocusEvent) {
-        this._cursor.excite();
+        // this._cursor.excite();
     }
 
     private handleInputerBlur(evt : FocusEvent) {
-        this._cursor.setOff();
+        // this._cursor.setOff();
     }
 
     getCoordinate(pos: Position) : Coordinate {
@@ -554,11 +393,14 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
                 e.dispose();
             }
         })
-        this._inputer.dispose();
-        this._cursor.dispose();
+        // this._inputer.dispose();
+        // this._cursor.dispose();
 
         window.removeEventListener("mousemove", this._window_mousemove_handler, true);
         window.removeEventListener("mouseup", this._window_mouseup_handler, true);
+
+        if (this._focus_selection)
+            this._focus_selection.dispose();
     }
 
     get scrollTop() {
@@ -599,7 +441,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
     set width(w: number) {
         super.width = w;
         if (this._focus_selection)
-            this._focus_selection.repaint();
+            this._focus_selection.setDocumentWidth(w);
     }
 
     get width() {

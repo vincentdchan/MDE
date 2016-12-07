@@ -14,8 +14,8 @@ DomHelper.Generic.AbsoluteElement<HTMLTextAreaElement> implements IDisposable {
         super("textarea", "mde-inputer");
         this._scrollTopThunk = scrollTopThunk;
 
-        this._dom.style.height = "18px";
-        this._dom.style.width = "10px";
+        this._dom.style.height = "0.1px";
+        this._dom.style.width = "0.1px";
         this._dom.style.opacity = "0.3";
 
         this._dom.addEventListener("focus", (evt: FocusEvent) => {

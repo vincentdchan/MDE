@@ -1,4 +1,3 @@
-import {Selection} from "./selection"
 
 export enum ChangeOperation {
     INSERT,
