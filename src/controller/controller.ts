@@ -150,14 +150,6 @@ export class MDE implements IDisposable, TextEditApplier {
         return this._view.editorView.documentView;
     }
 
-    get inputerView() {
-        return this._view.editorView.inputerView;
-    }
-
-    get cursorView() {
-        return this._view.editorView.cursorView;
-    }
-
     get view() {
         return this._view;
     }

@@ -14,6 +14,14 @@ function clonePosition(pos: Position) : Position {
     };
 }
 
+function equalPostion(pos1: Position, pos2: Position) {
+    return pos1.line === pos2.line && pos1.offset === pos2.offset;
+}
+
+function setHeight(elm: HTMLElement, h: number) {
+    elm.style.height = h + "px";
+}
+
 export class CursorMoveEvent extends Event {
 
     private _pos: Position;
@@ -39,6 +47,121 @@ class NullElement extends DomHelper.ResizableElement {
 
 }
 
+class SelectionAtom extends DomHelper.AbsoluteElement {
+
+    constructor() {
+        super("div", "mde-document-selection-atom");
+        this._dom.style.zIndex = "-1";
+    }
+
+}
+
+class SelectionManager {
+
+    public static readonly DefalutLineHeight = 18;
+
+    private _begin_pos: Position;
+    private _end_pos: Position;
+
+    private _posGetter: (pos: Position) => Coordinate;
+    private _father_dom: HTMLElement;
+
+    private _top_atom: SelectionAtom = null;
+    private _middle_atom: SelectionAtom = null;
+    private _end_atom: SelectionAtom = null;
+
+    constructor(_posGetter: (pos: Position) => Coordinate, begin: Position, end?: Position) {
+        this._posGetter = _posGetter;
+        this._begin_pos = begin;
+        this._end_pos = end;
+    }
+
+    binding(_father_dom: HTMLElement) {
+        this._father_dom = _father_dom;
+        this.paint();
+    }
+
+    resetEnd(end: Position) {
+        if (end !== this._end_pos) {
+            this._end_pos = end;
+            this.clearAll();
+            this.paint();
+        }
+    }
+
+    private clearAll() {
+        if (this._top_atom) {
+            this._top_atom.remove();
+            this._top_atom = null;
+        }
+        if (this._middle_atom) {
+            this._middle_atom.remove();
+            this._middle_atom = null;
+        }
+        if (this._end_atom) {
+            this._end_atom.remove();
+            this._end_atom = null;
+        }
+    }
+
+    private paint() {
+        if (this._begin_pos && this._end_pos && 
+            !equalPostion(this._begin_pos, this._end_pos)) {
+
+            let beginCo = this._posGetter(this._begin_pos),
+                endCo = this._posGetter(this._end_pos);
+
+            if (beginCo.y === endCo.y) {
+                
+                this._top_atom = new SelectionAtom();
+                this._top_atom.appendTo(this._father_dom);
+
+                this._top_atom.width = endCo.x - beginCo.x;
+
+                this._top_atom.marginLeft = beginCo.x;
+                this._top_atom.top = beginCo.y;
+
+            } else {
+
+                let rect = this._father_dom.getBoundingClientRect();
+
+                this._top_atom = new SelectionAtom();
+                this._middle_atom = new SelectionAtom();
+                this._end_atom = new SelectionAtom();
+
+                this._top_atom.appendTo(this._father_dom);
+                this._middle_atom.appendTo(this._father_dom);
+                this._end_atom.appendTo(this._father_dom);
+
+                this._top_atom.height = this._end_atom.height = SelectionManager.DefalutLineHeight;
+                
+                this._top_atom.marginLeft = beginCo.x - rect.left;
+                this._top_atom.width = rect.right - beginCo.x;
+                this._top_atom.top = beginCo.y;
+
+                this._middle_atom.width = rect.right - rect.left;
+                this._middle_atom.height = endCo.y - beginCo.y - this._top_atom.height;
+                this._middle_atom.top = beginCo.y + this._top_atom.height;
+
+                this._end_atom.top = endCo.y;
+                this._end_atom.width = endCo.x - rect.left;
+            }
+        }
+    }
+
+    get beginPosition() {
+        return this._begin_pos;
+    }
+
+    get endPosition() {
+        return this._end_pos;
+    }
+
+    remove() {
+        this.clearAll();
+    }
+
+}
 
 /// Event:
 ///
@@ -55,11 +178,18 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
     private _cursor: CursorView;
     private _inputer: InputerView;
 
+    private _window_mousemove_handler: EventListener = null;
+    private _window_mouseup_handler: EventListener = null;
+
+    private _mouse_pressed: boolean = false;
+
+    private _selections: SelectionManager[] = [];
+    private _focus_selection: SelectionManager = null;
+
     private _position: Position = { 
         line: 1,
         offset: 0,
     }
-
 
     constructor(_model) {
         super("div", "mde-document");
@@ -92,6 +222,12 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         }, 5);
 
         this.on("click", this.handleClick.bind(this));
+        this.on("mousedown", this.handleDocMouseDown.bind(this));
+
+        this._window_mousemove_handler = (evt: MouseEvent) => { this.handleWindowMouseMove(evt); }
+        this._window_mouseup_handler = (evt: MouseEvent) => { this.handleWindowMouseUp(evt); }
+
+        this.bindingEvent();
         this.stylish();
     }
 
@@ -104,9 +240,52 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         this._dom.style.whiteSpace = "pre-wrap";
     }
 
-    private handleClick(evt: MouseEvent) {
+    private bindingEvent() {
+        window.addEventListener("mousemove", this._window_mousemove_handler, true);
+        window.addEventListener("mouseup", this._window_mouseup_handler, true);
+    }
 
-        let _range = document.caretRangeFromPoint(evt.clientX, evt.clientY);
+    private handleDocMouseDown(evt: MouseEvent) {
+        this._mouse_pressed = true;
+
+        this._selections.forEach((s: SelectionManager) => {
+            s.remove();
+        });
+
+        if (this._focus_selection) {
+            this._focus_selection.remove();
+        }
+        let begin_pos = this.getPositionFromCoordinate({
+            x: evt.clientX,
+            y: evt.clientY,
+        });
+        let posGetter = (pos: Position) => {
+            return this.getCoordinate(pos);
+        }
+        this._focus_selection = new SelectionManager(posGetter, begin_pos);
+        this._focus_selection.binding(this._dom);
+    }
+
+    private handleWindowMouseMove(evt: MouseEvent) {
+        if (this._mouse_pressed) {
+            evt.preventDefault();
+
+            let pos = this.getPositionFromCoordinate({
+                x: evt.clientX,
+                y: evt.clientY,
+            });
+
+            this._focus_selection.resetEnd(pos);
+        }
+    }
+
+    private handleWindowMouseUp(evt: MouseEvent) {
+        this._mouse_pressed = false;
+    }
+
+    private getPositionFromCoordinate(co: Coordinate): Position {
+
+        let _range = document.caretRangeFromPoint(co.x, co.y);
 
         let line_number: number,
             absolute_offset: number,
@@ -117,7 +296,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
             // let rect = lineView.element().firstElementChild.getBoundingClientRect();
             let rect = lineView.element().getBoundingClientRect();
 
-            if (evt.clientY >= rect.top && evt.clientY <= rect.top + rect.height) {
+            if (co.y >= rect.top && co.y <= rect.top + rect.height) {
                 line_number = i;
                 break;
             }
@@ -137,15 +316,23 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
             }
             absolute_offset = lineView.words[i].length;
         }
-        
-        this._position = {
+
+        return {
             line: line_number,
             offset: absolute_offset,
-        };
+        }
+    }
+
+    private handleClick(evt: MouseEvent) {
+
+        this._position = this.getPositionFromCoordinate({
+            x: evt.clientX,
+            y: evt.clientY,
+        });
 
         let docRect = this._dom.getBoundingClientRect();
 
-        let coordinate = lineView.getCoordinate(this._position.offset);
+        let coordinate = this._lines[this._position.line].getCoordinate(this._position.offset);
         coordinate.y -= docRect.top;
 
         this.updateCoursorByAbsoluteCoordinate(coordinate, clonePosition(this._position));
@@ -172,6 +359,8 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         setTimeout(() => {
             this.updateCursor(this._position);
         }, 10);
+
+        this.bindingEvent();
     }
 
     render(): HTMLElement {
@@ -312,6 +501,9 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         })
         this._inputer.dispose();
         this._cursor.dispose();
+
+        window.removeEventListener("mousemove", this._window_mousemove_handler, true);
+        window.removeEventListener("mouseup", this._window_mouseup_handler, true);
     }
 
     get scrollTop() {

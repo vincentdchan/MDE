@@ -71,3 +71,7 @@ body {
 .mde-left-panel-nav {
     background: grey;
 }
+
+.mde-document-selection-atom {
+    background: pink;
+}
