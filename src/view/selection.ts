@@ -30,26 +30,32 @@ export class SelectionManager implements IDisposable {
     private _middle_atom: SelectionAtom = null;
     private _end_atom: SelectionAtom = null;
 
+    private _isMajor: boolean;
     private _cursor: CursorView = null;
     private _inputer: InputerView = null;
 
-    constructor(lineMargin: number, docWidth: number, absCoGetter: (pos: Position) => Coordinate, ticktock: TickTockUtil) {
+    constructor(isMajor: boolean, lineMargin: number, docWidth: number, absCoGetter: (pos: Position) => Coordinate, ticktock: TickTockUtil) {
+
+        this._isMajor = isMajor;
 
         this._lineMargin = lineMargin;
         this._docWidth = docWidth;
         this._coGetter = absCoGetter;
 
-        this._cursor = new CursorView(ticktock);
-        this._inputer = new InputerView();
+        this._cursor = new CursorView(isMajor, ticktock);
+        if (this._isMajor)
+            this._inputer = new InputerView();
     }
 
     binding(_father_dom: HTMLElement) {
         this._father_dom = _father_dom;
 
         this._cursor.appendTo(this._father_dom);
-        this._inputer.appendTo(this._father_dom);
         this._cursor.hide();
-        this._inputer.hide();
+        if (this._isMajor) {
+            this._inputer.appendTo(this._father_dom);
+            this._inputer.hide();
+        }
         this.paint();
     }
 
@@ -67,24 +73,13 @@ export class SelectionManager implements IDisposable {
                 this.paint();
         }
     }
- 
-    resetEnd(end: Position) {
-        if (end !== this._end_pos) {
-            this._end_pos = PositionUtil.clonePosition(end);
-            if (PositionUtil.equalPostion(this._begin_pos, this._end_pos)) this.clearAll();
-            else this.paint();
-        }
-    }
 
     repaint() {
         this.paint();
     }
 
     collapse() {
-        this._end_pos = null;
-        this.clearAll();
-        this._inputer.dispose();
-        this._cursor.dispose();
+        throw new Error("Not implemented.");
     }
 
     setDocumentWidth(w: number) {
@@ -118,15 +113,18 @@ export class SelectionManager implements IDisposable {
             (this._begin_pos && this._end_pos && PositionUtil.equalPostion(this._begin_pos, this._end_pos))) {
             let beginCo = this._coGetter(this._begin_pos);
 
-            this._inputer.show();
+            this._cursor.setAbsoluteCoordinate(beginCo);
             this._cursor.show();
 
-            this._cursor.setAbsoluteCoordinate(beginCo);
-            this._inputer.setAbsoluteCoordinate(beginCo);
+            if (this._isMajor) {
+                this._inputer.setAbsoluteCoordinate(beginCo);
+                this._inputer.show();
+            }
         } else if (this._begin_pos && this._end_pos && 
             !PositionUtil.equalPostion(this._begin_pos, this._end_pos)) {
-            this._inputer.hide();
+
             this._cursor.hide();
+            if (this._isMajor) this._inputer.hide();
 
             let begin_pos: Position,
                 end_pos: Position;
@@ -205,14 +203,14 @@ export class SelectionManager implements IDisposable {
     }
 
     dispose() {
-        this._inputer.dispose();
         this._cursor.dispose();
+        if(this._isMajor) this._inputer.dispose();
     }
 
     remove() {
         this.clearAll();
-        this._inputer.remove();
         this._cursor.remove();
+        if(this._isMajor) this._inputer.remove();
     }
 
 }

@@ -67,7 +67,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
     }
 
     constructor(_model) {
-        super("div", "mde-document");
+        super("div", "mde-document unselectable");
         this._lines = [];
         this._model = _model;
         this._highlightingRanges = [];
@@ -77,10 +77,9 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
 
         this._nullArea = new NullElement("div", "mde-document-null");
         this._nullArea.appendTo(this._dom);
+
         setTimeout(() => {
             this._nullArea.height = this._dom.clientHeight / 2;
-
-            this.updateCursor(this._position);
         }, 5);
 
         this.on("click", this.handleClick.bind(this));
@@ -143,7 +142,8 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
             return clientCo;
         }
 
-        this._focus_selection = new SelectionManager(LineView.DefaultLeftMarginWidth, this.width, absPosGetter, this._cursor_ticktock);
+        let isMajor = this._selections.length === 0;
+        this._focus_selection = new SelectionManager(isMajor, LineView.DefaultLeftMarginWidth, this.width, absPosGetter, this._cursor_ticktock);
         this._focus_selection.setBegin(begin_pos);
         this._focus_selection.binding(this._dom);
 
@@ -160,7 +160,8 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
                     y: evt.clientY,
                 });
 
-                this._focus_selection.resetEnd(pos);
+                // this._focus_selection.resetEnd(pos);
+                this._focus_selection.setEnd(pos);
             } catch (e) {
                 // not in range. do not handle it.
             }
@@ -221,6 +222,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
     }
 
     private handleClick(evt: MouseEvent) {
+        evt.preventDefault();
 
         this._position = this.getPositionFromCoordinate({
             x: evt.clientX,
@@ -232,14 +234,12 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         let coordinate = this._lines[this._position.line].getCoordinate(this._position.offset);
         coordinate.y -= docRect.top;
 
-        this.updateCoursorByAbsoluteCoordinate(coordinate, 
-            PositionUtil.clonePosition(this._position));
-
-        // this._inputer.element().focus();
     }
 
     reload(_model: TextModel) {
         this.dispose();
+
+        this._cursor_ticktock = new TickTockUtil(500);
 
         this._lines = [] 
         this._model = _model;
@@ -253,10 +253,6 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
             line: 1,
             offset: 0,
         }
-
-        setTimeout(() => {
-            this.updateCursor(this._position);
-        }, 10);
 
         this.bindingEvent();
     }
@@ -276,30 +272,6 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         })
 
         return this._dom;
-    }
-
-    private updateCursor(pos: Position) {
-        let cursorCo = this.getCoordinate(pos);
-
-        this.updateCoursorByAbsoluteCoordinate(cursorCo, pos);
-    }
-
-    private updateCoursorByAbsoluteCoordinate(co: Coordinate, pos?: Position) {
-        let rect = this._dom.getBoundingClientRect();
-
-        // co.x -= this._view.leftPanelView.width;
-        co.x -= rect.left;
-        //co.x -= this.marginLeft;
-
-        /*
-        this._cursor.setPostition(co);
-        this._inputer.setPostition(co);
-
-        this._cursor.excite();
-        */
-
-        let evt = new CursorMoveEvent(pos, co);
-        this._dom.dispatchEvent(evt);
     }
 
     private handleInputerFocused(evt : FocusEvent) {

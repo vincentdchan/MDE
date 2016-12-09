@@ -16,6 +16,10 @@ body {
     cursor: default;
 }
 .mde-cursor {
+    background: grey;
+}
+
+.mde-cursor.major {
     background: black;
 }
 

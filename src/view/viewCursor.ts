@@ -8,14 +8,19 @@ export class CursorView extends DomHelper.AppendableDomWrapper implements IDispo
     private _tick_thunk: () => void;
     private _tock_thunk: () => void;
     private _ticktock_pair: TickTockPair;
+    private _isMajor: boolean;
 
-    constructor(ticktock: TickTockUtil) {
+    constructor(isMajor, ticktock: TickTockUtil) {
         super("div", "mde-cursor");
+
+        this._isMajor = isMajor;
 
         this._ticktock = ticktock;
         this._dom.style.position = "absolute";
         this._dom.style.height = "22px";
         this._dom.style.width = "2px";
+
+        if (this._isMajor) this._dom.classList.add("major");
 
         this.initializeBlinking();
     }
@@ -41,6 +46,10 @@ export class CursorView extends DomHelper.AppendableDomWrapper implements IDispo
 
     show() {
         this._dom.style.display = "block";
+    }
+
+    isMajor() {
+        return this._isMajor;
     }
 
     isHidden() {
