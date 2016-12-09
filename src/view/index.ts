@@ -7,6 +7,12 @@ export {InputerView} from "./viewInputer"
 export {LeftPanelView} from "./viewLeftPanel"
 export {WindowView} from "./viewWindow"
 
+export interface IHidable {
+    hide();
+    show();
+    isHidden(): boolean;
+}
+
 export interface IVirtualNode {
     render(): Node;
 }

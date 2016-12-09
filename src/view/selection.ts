@@ -1,4 +1,4 @@
-import {DomHelper, IDisposable} from "../util"
+import {DomHelper, IDisposable, TickTockUtil} from "../util"
 import {Position, PositionUtil} from "../model"
 import {Coordinate} from "."
 import {InputerView} from "./viewInputer"
@@ -33,24 +33,41 @@ export class SelectionManager implements IDisposable {
     private _cursor: CursorView = null;
     private _inputer: InputerView = null;
 
-    constructor(lineMargin: number, docWidth: number, absCoGetter: (pos: Position) => Coordinate, 
-        begin: Position, end?: Position) {
+    constructor(lineMargin: number, docWidth: number, absCoGetter: (pos: Position) => Coordinate, ticktock: TickTockUtil) {
 
         this._lineMargin = lineMargin;
         this._docWidth = docWidth;
         this._coGetter = absCoGetter;
-        this._begin_pos = PositionUtil.clonePosition(begin);
-        this._end_pos = end ? PositionUtil.clonePosition(end) : PositionUtil.clonePosition(begin);
+
+        this._cursor = new CursorView(ticktock);
+        this._inputer = new InputerView();
     }
 
     binding(_father_dom: HTMLElement) {
         this._father_dom = _father_dom;
 
-        // this._cursor.appendTo(this._father_dom);
-        // this._inputer.appendTo(this._father_dom);
+        this._cursor.appendTo(this._father_dom);
+        this._inputer.appendTo(this._father_dom);
+        this._cursor.hide();
+        this._inputer.hide();
         this.paint();
     }
 
+    setBegin(pos: Position) {
+        if (this._begin_pos === null || !PositionUtil.equalPostion(this._begin_pos, pos)) {
+            this._begin_pos = PositionUtil.clonePosition(pos);
+            this.paint();
+        }
+    }
+
+    setEnd(pos: Position) {
+        if (this._end_pos === null || !PositionUtil.equalPostion(this._end_pos, pos)) {
+            this._end_pos = PositionUtil.clonePosition(pos);
+            if (this._begin_pos)
+                this.paint();
+        }
+    }
+ 
     resetEnd(end: Position) {
         if (end !== this._end_pos) {
             this._end_pos = PositionUtil.clonePosition(end);
@@ -97,8 +114,19 @@ export class SelectionManager implements IDisposable {
 
     private paint() {
 
-        if (this._begin_pos && this._end_pos && 
+        if ((this._begin_pos && this._end_pos === null) || 
+            (this._begin_pos && this._end_pos && PositionUtil.equalPostion(this._begin_pos, this._end_pos))) {
+            let beginCo = this._coGetter(this._begin_pos);
+
+            this._inputer.show();
+            this._cursor.show();
+
+            this._cursor.setAbsoluteCoordinate(beginCo);
+            this._inputer.setAbsoluteCoordinate(beginCo);
+        } else if (this._begin_pos && this._end_pos && 
             !PositionUtil.equalPostion(this._begin_pos, this._end_pos)) {
+            this._inputer.hide();
+            this._cursor.hide();
 
             let begin_pos: Position,
                 end_pos: Position;
@@ -177,14 +205,14 @@ export class SelectionManager implements IDisposable {
     }
 
     dispose() {
-        // this._inputer.dispose();
-        // this._cursor.dispose();
+        this._inputer.dispose();
+        this._cursor.dispose();
     }
 
     remove() {
         this.clearAll();
-        // this._inputer.remove();
-        // this._cursor.remove();
+        this._inputer.remove();
+        this._cursor.remove();
     }
 
 }

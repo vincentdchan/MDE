@@ -1,15 +1,18 @@
-import {IDisposable, DomHelper} from "../util"
-import {Coordinate} from "."
+import {IDisposable, DomHelper, TickTockPair, TickTockUtil} from "../util"
+import {Coordinate, IHidable} from "."
 
-export class CursorView extends DomHelper.AppendableDomWrapper implements IDisposable {
+export class CursorView extends DomHelper.AppendableDomWrapper implements IDisposable, IHidable {
 
-    private _internal : NodeJS.Timer;
-    private _scrollTopThunk : () => number;
+    // private _internal : NodeJS.Timer;
+    private _ticktock: TickTockUtil;
+    private _tick_thunk: () => void;
+    private _tock_thunk: () => void;
+    private _ticktock_pair: TickTockPair;
 
-    constructor(scrollTopThunk: () => number) {
+    constructor(ticktock: TickTockUtil) {
         super("div", "mde-cursor");
-        this._scrollTopThunk = scrollTopThunk;
 
+        this._ticktock = ticktock;
         this._dom.style.position = "absolute";
         this._dom.style.height = "22px";
         this._dom.style.width = "2px";
@@ -18,31 +21,36 @@ export class CursorView extends DomHelper.AppendableDomWrapper implements IDispo
     }
 
     private initializeBlinking() {
-        this.setInterval();
-    }
 
-    private setInterval() {
+        this._ticktock_pair = {
+            tick: () => { this._dom.style.opacity = "1" },
+            tock: () => { this._dom.style.opacity = "0" },
+        }
 
-        let showed = true;
-        this._internal = setInterval(()=> {
-            if (showed) {
-                this._dom.style.opacity = "1";
-            } else {
-                this._dom.style.opacity = "0";
-            }
-            showed = !showed;
-        }, 500);
+        this._ticktock.register(this._ticktock_pair);
 
     }
 
     private clearInterval() {
-        clearInterval(this._internal);
+        this._ticktock.unregister(this._ticktock_pair);
+    }
+
+    hide() {
+        this._dom.style.display = "none";
+    }
+
+    show() {
+        this._dom.style.display = "block";
+    }
+
+    isHidden() {
+        return this._dom.style.display == "none"; 
     }
 
     excite() {
         this.clearInterval();
         this._dom.style.opacity = "1";
-        this.setInterval();
+        this.initializeBlinking();
     }
 
     setOff() {
@@ -50,9 +58,9 @@ export class CursorView extends DomHelper.AppendableDomWrapper implements IDispo
         this._dom.style.opacity = "0"
     }
 
-    setPostition(coordinate: Coordinate) {
+    setAbsoluteCoordinate(coordinate: Coordinate) {
         this._dom.style.left = coordinate.x + "px";
-        this._dom.style.top = coordinate.y + this._scrollTopThunk() + "px";
+        this._dom.style.top = coordinate.y + "px";
     }
 
     dispose() {

@@ -1,18 +1,16 @@
 import {DomHelper, IDisposable} from "../util"
-import {Coordinate} from "."
+import {Coordinate, IHidable} from "."
 
 export class InputerView extends 
-DomHelper.Generic.AbsoluteElement<HTMLTextAreaElement> implements IDisposable {
+DomHelper.Generic.AbsoluteElement<HTMLTextAreaElement> implements IDisposable, IHidable {
 
     private _focused: boolean = false;
     private _isCompositing: boolean = false;
 
-    private _scrollTopThunk : () => number;
     private _isComposintThunkTimers : NodeJS.Timer[] = [];
 
-    constructor(scrollTopThunk : () => number) {
+    constructor() {
         super("textarea", "mde-inputer");
-        this._scrollTopThunk = scrollTopThunk;
 
         this._dom.style.height = "0.1px";
         this._dom.style.width = "0.1px";
@@ -42,10 +40,9 @@ DomHelper.Generic.AbsoluteElement<HTMLTextAreaElement> implements IDisposable {
         this._dom.value = "";
     }
 
-    setPostition(coordinate: Coordinate) {
-        let scrollY = window.scrollY;
+    setAbsoluteCoordinate(coordinate: Coordinate) {
         this.left = coordinate.x;
-        this.top = coordinate.y + this._scrollTopThunk()
+        this.top = coordinate.y;
     }
 
     isFosused() {
@@ -60,6 +57,18 @@ DomHelper.Generic.AbsoluteElement<HTMLTextAreaElement> implements IDisposable {
         this._isComposintThunkTimers.forEach((t: NodeJS.Timer) => {
             clearTimeout(t);
         });
+    }
+
+    hide() {
+        this._dom.style.display = "none";
+    }
+
+    show() {
+        this._dom.style.display = "block";
+    }
+
+    isHidden() {
+        return this._dom.style.display == "none";
     }
 
     get value() {

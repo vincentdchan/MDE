@@ -1,12 +1,11 @@
 import {LineView} from "./viewLine"
 import {IVirtualElement, Coordinate, HighlightingRange, HighlightingType} from "."
 import {TextModel, LineModel, Position, PositionUtil} from "../model"
-import {IDisposable, DomHelper} from "../util"
+import {IDisposable, DomHelper, TickTockUtil} from "../util"
 import {PopAllQueue} from "../util/queue"
 import {InputerView} from "./viewInputer"
 import {CursorView} from "./viewCursor"
 import {SelectionManager} from "./selection"
-
 
 function setHeight(elm: HTMLElement, h: number) {
     elm.style.height = h + "px";
@@ -49,13 +48,15 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
     private _nullArea: NullElement;
     private _highlightingRanges: PopAllQueue<HighlightingRange>[];
 
-    // private _cursor: CursorView;
-    // private _inputer: InputerView;
+    private _cursor_ticktock: TickTockUtil;
 
-    private _window_mousemove_handler: EventListener = null;
-    private _window_mouseup_handler: EventListener = null;
+    private _window_mousemove_handler: EventListener;
+    private _window_mouseup_handler: EventListener;
+    private _window_keydown_handler: EventListener;
+    private _window_keyup_handler: EventListener;
 
     private _mouse_pressed: boolean = false;
+    private _ctrl_pressed: boolean = false;
 
     private _selections: SelectionManager[] = [];
     private _focus_selection: SelectionManager = null;
@@ -70,17 +71,6 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         this._lines = [];
         this._model = _model;
         this._highlightingRanges = [];
-
-        /*
-        this._cursor = new CursorView(thk);
-        this._inputer = new InputerView(thk);
-
-        this._cursor.appendTo(this._dom);
-        this._inputer.appendTo(this._dom);
-
-        this._inputer.on("focus", this.handleInputerFocused.bind(this));
-        this._inputer.on("blur", this.handleInputerBlur.bind(this));
-        */
 
         this._container = <HTMLDivElement>DomHelper.elem("div", "mde-document-container");
         this._dom.appendChild(this._container);
@@ -98,6 +88,10 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
 
         this._window_mousemove_handler = (evt: MouseEvent) => { this.handleWindowMouseMove(evt); }
         this._window_mouseup_handler = (evt: MouseEvent) => { this.handleWindowMouseUp(evt); }
+        this._window_keydown_handler = (evt: KeyboardEvent) => { this.handleWindowKeydown(evt); }
+        this._window_keyup_handler = (evt: KeyboardEvent) => { this.handleWindowKeyup(evt); }
+
+        this._cursor_ticktock = new TickTockUtil(500);
 
         this.bindingEvent();
         this.stylish();
@@ -115,20 +109,27 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
     private bindingEvent() {
         window.addEventListener("mousemove", this._window_mousemove_handler, true);
         window.addEventListener("mouseup", this._window_mouseup_handler, true);
+        window.addEventListener("keydown", this._window_keydown_handler, true);
+        window.addEventListener("keyup", this._window_keyup_handler, true);
     }
 
     private handleDocMouseDown(evt: MouseEvent) {
         this._mouse_pressed = true;
 
-        this._selections.forEach((s: SelectionManager) => {
-            s.dispose();
-            s.remove();
-        });
+        if (!this._ctrl_pressed) {
+            this._selections.forEach((s: SelectionManager) => {
+                s.dispose();
+                s.remove();
+            });
+            this._selections = [];
+        }
 
+        /*
         if (this._focus_selection) {
             this._focus_selection.dispose();
             this._focus_selection.remove();
         }
+        */
         let begin_pos = this.getPositionFromCoordinate({
             x: evt.clientX,
             y: evt.clientY,
@@ -142,14 +143,11 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
             return clientCo;
         }
 
-        let thk = () => {
-            return {
-                x: 0,
-                y: this._dom.scrollTop,
-            }
-        }
-        this._focus_selection = new SelectionManager(LineView.DefaultLeftMarginWidth, this.width, absPosGetter, begin_pos);
+        this._focus_selection = new SelectionManager(LineView.DefaultLeftMarginWidth, this.width, absPosGetter, this._cursor_ticktock);
+        this._focus_selection.setBegin(begin_pos);
         this._focus_selection.binding(this._dom);
+
+        this._selections.push(this._focus_selection);
     }
 
     private handleWindowMouseMove(evt: MouseEvent) {
@@ -172,6 +170,14 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
 
     private handleWindowMouseUp(evt: MouseEvent) {
         this._mouse_pressed = false;
+    }
+
+    private handleWindowKeydown(evt: KeyboardEvent) {
+        if (evt.keyCode === 17) this._ctrl_pressed = true;
+    }
+
+    private handleWindowKeyup(evt: KeyboardEvent) {
+        if (evt.keyCode === 17) this._ctrl_pressed = false;
     }
 
     private getPositionFromCoordinate(co: Coordinate): Position {
@@ -393,11 +399,18 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
                 e.dispose();
             }
         })
-        // this._inputer.dispose();
-        // this._cursor.dispose();
+
+        this._selections.forEach((sel: SelectionManager) => {
+            sel.dispose();
+        });
+
+        this._cursor_ticktock.dispose();
+        this._cursor_ticktock = null;
 
         window.removeEventListener("mousemove", this._window_mousemove_handler, true);
         window.removeEventListener("mouseup", this._window_mouseup_handler, true);
+        window.removeEventListener("keydown", this._window_keydown_handler, true);
+        window.removeEventListener("keyup", this._window_keyup_handler, true);
 
         if (this._focus_selection)
             this._focus_selection.dispose();
