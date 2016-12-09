@@ -1,7 +1,7 @@
 import {LineView} from "./viewLine"
 import {IVirtualElement, Coordinate, HighlightingRange, HighlightingType} from "."
 import {TextModel, LineModel, Position, PositionUtil} from "../model"
-import {IDisposable, DomHelper, TickTockUtil} from "../util"
+import {IDisposable, DomHelper, TickTockUtil, KeyCode} from "../util"
 import {PopAllQueue} from "../util/queue"
 import {InputerView} from "./viewInputer"
 import {CursorView} from "./viewCursor"
@@ -174,11 +174,11 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
     }
 
     private handleWindowKeydown(evt: KeyboardEvent) {
-        if (evt.keyCode === 17) this._ctrl_pressed = true;
+        if (evt.keyCode === KeyCode.Ctrl) this._ctrl_pressed = true;
     }
 
     private handleWindowKeyup(evt: KeyboardEvent) {
-        if (evt.keyCode === 17) this._ctrl_pressed = false;
+        if (evt.keyCode === KeyCode.Ctrl) this._ctrl_pressed = false;
     }
 
     private getPositionFromCoordinate(co: Coordinate): Position {

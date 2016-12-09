@@ -4,6 +4,7 @@ export {DomHelper} from "./dom"
 export {Deque} from "./queue"
 export {Host} from "./host"
 export {TickTockPair, TickTockUtil} from "./ticktock"
+export {KeyCode} from "./keyCode"
 
 export interface IDisposable {
     dispose(): any;
