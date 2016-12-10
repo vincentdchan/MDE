@@ -60,11 +60,6 @@ export class EditorView extends DomHelper.FixedElement
     private _scrollbar: ScrollBarView;
     private _toolbar: ToolbarView;
 
-    private _position: Position = { 
-        line: 1,
-        offset: 0,
-    }
-
     constructor() {
         super("div", "mde-editor");
 
@@ -292,6 +287,7 @@ export class EditorView extends DomHelper.FixedElement
         }
     }
 
+    /*
     private updatePosition(textEdit: TextEdit) {
         switch(textEdit.type) {
             case TextEditType.InsertText:
@@ -309,6 +305,7 @@ export class EditorView extends DomHelper.FixedElement
         }
 
     }
+    */
 
     private handleScrollBarTrainMove(evt: TrainMoveEvent) {
         let tmp = this._document.element().scrollHeight - this._document.element().clientHeight;
