@@ -240,6 +240,10 @@ export class SelectionHandler implements IDisposable {
         }
     }
 
+    focus() {
+        if (this._inputer) this._inputer.element().focus();
+    }
+
     dispose() {
         this._cursor.dispose();
         if(this._isMajor) this._inputer.dispose();
@@ -253,9 +257,9 @@ export class SelectionHandler implements IDisposable {
 
 }
 
-export class SelectionManager implements IDisposable {
+export class SelectionManager extends DomHelper.AppendableDomWrapper implements IDisposable {
 
-    private _father_dom: HTMLElement = null;
+    // private _father_dom: HTMLElement = null;
     private _handlers: SelectionHandler[] = [];
     private _focused_handler: SelectionHandler;
 
@@ -266,23 +270,12 @@ export class SelectionManager implements IDisposable {
     private _cursor_ticktock: TickTockUtil;
 
     constructor(lineMargin: number, docWidth: number, absCoGetter: (pos: Position) => Coordinate, blinkTime: number) {
+        super("div", "mde-selection-manager");
         this._line_margin = lineMargin;
         this._doc_width = docWidth;
         this._abslute_getter = absCoGetter;
 
         this._cursor_ticktock = new TickTockUtil(blinkTime);
-    }
-
-    bind(dom: HTMLElement) {
-        this._father_dom = dom;
-        this._handlers.forEach((sel: SelectionHandler) => {
-            sel.bind(this._father_dom);
-        });
-    }
-    
-    unbind() {
-        this.clearAll();
-        this._father_dom = null;
     }
 
     beginSelect(pos: Position) {
@@ -295,8 +288,7 @@ export class SelectionManager implements IDisposable {
         
         this._focused_handler.setBegin(pos);
         this._focused_handler.setEnd(pos);
-        if (this._father_dom)
-            this._focused_handler.bind(this._father_dom);
+        this._focused_handler.bind(this._dom);
         
         this._handlers.push(this._focused_handler);
     }
@@ -341,6 +333,12 @@ export class SelectionManager implements IDisposable {
             this._handlers.forEach((sel: SelectionHandler) => {
                 sel.documentWidth = w;
             });
+        }
+    }
+
+    focus() {
+        if (this._handlers.length > 0) {
+            this._handlers[0].focus();
         }
     }
 

@@ -25,7 +25,6 @@ export class MDE implements IDisposable, TextEditApplier {
         this._model = new TextModel(content);
 
         this._view = new WindowView();
-        console.log(this._model);
         this._view.bind(this._model);
 
         // this.documentView.addEventListener("click", this.handleClientEvent.bind(this));

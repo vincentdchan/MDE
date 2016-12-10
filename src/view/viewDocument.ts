@@ -5,7 +5,9 @@ import {IDisposable, DomHelper, KeyCode} from "../util"
 import {PopAllQueue} from "../util/queue"
 import {InputerView} from "./viewInputer"
 import {CursorView} from "./viewCursor"
-import {SelectionManager} from "./selection"
+import {SelectionManager} from "./viewSelection"
+import {remote} from "electron"
+import * as Electron from "electron"
 
 function setHeight(elm: HTMLElement, h: number) {
     elm.style.height = h + "px";
@@ -57,6 +59,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
 
     private _mouse_pressed: boolean = false;
     private _ctrl_pressed: boolean = false;
+    private _compositing: boolean = false;
 
     private _selection_manger: SelectionManager;
 
@@ -69,6 +72,24 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         super("div", "mde-document unselectable");
         this._lines = [];
         this._highlightingRanges = [];
+
+        let absPosGetter = (pos: Position) => {
+            let clientCo = this.getCoordinate(pos);
+            let rect = this._dom.getBoundingClientRect();
+            clientCo.x -= rect.left;
+            clientCo.y += this._dom.scrollTop;
+            return clientCo;
+        }
+        this._selection_manger = new SelectionManager(LineView.DefaultLeftMarginWidth, 
+            this.width, absPosGetter, DocumentView.CursorBlinkingInternal);
+        this._selection_manger.appendTo(this._dom);
+
+        this._selection_manger.on("keydown", (evt: MouseEvent) => { this.handleSelectionKeydown(evt); });
+        this._selection_manger.on("compositionstart", (evt: Event) => { this.handleSelectionCompositionStart(evt); });
+        this._selection_manger.on("compositionupdate", (evt: Event) => { this.handleSelectionCompositionUpdate(evt); });
+        this._selection_manger.on("compositionend", (evt: Event) => { this.handleSelectionCompositionEnd(evt); });
+
+        this.on("contextmenu", (evt: MouseEvent) => { this.handleContextMenu(evt); });
 
         this._container = <HTMLDivElement>DomHelper.elem("div", "mde-document-container");
         this._dom.appendChild(this._container);
@@ -87,17 +108,6 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         this._window_mouseup_handler = (evt: MouseEvent) => { this.handleWindowMouseUp(evt); }
         this._window_keydown_handler = (evt: KeyboardEvent) => { this.handleWindowKeydown(evt); }
         this._window_keyup_handler = (evt: KeyboardEvent) => { this.handleWindowKeyup(evt); }
-
-        let absPosGetter = (pos: Position) => {
-            let clientCo = this.getCoordinate(pos);
-            let rect = this._dom.getBoundingClientRect();
-            clientCo.x -= rect.left;
-            clientCo.y += this._dom.scrollTop;
-            return clientCo;
-        }
-        this._selection_manger = new SelectionManager(LineView.DefaultLeftMarginWidth, 
-            this.width, absPosGetter, DocumentView.CursorBlinkingInternal);
-        this._selection_manger.bind(this._dom);
 
         this.bindingEvent();
         this.stylish();
@@ -153,6 +163,44 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         window.addEventListener("keyup", this._window_keyup_handler, true);
     }
 
+    private handleContextMenu(evt: MouseEvent) {
+        evt.preventDefault();
+
+        let options: Electron.MenuItemOptions[] = [
+            {
+                label: "Cut",
+                accelerator: "Control+X",
+            },
+            {
+                label: "Copy",
+                accelerator: "Control+C",
+            },
+            {
+                label: "Paste",
+                accelerator: "Control+V",
+            },
+        ]
+
+        let menu = remote.Menu.buildFromTemplate(options);
+
+        menu.popup(remote.getCurrentWindow());
+    }
+
+    private handleSelectionKeydown(evt: MouseEvent) {
+        console.log("selection keydown");
+    }
+
+    private handleSelectionCompositionStart(evt: Event) {
+        this._compositing = true;
+    }
+
+    private handleSelectionCompositionUpdate(evt: Event) {
+    }
+
+    private handleSelectionCompositionEnd(evt: Event) {
+        this._compositing = false;
+    }
+
     private handleDocMouseDown(evt: MouseEvent) {
         this._mouse_pressed = true;
 
@@ -196,6 +244,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
 
     private handleWindowMouseUp(evt: MouseEvent) {
         this._mouse_pressed = false;
+        this._selection_manger.focus();
     }
 
     private handleWindowKeydown(evt: KeyboardEvent) {
@@ -346,9 +395,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
 
     dispose() {
         this._lines.forEach((e: LineView) => {
-            if (e) {
-                e.dispose();
-            }
+            if (e) e.dispose();
         })
 
         this._selection_manger.dispose();

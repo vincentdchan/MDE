@@ -16,6 +16,7 @@ export class CursorView extends DomHelper.AppendableDomWrapper implements IDispo
         this._isMajor = isMajor;
 
         this._ticktock = ticktock;
+        this._dom.style.zIndex = "-1";
         this._dom.style.position = "absolute";
         this._dom.style.height = "22px";
         this._dom.style.width = "2px";
