@@ -395,7 +395,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
 
     set width(w: number) {
         super.width = w;
-        this._selection_manger.repainAll();
+        this._selection_manger.documentWidth = w;
     }
 
     get width() {

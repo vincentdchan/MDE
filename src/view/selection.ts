@@ -114,11 +114,6 @@ export class SelectionHandler implements IDisposable {
         throw new Error("Not implemented.");
     }
 
-    setDocumentWidth(w: number) {
-        this._docWidth = w;
-        this.repaint();
-    }
-
     get collapsed() {
         return this._end_pos === null || this._end_pos === undefined || 
             PositionUtil.equalPostion(this._begin_pos, this._end_pos);
@@ -234,6 +229,17 @@ export class SelectionHandler implements IDisposable {
         return this._end_pos;
     }
 
+    get documentWidth() {
+        return this._docWidth;
+    }
+
+    set documentWidth(w: number) {
+        if (w != this._docWidth) {
+            this._docWidth = w;
+            this.repaint();
+        }
+    }
+
     dispose() {
         this._cursor.dispose();
         if(this._isMajor) this._inputer.dispose();
@@ -323,6 +329,19 @@ export class SelectionManager implements IDisposable {
         this._handlers.forEach((sel: SelectionHandler) => {
             sel.repaint();
         });
+    }
+
+    get documentWidth() {
+        return this._doc_width;
+    }
+
+    set documentWidth(w: number) {
+        if (w !== this._doc_width) {
+            this._doc_width = w;
+            this._handlers.forEach((sel: SelectionHandler) => {
+                sel.documentWidth = w;
+            });
+        }
     }
 
     dispose() {
