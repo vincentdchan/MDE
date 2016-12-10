@@ -41,7 +41,6 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
         this._splitter.appendTo(this._dom);
 
         this._editor = new EditorView();
-        this._editor.bind(this._model);
         this._editor.appendTo(this._dom);
 
         updateLayoutThunk.call(this);
@@ -82,6 +81,7 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
 
     bind(model: TextModel) {
         this._model = model;
+
         this._editor.bind(model);
     }
 

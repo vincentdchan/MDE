@@ -103,7 +103,12 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         this.stylish();
     }
 
-    private render() {
+    bind(model: TextModel) {
+        this._model = model;
+        this._position = {
+            line: 1,
+            offset: 0,
+        }
 
         this._lines[0] = null;
         this._model.forEach((line: LineModel) => {
@@ -116,17 +121,6 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
             vl.renderLineNumber(line.number);
             this._container.appendChild(vl.element());
         })
-
-    }
-
-    bind(model: TextModel) {
-        this._model = model;
-        this._position = {
-            line: 1,
-            offset: 0,
-        }
-
-        this.render();
     }
 
     unbind() {

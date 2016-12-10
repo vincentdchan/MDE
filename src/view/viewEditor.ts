@@ -262,7 +262,6 @@ export class EditorView extends DomHelper.FixedElement
                         this.documentView.renderLine(init_length + i);
                     }
 
-
                 }
                 break;
             case TextEditType.DeleteText:
