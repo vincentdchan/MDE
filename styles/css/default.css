@@ -91,3 +91,7 @@ body {
 .mde-document-selection-atom {
     background: pink;
 }
+
+.mde-document-selection-atom.major {
+    background: hotpink;
+}

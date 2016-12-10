@@ -24,7 +24,8 @@ export class MDE implements IDisposable, TextEditApplier {
 
         this._model = new TextModel(content);
 
-        this._view = new WindowView(this._model);
+        this._view = new WindowView();
+        this._view.bind(this._model);
 
         // this.documentView.addEventListener("click", this.handleClientEvent.bind(this));
 
@@ -51,7 +52,9 @@ export class MDE implements IDisposable, TextEditApplier {
 
     reloadText(content: string) {
         this._model = new TextModel(content);
-        this._view.reaload(this._model);
+
+        this._view.unbind();
+        this._view.bind(this._model);
     }
 
     private findLineAncestor(node: Node) : HTMLElement {

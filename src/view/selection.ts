@@ -1,4 +1,4 @@
-import {DomHelper, IDisposable, TickTockUtil} from "../util"
+import {DomHelper, IDisposable, TickTockUtil, KeyCode} from "../util"
 import {Position, PositionUtil} from "../model"
 import {Coordinate} from "."
 import {InputerView} from "./viewInputer"
@@ -6,14 +6,16 @@ import {CursorView} from "./viewCursor"
 
 export class SelectionAtom extends DomHelper.AbsoluteElement {
 
-    constructor() {
+    constructor(isMajor: boolean) {
         super("div", "mde-document-selection-atom");
+
+        if (isMajor) this._dom.classList.add("major");
         this._dom.style.zIndex = "-1";
     }
 
 }
 
-export class SelectionManager implements IDisposable {
+export class SelectionHandler implements IDisposable {
 
     public static readonly DefalutLineHeight = 22;
 
@@ -43,11 +45,41 @@ export class SelectionManager implements IDisposable {
         this._coGetter = absCoGetter;
 
         this._cursor = new CursorView(isMajor, ticktock);
-        if (this._isMajor)
+        if (this._isMajor) {
             this._inputer = new InputerView();
+
+            this._inputer.on("keydown", (evt: KeyboardEvent) => {
+                this.handleInputerKeydown(evt);
+            });
+        }
     }
 
-    binding(_father_dom: HTMLElement) {
+    private handleInputerKeydown(evt: KeyboardEvent) {
+        switch(evt.keyCode) {
+            case KeyCode.UpArrow:
+                break;
+            case KeyCode.DownArrow:
+                break;
+            case KeyCode.LeftArrow:
+                if (this.collapsed) {
+
+                } else {
+                    this._end_pos = PositionUtil.clonePosition(this._begin_pos);
+                    this.paint();
+                }
+                break;
+            case KeyCode.RightArrow:
+                if (this.collapsed) {
+
+                } else {
+                    this._begin_pos = PositionUtil.clonePosition(this._end_pos);
+                    this.paint();
+                }
+                break;
+        }
+    }
+
+    bind(_father_dom: HTMLElement) {
         this._father_dom = _father_dom;
 
         this._cursor.appendTo(this._father_dom);
@@ -143,7 +175,7 @@ export class SelectionManager implements IDisposable {
             if (beginCo.y === endCo.y) {
 
                 if (this._top_atom === null) {
-                    this._top_atom = new SelectionAtom();
+                    this._top_atom = new SelectionAtom(this._isMajor);
                     this._top_atom.appendTo(this._father_dom);
                 }
                 if (this._middle_atom !== null) {
@@ -156,7 +188,7 @@ export class SelectionManager implements IDisposable {
                 }
 
                 this._top_atom.width = endCo.x - beginCo.x;
-                this._top_atom.height = SelectionManager.DefalutLineHeight;
+                this._top_atom.height = SelectionHandler.DefalutLineHeight;
 
                 this._top_atom.marginLeft = beginCo.x;
                 this._top_atom.top = beginCo.y;
@@ -164,19 +196,19 @@ export class SelectionManager implements IDisposable {
             } else {
 
                 if (this._top_atom === null) {
-                    this._top_atom = new SelectionAtom();
+                    this._top_atom = new SelectionAtom(this._isMajor);
                     this._top_atom.appendTo(this._father_dom);
                 }
                 if (this._middle_atom === null) {
-                    this._middle_atom = new SelectionAtom();
+                    this._middle_atom = new SelectionAtom(this._isMajor);
                     this._middle_atom.appendTo(this._father_dom);
                 }
                 if (this._end_atom === null) {
-                    this._end_atom = new SelectionAtom();
+                    this._end_atom = new SelectionAtom(this._isMajor);
                     this._end_atom.appendTo(this._father_dom);
                 }
 
-                this._top_atom.height = this._end_atom.height = SelectionManager.DefalutLineHeight;
+                this._top_atom.height = this._end_atom.height = SelectionHandler.DefalutLineHeight;
                 
                 this._top_atom.marginLeft = beginCo.x;
                 this._top_atom.width = this._docWidth - beginCo.x;
@@ -211,6 +243,95 @@ export class SelectionManager implements IDisposable {
         this.clearAll();
         this._cursor.remove();
         if(this._isMajor) this._inputer.remove();
+    }
+
+}
+
+export class SelectionManager implements IDisposable {
+
+    private _father_dom: HTMLElement = null;
+    private _handlers: SelectionHandler[] = [];
+    private _focused_handler: SelectionHandler;
+
+    private _line_margin: number;
+    private _doc_width: number;
+    private _abslute_getter: (pos: Position) => Coordinate;
+
+    private _cursor_ticktock: TickTockUtil;
+
+    constructor(lineMargin: number, docWidth: number, absCoGetter: (pos: Position) => Coordinate, blinkTime: number) {
+        this._line_margin = lineMargin;
+        this._doc_width = docWidth;
+        this._abslute_getter = absCoGetter;
+
+        this._cursor_ticktock = new TickTockUtil(blinkTime);
+    }
+
+    bind(dom: HTMLElement) {
+        this._father_dom = dom;
+        this._handlers.forEach((sel: SelectionHandler) => {
+            sel.bind(this._father_dom);
+        });
+    }
+    
+    unbind() {
+        this.clearAll();
+        this._father_dom = null;
+    }
+
+    beginSelect(pos: Position) {
+        let isMajor = this._handlers.length === 0;
+        this._focused_handler = new SelectionHandler(isMajor, 
+            this._line_margin, 
+            this._doc_width, 
+            this._abslute_getter, 
+            this._cursor_ticktock);
+        
+        this._focused_handler.setBegin(pos);
+        this._focused_handler.setEnd(pos);
+        if (this._father_dom)
+            this._focused_handler.bind(this._father_dom);
+        
+        this._handlers.push(this._focused_handler);
+    }
+
+    moveCursorTo(pos: Position): boolean {
+        if (this._focused_handler) {
+            this._focused_handler.setEnd(pos);
+            return true;
+        }
+        return false;
+    }
+
+    endSelecting() {
+        this._focused_handler = null;
+    }
+
+    selectionAt(index: number): SelectionHandler {
+        return this._handlers[index];
+    }
+    
+    clearAll() {
+        this._handlers.forEach((sel: SelectionHandler) => {
+            sel.dispose();
+            sel.remove();
+        });
+        this._handlers = [];
+    }
+
+    repainAll() {
+        this._handlers.forEach((sel: SelectionHandler) => {
+            sel.repaint();
+        });
+    }
+
+    dispose() {
+        this._handlers.forEach((sel: SelectionHandler) => {
+            sel.dispose();
+        });
+        this._handlers = [];
+
+        this._cursor_ticktock.dispose();
     }
 
 }

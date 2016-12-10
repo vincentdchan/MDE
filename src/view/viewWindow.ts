@@ -8,7 +8,7 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
 
     public static readonly leftPadWidth = 220;
 
-    private _model : TextModel;
+    private _model : TextModel = null;
 
     private _width : number;
     private _height: number;
@@ -17,7 +17,7 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
     private _splitter : SplitterView;
     private _editor : EditorView;
 
-    constructor(_model : TextModel) {
+    constructor() {
         super("div", "mde-window");
 
         this.requestWindowSize();
@@ -34,15 +34,14 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
 
         });
 
-        this._model = _model;
-
         this._leftPanel = new LeftPanelView(WindowView.leftPadWidth, this._height);
         this._leftPanel.appendTo(this._dom);
 
         this._splitter = new SplitterView();
         this._splitter.appendTo(this._dom);
 
-        this._editor = new EditorView(this._model);
+        this._editor = new EditorView();
+        this._editor.bind(this._model);
         this._editor.appendTo(this._dom);
 
         updateLayoutThunk.call(this);
@@ -81,9 +80,14 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
         });
     }
 
-    reaload(_model: TextModel) {
-        this._model = _model;
-        this._editor.reload(_model);
+    bind(model: TextModel) {
+        this._model = model;
+        this._editor.bind(model);
+    }
+
+    unbind() {
+        this._editor.unbind();
+        this._model = null;
     }
 
     private _mouseMoveHandler = null;

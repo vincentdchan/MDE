@@ -1,7 +1,7 @@
 import {LineView} from "./viewLine"
 import {IVirtualElement, Coordinate, HighlightingRange, HighlightingType} from "."
 import {TextModel, LineModel, Position, PositionUtil} from "../model"
-import {IDisposable, DomHelper, TickTockUtil, KeyCode} from "../util"
+import {IDisposable, DomHelper, KeyCode} from "../util"
 import {PopAllQueue} from "../util/queue"
 import {InputerView} from "./viewInputer"
 import {CursorView} from "./viewCursor"
@@ -42,13 +42,13 @@ class NullElement extends DomHelper.ResizableElement {
 ///
 export class DocumentView extends DomHelper.AbsoluteElement implements IDisposable {
 
-    private _model: TextModel;
+    public static readonly CursorBlinkingInternal = 500;
+
+    private _model: TextModel = null;
     private _container: HTMLDivElement;
     private _lines: LineView[];
     private _nullArea: NullElement;
     private _highlightingRanges: PopAllQueue<HighlightingRange>[];
-
-    private _cursor_ticktock: TickTockUtil;
 
     private _window_mousemove_handler: EventListener;
     private _window_mouseup_handler: EventListener;
@@ -58,18 +58,16 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
     private _mouse_pressed: boolean = false;
     private _ctrl_pressed: boolean = false;
 
-    private _selections: SelectionManager[] = [];
-    private _focus_selection: SelectionManager = null;
+    private _selection_manger: SelectionManager;
 
     private _position: Position = { 
         line: 1,
         offset: 0,
     }
 
-    constructor(_model) {
+    constructor() {
         super("div", "mde-document unselectable");
         this._lines = [];
-        this._model = _model;
         this._highlightingRanges = [];
 
         this._container = <HTMLDivElement>DomHelper.elem("div", "mde-document-container");
@@ -90,10 +88,59 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         this._window_keydown_handler = (evt: KeyboardEvent) => { this.handleWindowKeydown(evt); }
         this._window_keyup_handler = (evt: KeyboardEvent) => { this.handleWindowKeyup(evt); }
 
-        this._cursor_ticktock = new TickTockUtil(500);
+        let absPosGetter = (pos: Position) => {
+            let clientCo = this.getCoordinate(pos);
+            let rect = this._dom.getBoundingClientRect();
+            clientCo.x -= rect.left;
+            clientCo.y += this._dom.scrollTop;
+            return clientCo;
+        }
+        this._selection_manger = new SelectionManager(LineView.DefaultLeftMarginWidth, 
+            this.width, absPosGetter, DocumentView.CursorBlinkingInternal);
+        this._selection_manger.bind(this._dom);
 
         this.bindingEvent();
         this.stylish();
+    }
+
+    private render() {
+
+        this._lines[0] = null;
+        this._model.forEach((line: LineModel) => {
+            var vl = new LineView();
+
+            this._lines[line.number] = vl;
+            this._highlightingRanges[line.number] = new PopAllQueue<HighlightingRange>();
+
+            vl.render(line.text);
+            vl.renderLineNumber(line.number);
+            this._container.appendChild(vl.element());
+        })
+
+    }
+
+    bind(model: TextModel) {
+        this._model = model;
+        this._position = {
+            line: 1,
+            offset: 0,
+        }
+
+        this.render();
+    }
+
+    unbind() {
+        this._selection_manger.clearAll();
+
+        this._lines.forEach((e: LineView) => {
+            if (e) {
+                e.dispose();
+                e.remove();
+            }
+        })
+
+        this._lines = [null];
+        this._model = null;
     }
 
     private stylish() {
@@ -116,19 +163,9 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         this._mouse_pressed = true;
 
         if (!this._ctrl_pressed) {
-            this._selections.forEach((s: SelectionManager) => {
-                s.dispose();
-                s.remove();
-            });
-            this._selections = [];
+            this._selection_manger.clearAll();
         }
 
-        /*
-        if (this._focus_selection) {
-            this._focus_selection.dispose();
-            this._focus_selection.remove();
-        }
-        */
         let begin_pos = this.getPositionFromCoordinate({
             x: evt.clientX,
             y: evt.clientY,
@@ -142,12 +179,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
             return clientCo;
         }
 
-        let isMajor = this._selections.length === 0;
-        this._focus_selection = new SelectionManager(isMajor, LineView.DefaultLeftMarginWidth, this.width, absPosGetter, this._cursor_ticktock);
-        this._focus_selection.setBegin(begin_pos);
-        this._focus_selection.binding(this._dom);
-
-        this._selections.push(this._focus_selection);
+        this._selection_manger.beginSelect(begin_pos);
     }
 
     private handleWindowMouseMove(evt: MouseEvent) {
@@ -160,8 +192,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
                     y: evt.clientY,
                 });
 
-                // this._focus_selection.resetEnd(pos);
-                this._focus_selection.setEnd(pos);
+                this._selection_manger.moveCursorTo(pos);
             } catch (e) {
                 // not in range. do not handle it.
             }
@@ -234,52 +265,6 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         let coordinate = this._lines[this._position.line].getCoordinate(this._position.offset);
         coordinate.y -= docRect.top;
 
-    }
-
-    reload(_model: TextModel) {
-        this.dispose();
-
-        this._cursor_ticktock = new TickTockUtil(500);
-
-        this._lines = [] 
-        this._model = _model;
-        this._highlightingRanges = [];
-
-        this._dom.removeChild(this._container);
-        this._container = <HTMLDivElement>DomHelper.elem("div", "mde-document-container");
-        this._dom.insertBefore(this._container, this._nullArea.element());
-
-        this._position = {
-            line: 1,
-            offset: 0,
-        }
-
-        this.bindingEvent();
-    }
-
-    render(): HTMLElement {
-
-        this._lines[0] = null;
-        this._model.forEach((line: LineModel) => {
-            var vl = new LineView();
-
-            this._lines[line.number] = vl;
-            this._highlightingRanges[line.number] = new PopAllQueue<HighlightingRange>();
-
-            vl.render(line.text);
-            vl.renderLineNumber(line.number);
-            this._container.appendChild(vl.element());
-        })
-
-        return this._dom;
-    }
-
-    private handleInputerFocused(evt : FocusEvent) {
-        // this._cursor.excite();
-    }
-
-    private handleInputerBlur(evt : FocusEvent) {
-        // this._cursor.setOff();
     }
 
     getCoordinate(pos: Position) : Coordinate {
@@ -372,20 +357,12 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
             }
         })
 
-        this._selections.forEach((sel: SelectionManager) => {
-            sel.dispose();
-        });
-
-        this._cursor_ticktock.dispose();
-        this._cursor_ticktock = null;
+        this._selection_manger.dispose();
 
         window.removeEventListener("mousemove", this._window_mousemove_handler, true);
         window.removeEventListener("mouseup", this._window_mouseup_handler, true);
         window.removeEventListener("keydown", this._window_keydown_handler, true);
         window.removeEventListener("keyup", this._window_keyup_handler, true);
-
-        if (this._focus_selection)
-            this._focus_selection.dispose();
     }
 
     get scrollTop() {
@@ -415,8 +392,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
     set height(h : number) {
         super.height = h;
         this._nullArea.height = h / 2;
-        if (this._focus_selection)
-            this._focus_selection.repaint();
+        this._selection_manger.repainAll();
     }
 
     get height() {
@@ -425,8 +401,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
 
     set width(w: number) {
         super.width = w;
-        if (this._focus_selection)
-            this._focus_selection.setDocumentWidth(w);
+        this._selection_manger.repainAll();
     }
 
     get width() {

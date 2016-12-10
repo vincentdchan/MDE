@@ -54,7 +54,8 @@ export class EditorView extends DomHelper.FixedElement
     public static readonly DefaultLineMarginWidth = 40;
     public static readonly MinWidth = 100;
 
-    private _model: TextModel;
+    private _model: TextModel = null;
+
     private _document: DocumentView;
     private _scrollbar: ScrollBarView;
     private _toolbar: ToolbarView;
@@ -64,18 +65,16 @@ export class EditorView extends DomHelper.FixedElement
         offset: 0,
     }
 
-    constructor(_model: TextModel) {
+    constructor() {
         super("div", "mde-editor");
 
         this._toolbar = new ToolbarView(toolbarButtons);
         this._toolbar.top = 0;
 
-        this._model = _model;
-        this._document = new DocumentView(_model);
+        this._document = new DocumentView();
         this._document.top = this._toolbar.height;
         this._document.on("scroll", this.handleDocumentScroll.bind(this));
         // this._document.on("click", this.handleDocumentClick.bind(this));
-        this._document.render();
 
         this._scrollbar = new ScrollBarView();
         this._scrollbar.top = this._toolbar.height;
@@ -93,21 +92,20 @@ export class EditorView extends DomHelper.FixedElement
             this._scrollbar.trainHeightPercentage = this.getScrollTrainHeightPercentage();
         }, 10);
 
-        /*
-        this._inputer.addEventListener("keydown", (evt: KeyboardEvent) => {
-            setTimeout(() => {
-                this.handleInputerKeyDown(evt);
-            }, 5);
-        });
-        */
-
     }
 
-    reload(_model: TextModel) {
-        this.documentView.reload(_model);
-        this.documentView.render();
+    bind(model: TextModel) {
+        this._model = model;
+        this._document.bind(this._model);
 
-        this._scrollbar.trainHeightPercentage = this.getScrollTrainHeightPercentage();
+        setTimeout(() => {
+            this._scrollbar.trainHeightPercentage = this.getScrollTrainHeightPercentage();
+        }, 10);
+    }
+
+    unbind() {
+        this._document.unbind();
+        this._model = null;
     }
 
     private stylish()
