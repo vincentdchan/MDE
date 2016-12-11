@@ -1,12 +1,13 @@
 import {LineView} from "./viewLine"
 import {IVirtualElement, Coordinate, HighlightingRange, HighlightingType} from "."
-import {TextModel, LineModel, Position, PositionUtil} from "../model"
+import {TextModel, LineModel, Position, PositionUtil, 
+    TextEdit, TextEditType, TextEditApplier} from "../model"
 import {IDisposable, DomHelper, KeyCode} from "../util"
 import {PopAllQueue} from "../util/queue"
 import {InputerView} from "./viewInputer"
 import {CursorView} from "./viewCursor"
 import {SelectionManager} from "./viewSelection"
-import {remote} from "electron"
+import {remote, clipboard} from "electron"
 import * as Electron from "electron"
 
 function setHeight(elm: HTMLElement, h: number) {
@@ -42,7 +43,8 @@ class NullElement extends DomHelper.ResizableElement {
 ///
 /// CursorMove
 ///
-export class DocumentView extends DomHelper.AbsoluteElement implements IDisposable {
+export class DocumentView extends DomHelper.AbsoluteElement implements 
+    IDisposable, TextEditApplier {
 
     public static readonly CursorBlinkingInternal = 500;
 
@@ -61,15 +63,14 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
     private _ctrl_pressed: boolean = false;
     private _compositing: boolean = false;
 
+    private _allow_multiselections: boolean;
     private _selection_manger: SelectionManager;
 
-    private _position: Position = { 
-        line: 1,
-        offset: 0,
-    }
 
-    constructor() {
+    constructor(allowMultiselections: boolean = false) {
         super("div", "mde-document unselectable");
+
+        this._allow_multiselections = allowMultiselections;
         this._lines = [];
         this._highlightingRanges = [];
 
@@ -101,7 +102,6 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
             this._nullArea.height = this._dom.clientHeight / 2;
         }, 5);
 
-        this.on("click", this.handleClick.bind(this));
         this.on("mousedown", this.handleDocMouseDown.bind(this));
 
         this._window_mousemove_handler = (evt: MouseEvent) => { this.handleWindowMouseMove(evt); }
@@ -115,10 +115,6 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
 
     bind(model: TextModel) {
         this._model = model;
-        this._position = {
-            line: 1,
-            offset: 0,
-        }
 
         this._lines[0] = null;
         this._model.forEach((line: LineModel) => {
@@ -145,6 +141,10 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
 
         this._lines = [null];
         this._model = null;
+    }
+
+    applyTextEdit(textEdit: TextEdit) {
+
     }
 
     private stylish() {
@@ -174,6 +174,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
             {
                 label: "Copy",
                 accelerator: "Control+C",
+                click: () => { this.copyToClipboard() }
             },
             {
                 label: "Paste",
@@ -186,8 +187,64 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         menu.popup(remote.getCurrentWindow());
     }
 
+    private computeForwardOffset(textEdit: TextEdit){
+
+        switch(textEdit.type) {
+            case TextEditType.InsertText:
+                break;
+            case TextEditType.DeleteText:
+                break;
+            case TextEditType.ReplaceText:
+                break;
+        }
+
+    }
+
     private handleSelectionKeydown(evt: MouseEvent) {
-        console.log("selection keydown");
+
+        setTimeout(() => {
+
+            if (!this._compositing) {
+
+                let majorSelection = this._selection_manger.selectionAt(0);
+
+                if (majorSelection.collapsed) {
+
+                    let textEdit = new TextEdit(TextEditType.InsertText, 
+                        this._selection_manger.selectionAt(0).beginPosition, 
+                        this._selection_manger.selectionAt(0).inputerContent);
+                    
+                    this._selection_manger.selectionAt(0).clearInputerContent();
+
+                    this._model.applyTextEdit(textEdit);
+
+                    let beginPos = this._selection_manger.selectionAt(0).beginPosition;
+
+                    for (let i=beginPos.line; i < this._lines.length; i++) {
+                        this.renderLine(i);
+                    }
+
+                } else {
+
+                    let textEdit = new TextEdit(TextEditType.ReplaceText, {
+                        begin: majorSelection.beginPosition,
+                        end: majorSelection.endPosition,
+                    }, majorSelection.inputerContent);
+
+                    majorSelection.clearInputerContent();
+                    this._model.applyTextEdit(textEdit);
+
+                    for (let i=majorSelection.beginPosition.line; i < this._model.linesCount; i++) {
+                        this.renderLine(i);
+                    }
+
+                }
+
+
+            }
+
+        }, 10);
+
     }
 
     private handleSelectionCompositionStart(evt: Event) {
@@ -204,10 +261,6 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
     private handleDocMouseDown(evt: MouseEvent) {
         this._mouse_pressed = true;
 
-        if (!this._ctrl_pressed) {
-            this._selection_manger.clearAll();
-        }
-
         let begin_pos = this.getPositionFromCoordinate({
             x: evt.clientX,
             y: evt.clientY,
@@ -221,7 +274,13 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
             return clientCo;
         }
 
-        this._selection_manger.beginSelect(begin_pos);
+        if (evt.which === 1) {
+            if (!this._ctrl_pressed || !this._allow_multiselections) {
+                this._selection_manger.clearAll();
+            }
+
+            this._selection_manger.beginSelect(begin_pos);
+        }
     }
 
     private handleWindowMouseMove(evt: MouseEvent) {
@@ -295,19 +354,32 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         }
     }
 
-    private handleClick(evt: MouseEvent) {
-        evt.preventDefault();
+    private copyToClipboard() {
+        if (this._selection_manger.length > 0) {
+            let majorSelection = this._selection_manger.selectionAt(0);
+            if (majorSelection.collapsed) {
+                let end: Position = {
+                    line: majorSelection.beginPosition.line,
+                    offset: majorSelection.beginPosition.offset + 1,
+                }
+                let text = this._model.report({
+                    begin: majorSelection.beginPosition,
+                    end: end,
+                });
+                clipboard.writeText(text);
+            } else {
+                let beginPos: Position = majorSelection.beginPosition,
+                    endPos: Position = majorSelection.endPosition;
+                if (PositionUtil.greaterPosition(beginPos, endPos)) {
+                    let tmp = endPos;
+                    endPos = beginPos;
+                    beginPos = tmp;
+                }
 
-        this._position = this.getPositionFromCoordinate({
-            x: evt.clientX,
-            y: evt.clientY,
-        });
-
-        let docRect = this._dom.getBoundingClientRect();
-
-        let coordinate = this._lines[this._position.line].getCoordinate(this._position.offset);
-        coordinate.y -= docRect.top;
-
+                let text = this._model.report({begin: beginPos, end: endPos});
+                clipboard.writeText(text);
+            }
+        }
     }
 
     getCoordinate(pos: Position) : Coordinate {

@@ -213,13 +213,16 @@ export class TextModel implements TextEditApplier, ITextDocument {
 
     report(_range: Range) : string {
         var buf = new StringBuffer();
-        buf.push(this._lines[_range.begin.line].text.slice(_range.begin.offset, _range.end.offset));
 
-        for (let i = _range.begin.line + 1; i < _range.end.line - 1; i++) {
-            buf.push(this._lines[i].text)
-        }
+        if (_range.begin.line === _range.end.line) {
+            buf.push(this._lines[_range.begin.line].text.slice(_range.begin.offset, _range.end.offset));
+        } else {
+            buf.push(this._lines[_range.begin.line].text.slice(_range.begin.offset));
 
-        if (_range.end.line > _range.begin.line) {
+            for (let i = _range.begin.line + 1; i < _range.end.line; i++) {
+                buf.push(this._lines[i].text)
+            }
+
             buf.push(this._lines[_range.end.line].text.slice(0, _range.end.offset));
         }
 

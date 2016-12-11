@@ -36,7 +36,8 @@ export class SelectionHandler implements IDisposable {
     private _cursor: CursorView = null;
     private _inputer: InputerView = null;
 
-    constructor(isMajor: boolean, lineMargin: number, docWidth: number, absCoGetter: (pos: Position) => Coordinate, ticktock: TickTockUtil) {
+    constructor(isMajor: boolean, lineMargin: number, docWidth: number, 
+        absCoGetter: (pos: Position) => Coordinate, ticktock: TickTockUtil) {
 
         this._isMajor = isMajor;
 
@@ -110,8 +111,12 @@ export class SelectionHandler implements IDisposable {
         this.paint();
     }
 
-    collapse() {
-        throw new Error("Not implemented.");
+    leftCollapse() {
+        this._end_pos = PositionUtil.clonePosition(this._begin_pos);
+    }
+
+    rightCollapse() {
+        this._begin_pos = PositionUtil.clonePosition(this._end_pos);
     }
 
     get collapsed() {
@@ -143,7 +148,7 @@ export class SelectionHandler implements IDisposable {
             this._cursor.setAbsoluteCoordinate(beginCo);
             this._cursor.show();
 
-            if (this._isMajor) {
+            if (this._inputer) {
                 this._inputer.setAbsoluteCoordinate(beginCo);
                 this._inputer.show();
             }
@@ -151,7 +156,6 @@ export class SelectionHandler implements IDisposable {
             !PositionUtil.equalPostion(this._begin_pos, this._end_pos)) {
 
             this._cursor.hide();
-            if (this._isMajor) this._inputer.hide();
 
             let begin_pos: Position,
                 end_pos: Position;
@@ -188,6 +192,9 @@ export class SelectionHandler implements IDisposable {
                 this._top_atom.marginLeft = beginCo.x;
                 this._top_atom.top = beginCo.y;
 
+                if (this._inputer)
+                    this._inputer.setAbsoluteCoordinate(endCo);
+
             } else {
 
                 if (this._top_atom === null) {
@@ -217,6 +224,9 @@ export class SelectionHandler implements IDisposable {
                 this._end_atom.top = endCo.y;
                 this._end_atom.width = endCo.x - this._lineMargin;
                 this._end_atom.marginLeft = this._lineMargin;
+
+                if (this._inputer)
+                    this._inputer.setAbsoluteCoordinate(endCo);
             }
         }
     }
@@ -238,6 +248,16 @@ export class SelectionHandler implements IDisposable {
             this._docWidth = w;
             this.repaint();
         }
+    }
+
+    get inputerContent() {
+        if (this._inputer) return this._inputer.value;
+        else throw new Error("Only major selection can have inputer content.");
+    }
+
+    clearInputerContent() {
+        if (this._inputer) this._inputer.clearContent();
+        else throw new Error("This selection does not have inputer.");
     }
 
     focus() {
@@ -323,6 +343,16 @@ export class SelectionManager extends DomHelper.AppendableDomWrapper implements 
         });
     }
 
+    clearInputerContent() {
+        if (this._handlers.length > 0) this._handlers[0].clearInputerContent();
+        else throw new Error("Do not have any selections handlers.");
+    }
+
+    get inputerContent() {
+        if (this._handlers.length > 0) return this._handlers[0].inputerContent;
+        else throw new Error("Do not have any selection handlers.");
+    }
+
     get documentWidth() {
         return this._doc_width;
     }
@@ -334,6 +364,10 @@ export class SelectionManager extends DomHelper.AppendableDomWrapper implements 
                 sel.documentWidth = w;
             });
         }
+    }
+
+    get length() {
+        return this._handlers.length;
     }
 
     focus() {
