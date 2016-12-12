@@ -303,6 +303,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements
 
     private handleWindowMouseUp(evt: MouseEvent) {
         this._mouse_pressed = false;
+        if (this._selection_manger.focusedSelection) this._selection_manger.endSelecting();
         this._selection_manger.focus();
     }
 
@@ -368,13 +369,9 @@ export class DocumentView extends DomHelper.AbsoluteElement implements
                 });
                 clipboard.writeText(text);
             } else {
+                majorSelection.normalize();
                 let beginPos: Position = majorSelection.beginPosition,
                     endPos: Position = majorSelection.endPosition;
-                if (PositionUtil.greaterPosition(beginPos, endPos)) {
-                    let tmp = endPos;
-                    endPos = beginPos;
-                    beginPos = tmp;
-                }
 
                 let text = this._model.report({begin: beginPos, end: endPos});
                 clipboard.writeText(text);

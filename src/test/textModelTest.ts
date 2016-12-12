@@ -91,6 +91,8 @@ console.log("Report testing...");
 /// add text at the random line of document
 /// add text at out of range and check the Error
 /// add text add the end of document
+
+/*
 console.log("Inserting testing...");
 (() => {
     // Insert at the beginning of document
@@ -169,3 +171,5 @@ console.log("Delete text testing...");
 })();
 
 console.log("All test done.");
+
+*/

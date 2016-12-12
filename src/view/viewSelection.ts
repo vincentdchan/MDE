@@ -231,6 +231,16 @@ export class SelectionHandler implements IDisposable {
         }
     }
 
+    normalize() {
+        if (PositionUtil.greaterPosition(this._begin_pos, this._end_pos)) {
+            let tmp = this._begin_pos;
+            this._begin_pos = this._end_pos;
+            this._end_pos = tmp;
+
+            this.paint();
+        }
+    }
+
     get beginPosition() {
         return this._begin_pos;
     }
@@ -322,6 +332,7 @@ export class SelectionManager extends DomHelper.AppendableDomWrapper implements 
     }
 
     endSelecting() {
+        this._focused_handler.normalize();
         this._focused_handler = null;
     }
 
@@ -346,6 +357,10 @@ export class SelectionManager extends DomHelper.AppendableDomWrapper implements 
     clearInputerContent() {
         if (this._handlers.length > 0) this._handlers[0].clearInputerContent();
         else throw new Error("Do not have any selections handlers.");
+    }
+
+    get focusedSelection() {
+        return this._focused_handler;
     }
 
     get inputerContent() {

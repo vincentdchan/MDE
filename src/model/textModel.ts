@@ -91,22 +91,23 @@ export class TextModel implements TextEditApplier, ITextDocument {
 
         switch(textEdit.type) {
             case TextEditType.InsertText:
-                this.insertText(textEdit.position, textEdit.text);
+                this.insertText(textEdit);
                 break;
             case TextEditType.DeleteText:
-                this.deleteText(textEdit.range);
+                this.deleteText(textEdit);
                 break;
             case TextEditType.ReplaceText:
-                this.replaceText(textEdit.range, textEdit.text);
+                this.replaceText(textEdit);
                 break;
         }
 
     }
 
-    insertText(pos : Position, _content : string) {
-        if (_content.length === 0) return;
+    private insertText(textEdit: TextEdit) {
+        if (textEdit.text.length === 0) return;
 
-        let lines = parseTextToLines(_content);
+        let pos = textEdit.position;
+        let lines = textEdit.lines;
 
         if (pos.line <= 0 || pos.line > this.linesCount)
             throw new Error("data illegal when inserting text to TextModel");
@@ -161,7 +162,9 @@ export class TextModel implements TextEditApplier, ITextDocument {
 
     }
 
-    deleteText(_range: Range) {
+    private deleteText(textEdit: TextEdit): Position {
+        let _range = textEdit.range;
+
         if (_range.begin.line === _range.end.line) {
             this._lines[_range.begin.line].delete(_range.begin.offset, _range.end.offset);
         } else if (_range.begin.line < _range.end.line) {
@@ -178,17 +181,20 @@ export class TextModel implements TextEditApplier, ITextDocument {
 
             this._lines = suffix.concat(postffix);
 
-        } else {
-            throw new Error("Illegal data.");
-        }
+            return _range.begin;
+
+        } 
+        throw new Error("Illegal data.");
     }
 
-    replaceText(_range: Range, text: string) {
+    private replaceText(textEdit: TextEdit) {
+        let _range = textEdit.range,
+            _text = textEdit.text;
         if (_range.end.line > _range.begin.line || 
             (_range.end.line === _range.begin.line && _range.end.offset >= _range.begin.offset)) {
 
-            this.deleteText(_range);
-            this.insertText(_range.begin, text);
+            this.deleteText(textEdit);
+            this.insertText(textEdit);
 
         }
     }
