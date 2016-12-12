@@ -237,7 +237,7 @@ export class EditorView extends DomHelper.FixedElement
     }
     */
 
-    applyTextEdit(_textEdit: TextEdit) {
+    applyTextEdit(_textEdit: TextEdit) : Position {
         let _range = _textEdit.range;
 
         switch(_textEdit.type) {
@@ -284,6 +284,11 @@ export class EditorView extends DomHelper.FixedElement
                 break;
             default:
                 throw new Error("Error text edit type.");
+        }
+
+        return {
+            line: 1,
+            offset: 0
         }
     }
 

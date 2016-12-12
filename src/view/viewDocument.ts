@@ -1,12 +1,12 @@
 import {LineView} from "./viewLine"
 import {IVirtualElement, Coordinate, HighlightingRange, HighlightingType} from "."
 import {TextModel, LineModel, Position, PositionUtil, 
-    TextEdit, TextEditType, TextEditApplier} from "../model"
+    TextEdit, TextEditType} from "../model"
 import {IDisposable, DomHelper, KeyCode} from "../util"
 import {PopAllQueue} from "../util/queue"
 import {InputerView} from "./viewInputer"
 import {CursorView} from "./viewCursor"
-import {SelectionManager} from "./viewSelection"
+import {SelectionManager, moveSelectionTo} from "./viewSelection"
 import {remote, clipboard} from "electron"
 import * as Electron from "electron"
 
@@ -39,12 +39,12 @@ class NullElement extends DomHelper.ResizableElement {
 
 }
 
+///
 /// Event:
 ///
 /// CursorMove
 ///
-export class DocumentView extends DomHelper.AbsoluteElement implements 
-    IDisposable, TextEditApplier {
+export class DocumentView extends DomHelper.AbsoluteElement implements IDisposable {
 
     public static readonly CursorBlinkingInternal = 500;
 
@@ -65,7 +65,6 @@ export class DocumentView extends DomHelper.AbsoluteElement implements
 
     private _allow_multiselections: boolean;
     private _selection_manger: SelectionManager;
-
 
     constructor(allowMultiselections: boolean = false) {
         super("div", "mde-document unselectable");
@@ -143,10 +142,6 @@ export class DocumentView extends DomHelper.AbsoluteElement implements
         this._model = null;
     }
 
-    applyTextEdit(textEdit: TextEdit) {
-
-    }
-
     private stylish() {
         this._dom.style.overflowY = "scroll";
         this._dom.style.overflowX = "auto";
@@ -208,38 +203,123 @@ export class DocumentView extends DomHelper.AbsoluteElement implements
 
                 let majorSelection = this._selection_manger.selectionAt(0);
 
-                if (majorSelection.collapsed) {
+                switch(evt.which) {
 
-                    let textEdit = new TextEdit(TextEditType.InsertText, 
-                        this._selection_manger.selectionAt(0).beginPosition, 
-                        this._selection_manger.selectionAt(0).inputerContent);
-                    
-                    this._selection_manger.selectionAt(0).clearInputerContent();
+                    case KeyCode.Tab:
+                        if (majorSelection.collapsed) {
+                            let textEdit = new TextEdit(TextEditType.InsertText, majorSelection.beginPosition, "    ");
+                            let result = this._model.applyTextEdit(textEdit);
 
-                    this._model.applyTextEdit(textEdit);
+                            this.renderLine(majorSelection.beginPosition.line);
+                            moveSelectionTo(majorSelection, result);
 
-                    let beginPos = this._selection_manger.selectionAt(0).beginPosition;
+                            setTimeout(() => {
+                                majorSelection.focus();
+                            }, 5);
+                        }
+                        break;
+                    case KeyCode.BackSpace:
+                        if (majorSelection.collapsed) {
 
-                    for (let i=beginPos.line; i < this._lines.length; i++) {
-                        this.renderLine(i);
-                    }
+                            if (majorSelection.beginPosition.offset >= 1) {
+                                let textEdit = new TextEdit(TextEditType.DeleteText, {
+                                    begin: {
+                                        line: majorSelection.beginPosition.line,
+                                        offset: majorSelection.beginPosition.offset - 1
+                                    },
+                                    end: majorSelection.endPosition,
+                                });
+                                let result = this._model.applyTextEdit(textEdit);
 
-                } else {
+                                this.renderLine(majorSelection.beginPosition.line);
 
-                    let textEdit = new TextEdit(TextEditType.ReplaceText, {
-                        begin: majorSelection.beginPosition,
-                        end: majorSelection.endPosition,
-                    }, majorSelection.inputerContent);
+                                moveSelectionTo(majorSelection, result);
+                            }
 
-                    majorSelection.clearInputerContent();
-                    this._model.applyTextEdit(textEdit);
+                        } else {
+                            let textEdit = new TextEdit(TextEditType.DeleteText, {
+                                begin: majorSelection.beginPosition,
+                                end: majorSelection.endPosition
+                            });
 
-                    for (let i=majorSelection.beginPosition.line; i < this._model.linesCount; i++) {
-                        this.renderLine(i);
-                    }
+                            let result = this._model.applyTextEdit(textEdit);
+
+                            if (majorSelection.beginPosition.line === majorSelection.endPosition.line) {
+                                this.renderLine(majorSelection.beginPosition.line);
+                            } else {
+                                let offset = majorSelection.endPosition.line - majorSelection.beginPosition.line;
+
+                                for (let i = this._lines.length - offset; i < this._lines.length; i++ ) {
+                                    this._lines[i].dispose();
+                                    this._lines[i].remove();
+                                    this._lines[i] = null;
+                                }
+
+                                this._lines.length -= offset;
+
+                                for (let i=majorSelection.beginPosition.line; i < this._lines.length; i++) {
+                                    this.renderLine(i);
+                                }
+                            }
+
+                            moveSelectionTo(majorSelection, result);
+                        }
+                        break;
+                    default:
+                        if (majorSelection.collapsed) {
+
+                            let insertText = majorSelection.inputerContent;
+
+                            // indeed input something
+                            if (insertText.length > 0) {
+
+                                let textEdit = new TextEdit(TextEditType.InsertText, 
+                                    majorSelection.beginPosition, 
+                                    majorSelection.inputerContent);
+                                
+                                let resultPos = this._model.applyTextEdit(textEdit);
+
+                                let beginPos = this._selection_manger.selectionAt(0).beginPosition;
+
+                                // push the offset lines
+                                if (textEdit.lines.length > 1) {
+                                    let offset = textEdit.lines.length - 1;
+                                    for (let i = 0; i < offset; i++) {
+                                        let newLV = new LineView();
+                                        this._lines.push(newLV);
+                                        newLV.appendTo(this._container);
+                                    }
+                                }
+
+                                for (let i=beginPos.line; i < this._lines.length; i++) {
+                                    this.renderLine(i);
+                                }
+
+                                majorSelection.clearInputerContent();
+
+                                majorSelection.beginPosition = resultPos;
+                                majorSelection.endPosition = resultPos;
+                                majorSelection.repaint();
+
+                            }
+
+                        } else {
+
+                            let textEdit = new TextEdit(TextEditType.ReplaceText, {
+                                begin: majorSelection.beginPosition,
+                                end: majorSelection.endPosition,
+                            }, majorSelection.inputerContent);
+
+                            majorSelection.clearInputerContent();
+                            this._model.applyTextEdit(textEdit);
+
+                            for (let i=majorSelection.beginPosition.line; i < this._model.linesCount; i++) {
+                                this.renderLine(i);
+                            }
+
+                        }
 
                 }
-
 
             }
 
@@ -392,7 +472,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements
     renderLine(line: number) {
         if (line <= 0 || line > this.linesCount)
             throw new Error("<index out of range> line:" + line + " LinesCount:" + this.linesCount);
-        this._lines[line].render(this._model.lineAt(line).text, this._highlightingRanges[line].popAll());
+        this._lines[line].render(this._model.lineAt(line).text, null);
         this._lines[line].renderLineNumber(line);
     }
 

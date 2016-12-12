@@ -117,10 +117,11 @@ export class MDE implements IDisposable, TextEditApplier {
     }
     */
 
-    applyTextEdit(_textEdit: TextEdit) {
-        this._model.applyTextEdit(_textEdit);
+    applyTextEdit(_textEdit: TextEdit): Position {
+        let result = this._model.applyTextEdit(_textEdit);
 
-        this._view.editorView.applyTextEdit(_textEdit);
+        // this._view.editorView.applyTextEdit(_textEdit);
+        return result;
     }
 
     appendTo(_elem: HTMLElement) {

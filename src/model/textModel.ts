@@ -3,7 +3,7 @@ import {StringBuffer} from "../util/StringBuffer"
 import {parseTextToLines} from "../util/text"
 import {LineModel} from "./LineModel"
 import {EventEmitter} from "events"
-import {Position, Range, isPosition, isRange, TextEdit, TextEditType, TextEditApplier} from "."
+import {Position, PositionUtil, Range, isPosition, isRange, TextEdit, TextEditType, TextEditApplier} from "."
 import {hd, tl, last} from "../util/fn"
 
 
@@ -87,30 +87,37 @@ export class TextModel implements TextEditApplier, ITextDocument {
         return this._lines[this._lines.length - 1];
     }
 
-    applyTextEdit(textEdit: TextEdit) {
+    applyTextEdit(textEdit: TextEdit): Position {
 
         switch(textEdit.type) {
             case TextEditType.InsertText:
-                this.insertText(textEdit);
-                break;
+                return this.insertText(textEdit);
             case TextEditType.DeleteText:
-                this.deleteText(textEdit);
-                break;
+                return this.deleteText(textEdit);
             case TextEditType.ReplaceText:
-                this.replaceText(textEdit);
-                break;
+                return this.replaceText(textEdit);
         }
 
     }
 
-    private insertText(textEdit: TextEdit) {
+    ///
+    /// insert text into TextModel
+    /// whatever the type of TextModel
+    /// return the position after the insert
+    ///
+    private insertText(textEdit: TextEdit) : Position {
         if (textEdit.text.length === 0) return;
 
-        let pos = textEdit.position;
+        let pos: Position;
+        if (textEdit.position)
+            pos = textEdit.position;
+        else
+            pos = textEdit.range.begin;
+
         let lines = textEdit.lines;
 
         if (pos.line <= 0 || pos.line > this.linesCount)
-            throw new Error("data illegal when inserting text to TextModel");
+            throw new Error("data illegal when inserting text to TextModel. Line: #" + pos.line);
 
         let linesHead = hd(lines);
         let linesTail = tl(lines);
@@ -118,6 +125,11 @@ export class TextModel implements TextEditApplier, ITextDocument {
         if (linesTail.length === 0) { // it also means that this line will not endswith '\n'
 
             this._lines[pos.line].insert(pos.offset, linesHead);
+
+            return {
+                line: pos.line,
+                offset: pos.offset + linesHead.length,
+            }
 
         } else {
 
@@ -158,8 +170,11 @@ export class TextModel implements TextEditApplier, ITextDocument {
                 }
             }
 
+            return {
+                line: pos.line + lines.length - 1,
+                offset: lines[lines.length - 1].length,
+            }
         }
-
     }
 
     private deleteText(textEdit: TextEdit): Position {
@@ -167,6 +182,8 @@ export class TextModel implements TextEditApplier, ITextDocument {
 
         if (_range.begin.line === _range.end.line) {
             this._lines[_range.begin.line].delete(_range.begin.offset, _range.end.offset);
+
+            return PositionUtil.clonePosition(_range.begin);
         } else if (_range.begin.line < _range.end.line) {
             let remain = this._lines[_range.end.line].text.slice(_range.end.offset);
 
@@ -181,8 +198,7 @@ export class TextModel implements TextEditApplier, ITextDocument {
 
             this._lines = suffix.concat(postffix);
 
-            return _range.begin;
-
+            return PositionUtil.clonePosition(_range.begin);
         } 
         throw new Error("Illegal data.");
     }
@@ -194,8 +210,8 @@ export class TextModel implements TextEditApplier, ITextDocument {
             (_range.end.line === _range.begin.line && _range.end.offset >= _range.begin.offset)) {
 
             this.deleteText(textEdit);
-            this.insertText(textEdit);
 
+            return this.insertText(textEdit);
         }
     }
     

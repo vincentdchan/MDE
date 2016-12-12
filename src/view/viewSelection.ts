@@ -1,5 +1,5 @@
 import {DomHelper, IDisposable, TickTockUtil, KeyCode} from "../util"
-import {Position, PositionUtil} from "../model"
+import {Position, PositionUtil, Range} from "../model"
 import {Coordinate} from "."
 import {InputerView} from "./viewInputer"
 import {CursorView} from "./viewCursor"
@@ -13,6 +13,12 @@ export class SelectionAtom extends DomHelper.AbsoluteElement {
         this._dom.style.zIndex = "-1";
     }
 
+}
+
+export function moveSelectionTo(sel: SelectionHandler, pos: Position) {
+    sel.beginPosition = pos;
+    sel.endPosition = pos;
+    sel.repaint();
 }
 
 export class SelectionHandler implements IDisposable {
@@ -119,6 +125,13 @@ export class SelectionHandler implements IDisposable {
         this._begin_pos = PositionUtil.clonePosition(this._end_pos);
     }
 
+    report() : Range {
+        return {
+            begin: PositionUtil.clonePosition(this._begin_pos),
+            end: PositionUtil.clonePosition(this._end_pos),
+        }
+    }
+
     get collapsed() {
         return this._end_pos === null || this._end_pos === undefined || 
             PositionUtil.equalPostion(this._begin_pos, this._end_pos);
@@ -143,6 +156,8 @@ export class SelectionHandler implements IDisposable {
 
         if ((this._begin_pos && this._end_pos === null) || 
             (this._begin_pos && this._end_pos && PositionUtil.equalPostion(this._begin_pos, this._end_pos))) {
+
+            this.clearAll();
             let beginCo = this._coGetter(this._begin_pos);
 
             this._cursor.setAbsoluteCoordinate(beginCo);
@@ -245,8 +260,16 @@ export class SelectionHandler implements IDisposable {
         return this._begin_pos;
     }
 
+    set beginPosition(pos: Position) {
+        this._begin_pos = PositionUtil.clonePosition(pos);
+    }
+
     get endPosition() {
         return this._end_pos;
+    }
+
+    set endPosition(pos: Position) {
+        this._end_pos = PositionUtil.clonePosition(pos);
     }
 
     get documentWidth() {
@@ -276,13 +299,13 @@ export class SelectionHandler implements IDisposable {
 
     dispose() {
         this._cursor.dispose();
-        if(this._isMajor) this._inputer.dispose();
+        if (this._isMajor) this._inputer.dispose();
     }
 
     remove() {
         this.clearAll();
         this._cursor.remove();
-        if(this._isMajor) this._inputer.remove();
+        if (this._isMajor) this._inputer.remove();
     }
 
 }
@@ -357,6 +380,16 @@ export class SelectionManager extends DomHelper.AppendableDomWrapper implements 
     clearInputerContent() {
         if (this._handlers.length > 0) this._handlers[0].clearInputerContent();
         else throw new Error("Do not have any selections handlers.");
+    }
+
+    report(index: number) : Range {
+        return this._handlers[index].report();
+    }
+
+    reportAll() : Range[] {
+        return this._handlers.map((sel: SelectionHandler) => {
+            return sel.report();
+        });
     }
 
     get focusedSelection() {

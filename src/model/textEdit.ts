@@ -71,6 +71,6 @@ export class TextEdit {
 
 export interface TextEditApplier {
 
-    applyTextEdit(textEdit: TextEdit);
+    applyTextEdit(textEdit: TextEdit): Position;
 
 }
