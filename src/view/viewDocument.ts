@@ -14,6 +14,34 @@ function setHeight(elm: HTMLElement, h: number) {
     elm.style.height = h + "px";
 }
 
+interface RenderOption {
+    rerenderLines: number[];
+    appendLines?: number;
+    removeTailLines?: number;
+}
+
+export class ScrollHeightChangedEvent extends Event {
+
+    private _scroll_height: number;
+    private _old_height: number;
+
+    constructor(newHeight: number, oldHeight?: number) {
+        super("scrollHeightChanged");
+
+        this._scroll_height = newHeight;
+        this._old_height = oldHeight;
+    }
+
+    get newHeight() {
+        return this._scroll_height;
+    }
+
+    get oldHeight() {
+        return this._old_height;
+    }
+
+}
+
 export class CursorMoveEvent extends Event {
 
     private _pos: Position;
@@ -53,6 +81,8 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
     private _lines: LineView[];
     private _nullArea: NullElement;
     private _highlightingRanges: PopAllQueue<HighlightingRange>[];
+
+    private _scroll_height: number;
 
     private _window_mousemove_handler: EventListener;
     private _window_mouseup_handler: EventListener;
@@ -126,6 +156,10 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
             vl.renderLineNumber(line.number);
             this._container.appendChild(vl.element());
         })
+
+        setTimeout(() => {
+            this._scroll_height = this._dom.scrollHeight;
+        }, 5);
     }
 
     unbind() {
@@ -165,15 +199,17 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
             {
                 label: "Cut",
                 accelerator: "Control+X",
+                click: () => { this.cutToClipboard(); }
             },
             {
                 label: "Copy",
                 accelerator: "Control+C",
-                click: () => { this.copyToClipboard() }
+                click: () => { this.copyToClipboard(); }
             },
             {
                 label: "Paste",
                 accelerator: "Control+V",
+                click: () => { this.pasteToDocument(); }
             },
         ]
 
@@ -182,17 +218,12 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         menu.popup(remote.getCurrentWindow());
     }
 
-    private computeForwardOffset(textEdit: TextEdit){
+    private pasteToDocument() {
+        throw new Error("Not implemented.");
+    }
 
-        switch(textEdit.type) {
-            case TextEditType.InsertText:
-                break;
-            case TextEditType.DeleteText:
-                break;
-            case TextEditType.ReplaceText:
-                break;
-        }
-
+    private cutToClipboard() {
+        throw new Error("Not implemented.");
     }
 
     private handleSelectionKeydown(evt: MouseEvent) {
@@ -281,19 +312,9 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
 
                                 let beginPos = this._selection_manger.selectionAt(0).beginPosition;
 
-                                // push the offset lines
-                                if (textEdit.lines.length > 1) {
-                                    let offset = textEdit.lines.length - 1;
-                                    for (let i = 0; i < offset; i++) {
-                                        let newLV = new LineView();
-                                        this._lines.push(newLV);
-                                        newLV.appendTo(this._container);
-                                    }
-                                }
+                                let renderOption : RenderOption = this.calculateRenderLines(textEdit);
 
-                                for (let i=beginPos.line; i < this._lines.length; i++) {
-                                    this.renderLine(i);
-                                }
+                                this.render(renderOption);
 
                                 majorSelection.clearInputerContent();
 
@@ -313,9 +334,8 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
                             majorSelection.clearInputerContent();
                             this._model.applyTextEdit(textEdit);
 
-                            for (let i=majorSelection.beginPosition.line; i < this._model.linesCount; i++) {
-                                this.renderLine(i);
-                            }
+                            let renderOption: RenderOption = this.calculateRenderLines(textEdit);
+                            this.render(renderOption);
 
                         }
 
@@ -325,6 +345,78 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
 
         }, 10);
 
+    }
+
+    private render(option: RenderOption) {
+        if (option.appendLines) {
+            for (let i = 0; i < option.appendLines; i++) {
+                let newLV = new LineView();
+                this._lines.push(newLV);
+                newLV.appendTo(this._container);
+            }
+        }
+
+        if (option.removeTailLines) {
+            for (let i = this._lines.length - option.removeTailLines - 1; i < this._lines.length; i++) {
+                this._lines[i].dispose();
+                this._lines[i].remove();
+                this._lines[i] = null;
+            }
+            this._lines.length -= option.removeTailLines;
+        }
+
+        option.rerenderLines.forEach((num: number) => {
+            this.renderLine(num);
+        });
+
+        setTimeout(() => {
+            this.checkScrollHeightChanged();
+        }, 10);
+
+    }
+
+    private checkScrollHeightChanged() {
+        let currentHeight = this._dom.scrollHeight;
+        if (currentHeight !== this._scroll_height) {
+            let oldHeight = currentHeight;
+
+            this._scroll_height = currentHeight;
+            let evt = new ScrollHeightChangedEvent(currentHeight, oldHeight);
+            this._dom.dispatchEvent(evt);
+        }
+    }
+
+    private calculateRenderLines(textEdit: TextEdit) : RenderOption {
+        let option : RenderOption = {
+            rerenderLines: []
+        };
+        switch(textEdit.type) {
+            case TextEditType.InsertText:
+                if (textEdit.lines.length == 1) {
+                    option.rerenderLines.push(textEdit.position.line);
+                } else {
+                    option.appendLines = textEdit.lines.length - 1;
+                    let appendedLines = this._lines.length + option.appendLines;
+                    for (let i = textEdit.position.line; i < appendedLines; i++) {
+                        option.rerenderLines.push(i);
+                    }
+                }
+                break;
+            case TextEditType.DeleteText:
+                if (textEdit.range.begin.line === textEdit.range.end.line) {
+                    option.rerenderLines.push(textEdit.range.begin.line);
+                } else {
+                    option.removeTailLines = textEdit.range.end.line - textEdit.range.begin.line;
+                    let removedLines = this._lines.length - option.removeTailLines;
+                    for (let i = textEdit.range.begin.line; i < removedLines; i++) {
+                        option.rerenderLines.push(i);
+                    }
+                }
+                break;
+            case TextEditType.ReplaceText:
+                throw new Error("Not implemented.");
+        }
+        return option;
     }
 
     private handleSelectionCompositionStart(evt: Event) {

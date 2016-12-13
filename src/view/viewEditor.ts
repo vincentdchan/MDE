@@ -1,6 +1,6 @@
 import {IDisposable, DomHelper} from "../util"
 import {Coordinate} from "."
-import {DocumentView} from "./viewDocument"
+import {DocumentView, ScrollHeightChangedEvent} from "./viewDocument"
 import {ScrollBarView, TrainMoveEvent} from "./viewScrollBar"
 import {CursorView} from "./viewCursor"
 import {InputerView} from "./viewInputer"
@@ -69,6 +69,7 @@ export class EditorView extends DomHelper.FixedElement
         this._document = new DocumentView();
         this._document.top = this._toolbar.height;
         this._document.on("scroll", this.handleDocumentScroll.bind(this));
+        this._document.on("scrollHeightChanged", this.handleDocumentScrollHeightChanged.bind(this));
         // this._document.on("click", this.handleDocumentClick.bind(this));
 
         this._scrollbar = new ScrollBarView();
@@ -331,6 +332,11 @@ export class EditorView extends DomHelper.FixedElement
     }
 
     private handleDocumentScroll(evt: Event) {
+        this._scrollbar.trainPositionPercentage = this.getScrollPercentage();
+    }
+
+    private handleDocumentScrollHeightChanged(evt: ScrollHeightChangedEvent) {
+        this._scrollbar.trainHeightPercentage = this.getScrollTrainHeightPercentage();
         this._scrollbar.trainPositionPercentage = this.getScrollPercentage();
     }
 
