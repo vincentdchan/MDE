@@ -218,12 +218,90 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         menu.popup(remote.getCurrentWindow());
     }
 
+    private copyToClipboard() {
+        if (this._selection_manger.length > 0) {
+            let majorSelection = this._selection_manger.selectionAt(0);
+            if (majorSelection.collapsed) {
+                let end: Position = {
+                    line: majorSelection.beginPosition.line,
+                    offset: majorSelection.beginPosition.offset + 1,
+                }
+                let text = this._model.report({
+                    begin: PositionUtil.clonePosition(majorSelection.beginPosition),
+                    end: end,
+                });
+                clipboard.writeText(text);
+            } else {
+                majorSelection.normalize();
+                let beginPos: Position = majorSelection.beginPosition,
+                    endPos: Position = majorSelection.endPosition;
+
+                let text = this._model.report({begin: beginPos, end: endPos});
+                clipboard.writeText(text);
+            }
+        }
+    }
+
     private pasteToDocument() {
-        throw new Error("Not implemented.");
+        if (this._selection_manger.length > 0) {
+            let majorSelection = this._selection_manger.selectionAt(0);
+
+            let textContent = clipboard.readText();
+            let textEdit: TextEdit,
+                result: Position,
+                renderOption: RenderOption;
+
+            if (majorSelection.collapsed) {
+                textEdit = new TextEdit(TextEditType.InsertText, majorSelection.beginPosition, 
+                    textContent);
+            } else {
+                textEdit = new TextEdit(TextEditType.ReplaceText, {
+                    begin: majorSelection.beginPosition,
+                    end: majorSelection.endPosition,
+                }, textContent);
+            }
+
+            result = this._model.applyTextEdit(textEdit);
+            renderOption = this.calculateRenderLines(textEdit);
+            this.render(renderOption);
+
+            moveSelectionTo(majorSelection, result);
+        }
     }
 
     private cutToClipboard() {
-        throw new Error("Not implemented.");
+        if (this._selection_manger.length > 0) {
+            let majorSelection = this._selection_manger.selectionAt(0);
+
+            let range: any;
+            if (majorSelection.collapsed) {
+                let end: Position = {
+                    line: majorSelection.beginPosition.line,
+                    offset: majorSelection.beginPosition.offset + 1,
+                }
+                range = {
+                    begin: PositionUtil.clonePosition(majorSelection.beginPosition),
+                    end: end
+                };
+            } else {
+                range = {
+                    begin: PositionUtil.clonePosition(majorSelection.beginPosition),
+                    end: PositionUtil.clonePosition(majorSelection.endPosition),
+                }
+            }
+
+            let textContent = this._model.report(range);
+
+            let textEdit = new TextEdit(TextEditType.DeleteText, range);
+            let result = this._model.applyTextEdit(textEdit);
+
+            let renderOption = this.calculateRenderLines(textEdit);
+            this.render(renderOption);
+
+            moveSelectionTo(majorSelection, result);
+
+            clipboard.writeText(textContent);
+        }
     }
 
     private handleSelectionKeydown(evt: MouseEvent) {
@@ -371,11 +449,13 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
                             }, majorSelection.inputerContent);
 
                             majorSelection.clearInputerContent();
-                            this._model.applyTextEdit(textEdit);
+                            let result = this._model.applyTextEdit(textEdit);
 
                             let renderOption: RenderOption = this.calculateRenderLines(textEdit);
                             this.render(renderOption);
 
+                            majorSelection.beginPosition = majorSelection.endPosition = result;
+                            majorSelection.repaint();
                         }
 
                 }
@@ -453,7 +533,24 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
                 }
                 break;
             case TextEditType.ReplaceText:
-                throw new Error("Not implemented.");
+                let lineOffset = 0;
+                if (textEdit.lines.length > 1) lineOffset = textEdit.lines.length - 1;
+                if (textEdit.range.end.line > textEdit.range.begin.line)
+                    lineOffset -= textEdit.range.end.line - textEdit.range.begin.line;
+
+                let fixedLineCount = this._lines.length;
+                if (lineOffset > 0) {
+                    option.appendLines = lineOffset;
+                    fixedLineCount += lineOffset;
+                }
+                else if (lineOffset < 0) {
+                    option.removeTailLines = -lineOffset;
+                    fixedLineCount += lineOffset;
+                }
+                for (let i = textEdit.range.begin.line; i < fixedLineCount; i++) {
+                    option.rerenderLines.push(i);
+                }
+                break;
         }
         return option;
     }
@@ -563,30 +660,6 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         return {
             line: line_number,
             offset: absolute_offset,
-        }
-    }
-
-    private copyToClipboard() {
-        if (this._selection_manger.length > 0) {
-            let majorSelection = this._selection_manger.selectionAt(0);
-            if (majorSelection.collapsed) {
-                let end: Position = {
-                    line: majorSelection.beginPosition.line,
-                    offset: majorSelection.beginPosition.offset + 1,
-                }
-                let text = this._model.report({
-                    begin: majorSelection.beginPosition,
-                    end: end,
-                });
-                clipboard.writeText(text);
-            } else {
-                majorSelection.normalize();
-                let beginPos: Position = majorSelection.beginPosition,
-                    endPos: Position = majorSelection.endPosition;
-
-                let text = this._model.report({begin: beginPos, end: endPos});
-                clipboard.writeText(text);
-            }
         }
     }
 
