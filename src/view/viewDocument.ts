@@ -249,6 +249,27 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
                             }, 5);
                         }
                         break;
+                    case KeyCode.PageUp:
+                        break;
+                    case KeyCode.PageDown:
+                        break;
+                    case KeyCode.Home:
+                        majorSelection.endPosition = majorSelection.beginPosition = {
+                            line: majorSelection.beginPosition.line,
+                            offset: 0,
+                        };
+                        majorSelection.repaint();
+                        break;
+                    case KeyCode.End:
+                        {
+                            let _offset = this._model.lineAt(majorSelection.endPosition.line).length - 1;
+                            majorSelection.endPosition = majorSelection.beginPosition = {
+                                line: majorSelection.endPosition.line,
+                                offset: _offset
+                            };
+                            majorSelection.repaint();
+                        }
+                        break;
                     case KeyCode.BackSpace:
                         if (majorSelection.collapsed) {
 
@@ -265,6 +286,24 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
                                 this.renderLine(majorSelection.beginPosition.line);
 
                                 moveSelectionTo(majorSelection, result);
+                            } else {
+                                let pos = majorSelection.beginPosition;
+                                if (pos.line > 1) {
+                                    let previousLineLength = this._model.lineAt(pos.line - 1).length;
+                                    let textEdit = new TextEdit(TextEditType.DeleteText, {
+                                        begin: {
+                                            line: pos.line - 1,
+                                            offset: previousLineLength - 1,
+                                        },
+                                        end: pos
+                                    });
+
+                                    let result = this._model.applyTextEdit(textEdit);
+                                    let renderOption = this.calculateRenderLines(textEdit);
+                                    this.render(renderOption);
+
+                                    moveSelectionTo(majorSelection, result);
+                                }
                             }
 
                         } else {
@@ -357,7 +396,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         }
 
         if (option.removeTailLines) {
-            for (let i = this._lines.length - option.removeTailLines - 1; i < this._lines.length; i++) {
+            for (let i = this._lines.length - option.removeTailLines; i < this._lines.length; i++) {
                 this._lines[i].dispose();
                 this._lines[i].remove();
                 this._lines[i] = null;
