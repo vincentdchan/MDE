@@ -40,7 +40,7 @@ export class WordView implements IDisposable {
     }
 
     getCoordinate(offset: number) : Coordinate {
-        if (offset >= this.length)
+        if (offset > this.length)
             throw new Error("Index out of range.");
         if (offset === 0) {
             let rect = this._dom.getBoundingClientRect();

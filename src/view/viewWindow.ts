@@ -29,9 +29,7 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
         }
 
         window.addEventListener("resize", (e : Event) => {
-
             setTimeout(updateLayoutThunk, 20);
-
         });
 
         this._leftPanel = new LeftPanelView(WindowView.leftPadWidth, this._height);

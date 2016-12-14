@@ -8,6 +8,7 @@ import {InputerView} from "./viewInputer"
 import {CursorView} from "./viewCursor"
 import {SelectionManager, moveSelectionTo} from "./viewSelection"
 import {remote, clipboard} from "electron"
+import {CursorMoveEvent, ScrollHeightChangedEvent} from "./events"
 import * as Electron from "electron"
 
 function setHeight(elm: HTMLElement, h: number) {
@@ -18,49 +19,6 @@ interface RenderOption {
     rerenderLines: number[];
     appendLines?: number;
     removeTailLines?: number;
-}
-
-export class ScrollHeightChangedEvent extends Event {
-
-    private _scroll_height: number;
-    private _old_height: number;
-
-    constructor(newHeight: number, oldHeight?: number) {
-        super("scrollHeightChanged");
-
-        this._scroll_height = newHeight;
-        this._old_height = oldHeight;
-    }
-
-    get newHeight() {
-        return this._scroll_height;
-    }
-
-    get oldHeight() {
-        return this._old_height;
-    }
-
-}
-
-export class CursorMoveEvent extends Event {
-
-    private _pos: Position;
-    private _co: Coordinate;
-
-    constructor(pos: Position, abs_co: Coordinate) {
-        super("cursorMove");
-        this._pos = pos;
-        this._co = abs_co;
-    }
-
-    get position() {
-        return this._pos;
-    }
-
-    get absoluteCoordinate() {
-        return this._co;
-    }
-
 }
 
 class NullElement extends DomHelper.ResizableElement {
@@ -701,7 +659,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
             throw new Error("Index out of range.");
 
         let domRect = this._dom.getBoundingClientRect();
-        let co = this._lines[pos.line].getCoordinate(pos.offset);
+        let co = this._lines[pos.line].getCoordinate(pos.offset, false);
         co.y -= domRect.top;
         return co;
     }

@@ -207,7 +207,7 @@ export class LineView extends DomHelper.AppendableDomWrapper implements IDisposa
 
     renderLineNumber(num: number) {
         if (num !== this._rendered_lineNumber) {
-            let span = <HTMLSpanElement>DomHelper.elem("span", 
+            let span = DomHelper.Generic.elem<HTMLSpanElement>("span", 
                 "mde-line-number unselectable");
 
             this._leftMargin.clearAll();
@@ -286,23 +286,26 @@ export class LineView extends DomHelper.AppendableDomWrapper implements IDisposa
         this._line_content_dom.appendChild(wordView.element());
     }
 
-    getCoordinate(offset: number) : Coordinate {
+    ///
+    /// get coordinate of the alphabet in the specific offset
+    /// if "safe" parameter is set to true, it will throw a Error
+    ///     if the offset is not in range.
+    ///
+    getCoordinate(offset: number, safe: boolean = true) : Coordinate {
         let count = 0;
         for (let i = 0; i < this._words.length; i++) {
             let word = this._words[i];
-            if (offset < count + word.length) {
+            if (offset <= count + word.length) {
                 return word.getCoordinate(offset);
             }
             count += word.length;
         }
-        if (count == offset) {
-            let rect = this._words[this._words.length - 1].element().getBoundingClientRect();
-            return {
-                x: rect.left + rect.width,
-                y: rect.top,
-            }
+        if (safe) {
+            throw new Error("Index out of Range. offset: " + offset);
+        } else {
+            let lastWord = this._words[this._words.length - 1];
+            return lastWord.getCoordinate(lastWord.length);
         }
-        throw new Error("Index out of Range. offset: " + offset);
     }
 
     dispose() {
