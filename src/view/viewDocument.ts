@@ -520,27 +520,25 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
     private handleSelectionCompositionUpdate(evt: Event) {
         if (this._selection_manger.length > 0) {
             let majorSelection = this._selection_manger.selectionAt(0);
-            if (majorSelection.collapsed) {
-                let textEdit: TextEdit;
-                if (PositionUtil.equalPostion(this._compositing_position, majorSelection.beginPosition)) {
-                    textEdit = new TextEdit(TextEditType.InsertText, this._compositing_position, 
-                        majorSelection.inputerContent);
-                } else {
-                    textEdit = new TextEdit(TextEditType.ReplaceText, {
-                        begin: PositionUtil.clonePosition(this._compositing_position),
-                        end: PositionUtil.clonePosition(majorSelection.beginPosition),
-                    }, majorSelection.inputerContent);
-                }
+            if (!majorSelection.collapsed)
+                this._compositing_position = PositionUtil.clonePosition(majorSelection.beginPosition);
 
-                let result = this._model.applyTextEdit(textEdit);
-                this.render(this.calculateRenderLines(textEdit));
-
-                moveSelectionTo(majorSelection, result);
-                majorSelection.repaint();
-
+            let textEdit: TextEdit;
+            if (PositionUtil.equalPostion(this._compositing_position, majorSelection.endPosition)) {
+                textEdit = new TextEdit(TextEditType.InsertText, this._compositing_position, 
+                    majorSelection.inputerContent);
             } else {
-                throw new Error("Not implemented.");
+                textEdit = new TextEdit(TextEditType.ReplaceText, {
+                    begin: PositionUtil.clonePosition(this._compositing_position),
+                    end: PositionUtil.clonePosition(majorSelection.endPosition),
+                }, majorSelection.inputerContent);
             }
+
+            let result = this._model.applyTextEdit(textEdit);
+            this.render(this.calculateRenderLines(textEdit));
+
+            moveSelectionTo(majorSelection, result);
+            majorSelection.repaint();
         }
     }
 

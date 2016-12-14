@@ -227,7 +227,8 @@ export class LineView extends DomHelper.AppendableDomWrapper implements IDisposa
         hlr_arr = hlr_arr ? LineView.splitArr(hlr_arr) : [];
 
         this._words = [];
-        content = content.slice(0, content.length - 1);
+        if (content.length > 0 && content.charAt(content.length - 1) == '\n')
+            content = content.slice(0, content.length - 1);
         if (this._line_content_dom) {
             this._dom.removeChild(this._line_content_dom);
         }

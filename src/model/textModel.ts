@@ -106,15 +106,14 @@ export class TextModel implements TextEditApplier, ITextDocument {
     /// return the position after the insert
     ///
     private insertText(textEdit: TextEdit) : Position {
-        if (textEdit.text.length === 0) {
-            return PositionUtil.clonePosition(textEdit.position);
-        }
-
         let pos: Position;
         if (textEdit.position)
             pos = textEdit.position;
         else
             pos = textEdit.range.begin;
+        if (textEdit.text.length === 0) {
+            return PositionUtil.clonePosition(pos);
+        }
 
         let lines = textEdit.lines;
 

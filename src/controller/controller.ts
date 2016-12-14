@@ -15,6 +15,9 @@ const SaveFilter = [
 
 export class MDE implements IDisposable, TextEditApplier {
 
+    private _buffers: TextModel[] = [];
+    private _current_buffer: number;
+
     private _model : TextModel = null;
     private _position: Position;
     private _menu: MainMenuView;
