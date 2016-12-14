@@ -94,7 +94,9 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
     private _compositing: boolean = false;
 
     private _allow_multiselections: boolean;
-    private _selection_manger: SelectionManager;
+    private _selection_manger: SelectionManager = null;
+
+    private _compositing_position: Position;
 
     constructor(allowMultiselections: boolean = false) {
         super("div", "mde-document unselectable");
@@ -308,9 +310,8 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
 
         setTimeout(() => {
 
+            let majorSelection = this._selection_manger.selectionAt(0);
             if (!this._compositing) {
-
-                let majorSelection = this._selection_manger.selectionAt(0);
 
                 switch(evt.which) {
 
@@ -426,17 +427,12 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
                                     majorSelection.inputerContent);
                                 
                                 let resultPos = this._model.applyTextEdit(textEdit);
-
                                 let beginPos = this._selection_manger.selectionAt(0).beginPosition;
 
-                                let renderOption : RenderOption = this.calculateRenderLines(textEdit);
-
-                                this.render(renderOption);
+                                this.render(this.calculateRenderLines(textEdit));
 
                                 majorSelection.clearInputerContent();
-
-                                majorSelection.beginPosition = resultPos;
-                                majorSelection.endPosition = resultPos;
+                                moveSelectionTo(majorSelection, resultPos);
                                 majorSelection.repaint();
 
                             }
@@ -451,10 +447,9 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
                             majorSelection.clearInputerContent();
                             let result = this._model.applyTextEdit(textEdit);
 
-                            let renderOption: RenderOption = this.calculateRenderLines(textEdit);
-                            this.render(renderOption);
+                            this.render(this.calculateRenderLines(textEdit));
 
-                            majorSelection.beginPosition = majorSelection.endPosition = result;
+                            moveSelectionTo(majorSelection, result)
                             majorSelection.repaint();
                         }
 
@@ -557,13 +552,51 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
 
     private handleSelectionCompositionStart(evt: Event) {
         this._compositing = true;
+
+        if (this._selection_manger.length > 0) {
+            this._compositing_position = PositionUtil.clonePosition(
+                this._selection_manger.selectionAt(0).beginPosition);
+        }
     }
 
     private handleSelectionCompositionUpdate(evt: Event) {
+        if (this._selection_manger.length > 0) {
+            let majorSelection = this._selection_manger.selectionAt(0);
+            if (majorSelection.collapsed) {
+                let textEdit: TextEdit;
+                if (PositionUtil.equalPostion(this._compositing_position, majorSelection.beginPosition)) {
+                    textEdit = new TextEdit(TextEditType.InsertText, this._compositing_position, 
+                        majorSelection.inputerContent);
+                } else {
+                    textEdit = new TextEdit(TextEditType.ReplaceText, {
+                        begin: PositionUtil.clonePosition(this._compositing_position),
+                        end: PositionUtil.clonePosition(majorSelection.beginPosition),
+                    }, majorSelection.inputerContent);
+                }
+
+                let result = this._model.applyTextEdit(textEdit);
+                this.render(this.calculateRenderLines(textEdit));
+
+                moveSelectionTo(majorSelection, result);
+                majorSelection.repaint();
+
+            } else {
+                throw new Error("Not implemented.");
+            }
+        }
     }
 
     private handleSelectionCompositionEnd(evt: Event) {
-        this._compositing = false;
+
+        setTimeout(() => {
+            this._compositing = false;
+            this._compositing_position = null;
+
+            if (this._selection_manger.length > 0) {
+                let majorSelection = this._selection_manger.selectionAt(0);
+                majorSelection.clearInputerContent();
+            }
+        }, 20);
     }
 
     private handleDocMouseDown(evt: MouseEvent) {

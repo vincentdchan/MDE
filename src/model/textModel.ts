@@ -106,7 +106,9 @@ export class TextModel implements TextEditApplier, ITextDocument {
     /// return the position after the insert
     ///
     private insertText(textEdit: TextEdit) : Position {
-        if (textEdit.text.length === 0) return;
+        if (textEdit.text.length === 0) {
+            return PositionUtil.clonePosition(textEdit.position);
+        }
 
         let pos: Position;
         if (textEdit.position)
@@ -212,6 +214,8 @@ export class TextModel implements TextEditApplier, ITextDocument {
             this.deleteText(textEdit);
 
             return this.insertText(textEdit);
+        } else {
+            throw new Error("Range is illegal.");
         }
     }
     
