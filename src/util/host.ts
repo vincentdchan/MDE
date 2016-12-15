@@ -41,6 +41,19 @@ export class Host {
                         } else {
                             Host.mapper[id].resolve(data);
                         }
+                        Host.mapper[id] = null;
+                    }
+                });
+
+            ipcRenderer.on("file-writeFile-reply",
+                (event: Electron.IpcRendererEvent, id: number, err: NodeJS.ErrnoException) => {
+                    if (Host.mapper[id]) {
+                        if (err) {
+                            Host.mapper[id].reject(err);
+                        } else {
+                            Host.mapper[id].resolve(true);
+                        }
+                        Host.mapper[id] = null;
                     }
                 });
 
@@ -84,6 +97,21 @@ export class Host {
         let id = Host.idCounter++;
         return new Promise((resolve, reject) => {
             ipcRenderer.send("file-readFile", id, filename, encoding);
+            Host.mapper[id] = {
+                resolve: resolve,
+                reject: reject,
+            }
+        });
+    }
+
+    static writeStringToFile(filename: string, encoding: string, content: string) : Promise<true> {
+        Host.init();
+
+        let id = Host.idCounter++;
+        return new Promise((resolve, reject) => {
+            ipcRenderer.send("file-writeFile", id, filename, content, {
+                encoding: encoding
+            });
             Host.mapper[id] = {
                 resolve: resolve,
                 reject: reject,

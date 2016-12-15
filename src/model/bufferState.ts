@@ -13,7 +13,7 @@ export class BufferStateChanged extends Event {
         this._buffer_state_changed = fileStateChanged;
     }
 
-    get fileStateChanged() {
+    get bufferStateChanged() {
         return this._buffer_state_changed;
     }
 
@@ -45,7 +45,15 @@ export class BufferState extends EventEmitter implements IDisposable {
             }
         };
 
-        if (!this._abs_path) this.initTextModel("");
+        if (!this._abs_path) {
+            this.initTextModel("")
+            this._is_modified = true;
+
+            setTimeout(() => {
+                let evt = new BufferStateChanged(true);
+                this.emit("bufferStateChanged", evt);
+            }, 10);
+        }
     }
 
     private initTextModel(content: string) {
@@ -53,7 +61,7 @@ export class BufferState extends EventEmitter implements IDisposable {
         this._text_model.on("textEdit", this._textModelChangedHandler);
     }
 
-    async readFileContentToModel(encoding: string = "UTF-8"): Promise<boolean> {
+    async readFileContentToModel(encoding: string = "utf8"): Promise<boolean> {
         if (this._text_model === null) {
             let content = await Host.readFile(this._abs_path, encoding);
             this.initTextModel(content);
@@ -62,10 +70,17 @@ export class BufferState extends EventEmitter implements IDisposable {
         return false;
     }
 
-    async writeContentToFile(encoding: string = "UTF-8"): Promise<boolean> {
-        if (this._text_model && this._filename) {
+    async writeContentToFile(path: string, encoding: string = "utf8"): Promise<boolean> {
+        if (this._text_model) {
             let content = this._text_model.reportAll();
-            throw new Error("Not implemented");
+
+            let result = await Host.writeStringToFile(path, "utf8", content);
+            if (result) {
+                this._is_modified = false;
+                let evt = new BufferStateChanged(false);
+                this.emit("bufferStateChanged", evt);
+                return true;
+            }
         }
         return false;
     }
@@ -82,7 +97,7 @@ export class BufferState extends EventEmitter implements IDisposable {
     }
 
     set absolutePath(path: string) {
-        if (this._abs_path != path) {
+        if (this._abs_path && this._abs_path != path) {
             this.detachTextModel();
         }
         this._abs_path = path;

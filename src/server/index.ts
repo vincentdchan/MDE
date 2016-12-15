@@ -75,7 +75,9 @@ export function initializeFileService() {
         }
 
         if (options) {
-            fs.writeFile("filename", data, options, callback);
+            fs.writeFile(filename, data, options, callback);
+        } else {
+            fs.writeFile(filename, data, callback);
         }
     });
 

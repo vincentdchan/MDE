@@ -85,24 +85,27 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
         this._editor.bind(this._buffer_state.model);
 
         this._buffer_state.on("bufferStateChanged", (evt: BufferStateChanged) => {
-            this.setUnsavedState();
+            if (evt.bufferStateChanged)
+                this.setUnsavedState();
+            else
+                this.setSavedState();
         });
 
         setTimeout(() => {
             this.title = this._buffer_state.filename + " - MDE";
-        }, 10);
+        }, 100);
     }
 
     private setUnsavedState() {
         setTimeout(() => {
             this.title = "*" + this._buffer_state.filename + " - MDE";
-        }, 10);
+        }, 100);
     }
 
     private setSavedState() {
         setTimeout(() => {
             this.title = this._buffer_state.filename + " - MDE"
-        }, 10);
+        }, 100);
     }
 
     unbind() {

@@ -34,7 +34,6 @@ export class MDE implements IDisposable {
         });
         this._menu.setApplicationMenu();
 
-
         this._buffer_state = new BufferState();
 
         this._view = new WindowView();
@@ -62,6 +61,7 @@ export class MDE implements IDisposable {
                 this.handleSaveFile(SaveFilter);
                 break;
             case MenuButtonType.SaveAs:
+                this.handleSaveAsFile(SaveFilter);
                 break;
             case MenuButtonType.Preference:
                 break;
@@ -102,13 +102,39 @@ export class MDE implements IDisposable {
     }
 
     private async handleSaveFile(_saveFilter) {
-        let filename = await Host.showOpenDialog({
-            title: "Save File",
-            filters: _saveFilter,
-        });
+
+        let path: string;
+        if (!this._buffer_state.absolutePath) {
+            let paths = await Host.showSaveDialog({
+                title: "Save",
+                filters: _saveFilter,
+            });
+
+            if (paths) {
+                this._buffer_state.absolutePath = paths;
+            } else {
+                throw new Error("Illegal path.");
+            }
+        }
+
+        let result = await this._buffer_state.writeContentToFile(
+            this._buffer_state.absolutePath
+        );
 
     }
 
+    private async handleSaveAsFile(_saveFilter) {
+
+        let paths = await Host.showSaveDialog({
+            title: "Save",
+            filters: _saveFilter
+        });
+
+        if (paths) {
+            let result = await this._buffer_state.writeContentToFile(paths);
+        } 
+
+    }
 
     private findLineAncestor(node: Node) : HTMLElement {
         let elm: HTMLElement = node.parentElement;
@@ -121,14 +147,6 @@ export class MDE implements IDisposable {
             elm = elm.parentElement;
         }
     }
-
-    /*
-    applyTextEdit(_textEdit: TextEdit): Position {
-        let result = this._model.applyTextEdit(_textEdit);
-
-        return result;
-    }
-    */
 
     appendTo(_elem: HTMLElement) {
         _elem.appendChild(this._view.element());
