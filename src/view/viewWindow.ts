@@ -2,7 +2,7 @@ import {DomHelper, IDisposable, Vector2} from "../util"
 import {LeftPanelView} from "./viewLeftPanel"
 import {EditorView} from "./viewEditor"
 import {SplitterView} from "./viewSplitter"
-import {TextModel, BufferState, BufferStateChanged} from "../model"
+import {TextModel, BufferState, BufferStateChanged, BufferAbsPathChanged} from "../model"
 
 export class WindowView extends DomHelper.AppendableDomWrapper implements IDisposable {
 
@@ -89,6 +89,10 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
                 this.setUnsavedState();
             else
                 this.setSavedState();
+        });
+
+        this._buffer_state.on("bufferAbsPathChanged", (evt: BufferAbsPathChanged) => {
+            this.title = this._buffer_state.filename + " - MDE";
         });
 
         setTimeout(() => {

@@ -2,7 +2,7 @@ export {TextModel, TextEditEvent} from "./textModel"
 export {LineModel} from "./lineModel"
 export {LineStream, ILineStream} from "./lineStream"
 export {TextEdit, TextEditType, TextEditApplier} from "./textEdit"
-export {BufferState, BufferStateChanged} from "./bufferState"
+export {BufferState, BufferStateChanged, BufferAbsPathChanged} from "./bufferState"
 
 export interface Position {
     line : number;

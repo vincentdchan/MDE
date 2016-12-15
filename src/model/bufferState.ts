@@ -3,6 +3,28 @@ import {EventEmitter} from "events"
 import {Host, IDisposable} from "../util"
 import * as Path from "path"
 
+export class BufferAbsPathChanged extends Event {
+
+    private _newPath: string;
+    private _oldPath: string;
+
+    constructor(newPath: string, oldPath?: string) {
+        super("bufferAbsPathChanged");
+
+        this._newPath = newPath;
+        this._oldPath = oldPath;
+    }
+
+    get newPath() {
+        return this._newPath;
+    }
+
+    get oldPath() {
+        return this._oldPath;
+    }
+
+}
+
 export class BufferStateChanged extends Event {
 
     private _buffer_state_changed: boolean;
@@ -21,6 +43,9 @@ export class BufferStateChanged extends Event {
 
 ///
 /// A file state
+///
+/// Events:
+/// BufferStateChanged
 ///
 export class BufferState extends EventEmitter implements IDisposable {
 
@@ -85,7 +110,7 @@ export class BufferState extends EventEmitter implements IDisposable {
         return false;
     }
 
-    private detachTextModel() {
+    detachTextModel() {
         if (this._text_model) {
             this._text_model.removeListener("textEdit", this._textModelChangedHandler);
             this._text_model = null;
@@ -97,10 +122,10 @@ export class BufferState extends EventEmitter implements IDisposable {
     }
 
     set absolutePath(path: string) {
-        if (this._abs_path && this._abs_path != path) {
-            this.detachTextModel();
-        }
+        this._filename = null;
         this._abs_path = path;
+        let evt = new BufferAbsPathChanged(path, this._abs_path);
+        this.emit("bufferAbsPathChanged", evt);
     }
 
     get absolutePath() {

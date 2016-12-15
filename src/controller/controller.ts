@@ -132,6 +132,9 @@ export class MDE implements IDisposable {
 
         if (paths) {
             let result = await this._buffer_state.writeContentToFile(paths);
+            if (result) {
+                this._buffer_state.absolutePath = paths;
+            }
         } 
 
     }
