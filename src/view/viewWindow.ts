@@ -3,6 +3,8 @@ import {LeftPanelView} from "./viewLeftPanel"
 import {EditorView} from "./viewEditor"
 import {SplitterView} from "./viewSplitter"
 import {TextModel, BufferState, BufferStateChanged, BufferAbsPathChanged} from "../model"
+import * as Electron from "electron"
+import {remote} from "electron"
 
 export class WindowView extends DomHelper.AppendableDomWrapper implements IDisposable {
 
@@ -76,6 +78,14 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
             }
         });
 
+        window.onbeforeunload = (e: Event) => {
+            if (this._buffer_state.isModified) {
+                let result = window.confirm("File not saved, sure to close?");
+
+                if (!result) e.returnValue = false;
+            }
+        };
+
         this.title = "MDE"
     }
 
@@ -92,24 +102,28 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
         });
 
         this._buffer_state.on("bufferAbsPathChanged", (evt: BufferAbsPathChanged) => {
-            this.title = this._buffer_state.filename + " - MDE";
+            this.setTitle(this._buffer_state.filename);
         });
 
         setTimeout(() => {
-            this.title = this._buffer_state.filename + " - MDE";
+            this.setTitle(this._buffer_state.filename);
         }, 100);
     }
 
     private setUnsavedState() {
         setTimeout(() => {
-            this.title = "*" + this._buffer_state.filename + " - MDE";
+            this.setTitle("*" + this._buffer_state.filename);
         }, 100);
     }
 
     private setSavedState() {
         setTimeout(() => {
-            this.title = this._buffer_state.filename + " - MDE"
+            this.setTitle(this._buffer_state.filename);
         }, 100);
+    }
+
+    private setTitle(content: string) {
+        this.title = content + " - MDE";
     }
 
     unbind() {

@@ -115,10 +115,6 @@ export class MainMenuView extends EventEmitter {
                 ]
             },
             {
-                label: "Buffers",
-                id: "buffers",
-            },
-            {
                 label: "Help",
                 submenu: [
                     {

@@ -1,6 +1,6 @@
 import {WordView} from "./viewWord"
-import {IVirtualElement, Coordinate, MarkdownLexerState, 
-    HighlightingRange, HighlightingType} from "."
+import {IVirtualElement, Coordinate, HighlightingRange, HighlightingType} from "."
+import {LineStateManager} from "../model/lineStateManager"
 import {IDisposable, DomHelper} from "../util"
 import {Deque} from "../util/queue"
 
@@ -83,14 +83,15 @@ export class LineView extends DomHelper.AppendableDomWrapper implements IDisposa
 
     public static readonly DefaultLeftMarginWidth = 45;
 
+    private _line_state_manager: LineStateManager;
+
     private _leftMargin: LeftMargin;
     private _content: string;
     private _words: WordView[]; 
-    private _state: MarkdownLexerState;
     private _rendered_lineNumber: number = 0;
     private _line_content_dom: HTMLElement = null;
 
-    constructor() {
+    constructor(lineStateManager: LineStateManager) {
         super("p", "mde-line");
 
         this._leftMargin = new LeftMargin(LineView.DefaultLeftMarginWidth);
@@ -105,7 +106,7 @@ export class LineView extends DomHelper.AppendableDomWrapper implements IDisposa
         this._dom.style.margin = "0";
         this._dom.style.cursor = "text";
 
-        this._state =  new MarkdownLexerState();
+        this._line_state_manager = lineStateManager;
     }
 
     private generateContentDom() : HTMLElement {
@@ -323,10 +324,6 @@ export class LineView extends DomHelper.AppendableDomWrapper implements IDisposa
 
     get words() {
         return this._words;
-    }
-
-    get state() {
-        return this._state;
     }
 
 }

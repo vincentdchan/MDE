@@ -2,6 +2,7 @@ import {LineView} from "./viewLine"
 import {IVirtualElement, Coordinate, HighlightingRange, HighlightingType} from "."
 import {TextModel, LineModel, Position, PositionUtil, 
     TextEdit, TextEditType} from "../model"
+import {LineStateManager} from "../model/lineStateManager"
 import {IDisposable, DomHelper, KeyCode} from "../util"
 import {PopAllQueue} from "../util/queue"
 import {InputerView} from "./viewInputer"
@@ -34,6 +35,8 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
 
     public static readonly CursorBlinkingInternal = 500;
 
+    private _line_state_manger: LineStateManager;
+
     private _model: TextModel = null;
     private _container: HTMLDivElement;
     private _lines: LineView[];
@@ -62,6 +65,8 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         this._allow_multiselections = allowMultiselections;
         this._lines = [];
         this._highlightingRanges = [];
+
+        this._line_state_manger = new LineStateManager();
 
         let absPosGetter = (pos: Position) => {
             let clientCo = this.getCoordinate(pos);
@@ -103,7 +108,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
 
         this._lines[0] = null;
         this._model.forEach((line: LineModel) => {
-            var vl = new LineView();
+            var vl = new LineView(this._line_state_manger);
 
             this._lines[line.number] = vl;
             this._highlightingRanges[line.number] = new PopAllQueue<HighlightingRange>();
@@ -419,7 +424,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
     private render(option: RenderOption) {
         if (option.appendLines) {
             for (let i = 0; i < option.appendLines; i++) {
-                let newLV = new LineView();
+                let newLV = new LineView(this._line_state_manger);
                 this._lines.push(newLV);
                 newLV.appendTo(this._container);
             }
@@ -687,7 +692,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         this._highlightingRanges = _queues_prefix.concat(_new_queues_arr).concat(_queues_postfix);
 
         for (let i = index + count - 1; i >= index; i--) {
-            this._lines[i] = new LineView();
+            this._lines[i] = new LineView(this._line_state_manger);
             this._container.insertBefore(this._lines[i].element(), 
                 this._lines[i + 1].element());
         }
@@ -700,7 +705,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         _new_lines_arr.length = num;
         _new_queues_arr.length = num;
         for (let i = 0; i < num; i++) {
-            _new_lines_arr[i] = new LineView();
+            _new_lines_arr[i] = new LineView(this._line_state_manger);
             _new_queues_arr[i] = new PopAllQueue<HighlightingRange>();
             this._container.appendChild(_new_lines_arr[i].element());
         }

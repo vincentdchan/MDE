@@ -10,7 +10,7 @@ const DEFAULT_OPTION: EditorOption = {
     lineHeight: 18
 }
 
-export function Display(content: string) {
+export function Display() {
 
     let mde = new MDE();
 

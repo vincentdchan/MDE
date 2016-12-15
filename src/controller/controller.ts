@@ -49,6 +49,7 @@ export class MDE implements IDisposable {
         this._view.bind(this._buffer_state);
     }
 
+    // 2016-12-15 Chen Xiao once said he is awesome
     private handleMenuClick(evt: MenuClickEvent) {
         switch(evt.buttonType) {
             case MenuButtonType.NewFile:
