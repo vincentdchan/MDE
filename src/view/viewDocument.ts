@@ -87,10 +87,6 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         this._nullArea = new NullElement("div", "mde-document-null");
         this._nullArea.appendTo(this._dom);
 
-        setTimeout(() => {
-            this._nullArea.height = this._dom.clientHeight / 2;
-        }, 5);
-
         this.on("mousedown", this.handleDocMouseDown.bind(this));
 
         this._window_mousemove_handler = (evt: MouseEvent) => { this.handleWindowMouseMove(evt); }
@@ -118,6 +114,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         })
 
         setTimeout(() => {
+            this._nullArea.height = this._dom.clientHeight / 2;
             this._scroll_height = this._dom.scrollHeight;
         }, 5);
     }

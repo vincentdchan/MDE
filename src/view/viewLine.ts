@@ -81,7 +81,7 @@ class LeftMargin extends DomHelper.ResizableElement implements IDisposable {
 
 export class LineView extends DomHelper.AppendableDomWrapper implements IDisposable {
 
-    public static readonly DefaultLeftMarginWidth = 40;
+    public static readonly DefaultLeftMarginWidth = 45;
 
     private _leftMargin: LeftMargin;
     private _content: string;

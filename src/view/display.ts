@@ -12,7 +12,7 @@ const DEFAULT_OPTION: EditorOption = {
 
 export function Display(content: string) {
 
-    let mde = new MDE(content);
+    let mde = new MDE();
 
     mde.appendTo(document.body);
 

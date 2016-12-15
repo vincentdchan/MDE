@@ -6,7 +6,6 @@ import {EventEmitter} from "events"
 import {Position, PositionUtil, Range, isPosition, isRange, TextEdit, TextEditType, TextEditApplier} from "."
 import {hd, tl, last} from "../util/fn"
 
-
 function isEndOfLineBreaker(str: string) : boolean {
     return str[str.length - 1] == "\n";
 }
@@ -16,11 +15,28 @@ export interface ITextDocument {
     report(range: Range): string;
 }
 
-export class TextModel implements TextEditApplier, ITextDocument {
+export class TextEditEvent extends Event {
+
+    private _textEdit : TextEdit;
+
+    constructor(textEdit: TextEdit) {
+        super("textEdit");
+
+        this._textEdit = textEdit;
+    }
+
+    get textEdit() {
+        return this._textEdit;
+    }
+
+}
+
+export class TextModel extends EventEmitter implements TextEditApplier, ITextDocument {
 
     protected _lines : LineModel[];
 
     constructor(_string: string) {
+        super();
 
         this._lines = new Array<LineModel>();
         
@@ -89,15 +105,24 @@ export class TextModel implements TextEditApplier, ITextDocument {
 
     applyTextEdit(textEdit: TextEdit): Position {
 
+        let pos: Position;
         switch(textEdit.type) {
             case TextEditType.InsertText:
-                return this.insertText(textEdit);
+                pos = this.insertText(textEdit);
+                break;
             case TextEditType.DeleteText:
-                return this.deleteText(textEdit);
+                pos = this.deleteText(textEdit);
+                break;
             case TextEditType.ReplaceText:
-                return this.replaceText(textEdit);
+                pos = this.replaceText(textEdit);
+                break;
         }
 
+        if (!pos) throw new Error("Unknown textEdit error.");
+
+        let evt = new TextEditEvent(textEdit);
+        this.emit("textEdit", evt);
+        return pos;
     }
 
     ///

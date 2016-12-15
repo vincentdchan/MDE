@@ -14,7 +14,13 @@ body {
 
 .mde-line-leftMargin {
     cursor: default;
+    text-align: right;
 }
+
+.mde-line-number {
+    margin-right: 10px;
+}
+
 .mde-cursor {
     background: grey;
 }

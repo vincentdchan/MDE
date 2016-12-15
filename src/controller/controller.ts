@@ -1,5 +1,5 @@
 import {TextModel, LineModel, TextEdit, TextEditType, 
-    TextEditApplier, Position} from "../model"
+     Position, BufferState} from "../model"
 import {EditorView, Coordinate, WindowView} from "../view"
 import {IDisposable, Host} from "../util"
 import {remote, ipcRenderer} from "electron"
@@ -13,12 +13,12 @@ const SaveFilter = [
     { name: "All Files", extensions: ["*"] }
 ];
 
-export class MDE implements IDisposable, TextEditApplier {
+export class MDE implements IDisposable {
 
     private _buffers: TextModel[] = [];
     private _current_buffer: number;
 
-    private _model : TextModel = null;
+    private _buffer_state: BufferState;
     private _position: Position;
     private _menu: MainMenuView;
     private _view: WindowView = null;
@@ -26,8 +26,7 @@ export class MDE implements IDisposable, TextEditApplier {
     private _composition_start_pos : Position;
     private _composition_update_pos : Position;
 
-    constructor(content? : string) {
-        content = content? content : "";
+    constructor() {
 
         this._menu = new MainMenuView();
         this._menu.on("menuClick", (evt: MenuClickEvent) => {
@@ -35,25 +34,26 @@ export class MDE implements IDisposable, TextEditApplier {
         });
         this._menu.setApplicationMenu();
 
-        this._model = new TextModel(content);
+
+        this._buffer_state = new BufferState();
 
         this._view = new WindowView();
-        this._view.bind(this._model);
+        this._view.bind(this._buffer_state);
 
-        ipcRenderer.on("file-readFile-error", this.handleFileReadError.bind(this));
-        ipcRenderer.on("file-readFile-success", this.handleFileRead.bind(this));
     }
 
-    reloadText(content: string) {
-        this._model = new TextModel(content);
+    private reloadBuffer(buffer: BufferState) {
+        this._buffer_state.dispose();
+        this._buffer_state = buffer;
 
         this._view.unbind();
-        this._view.bind(this._model);
+        this._view.bind(this._buffer_state);
     }
 
     private handleMenuClick(evt: MenuClickEvent) {
         switch(evt.buttonType) {
             case MenuButtonType.NewFile:
+                this.handleNewFile();
                 break;
             case MenuButtonType.OpenFile:
                 this.handleOpenFile();
@@ -74,6 +74,11 @@ export class MDE implements IDisposable, TextEditApplier {
         }
     }
 
+    private handleNewFile() {
+        let newBuffer = new BufferState();
+        this.reloadBuffer(newBuffer);
+    }
+
     private async handleOpenFile() {
         let filenames: string[] = await Host.showOpenDialog({
             title: "Open File",
@@ -88,9 +93,11 @@ export class MDE implements IDisposable, TextEditApplier {
         }
         else if (filenames.length > 0) {
             let filename = filenames[0];
-            let content = await Host.readFile(filename, "UTF-8");
 
-            this.reloadText(content);
+            let newBuffer = new BufferState(filename);
+            await newBuffer.readFileContentToModel();
+
+            this.reloadBuffer(newBuffer);
         }
     }
 
@@ -100,7 +107,6 @@ export class MDE implements IDisposable, TextEditApplier {
             filters: _saveFilter,
         });
 
-        let content = this._model.reportAll();
     }
 
 
@@ -116,11 +122,13 @@ export class MDE implements IDisposable, TextEditApplier {
         }
     }
 
+    /*
     applyTextEdit(_textEdit: TextEdit): Position {
         let result = this._model.applyTextEdit(_textEdit);
 
         return result;
     }
+    */
 
     appendTo(_elem: HTMLElement) {
         _elem.appendChild(this._view.element());
@@ -130,16 +138,15 @@ export class MDE implements IDisposable, TextEditApplier {
         ipcRenderer.send("file-readFile", filename);
     }
 
-    handleFileRead(event: Electron.IpcRendererEvent, data: string) {
-        this.reloadText(data);
-    }
-
     handleFileReadError(event: Electron.IpcRendererEvent, err: NodeJS.ErrnoException) {
         console.log(err);
     }
 
     dispose() {
-        this._model = null;
+        if (this._buffer_state) {
+            this._buffer_state.dispose();
+            this._buffer_state = null;
+        }
         this._view.dispose();
         this._view = null;
     }
@@ -156,8 +163,8 @@ export class MDE implements IDisposable, TextEditApplier {
         return this._view;
     }
 
-    get model() {
-        return this._model;
+    get buffer() {
+        return this._buffer_state
     }
 
 }

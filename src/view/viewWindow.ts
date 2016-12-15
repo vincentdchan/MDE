@@ -2,13 +2,13 @@ import {DomHelper, IDisposable, Vector2} from "../util"
 import {LeftPanelView} from "./viewLeftPanel"
 import {EditorView} from "./viewEditor"
 import {SplitterView} from "./viewSplitter"
-import {TextModel} from "../model"
+import {TextModel, BufferState, BufferStateChanged} from "../model"
 
 export class WindowView extends DomHelper.AppendableDomWrapper implements IDisposable {
 
     public static readonly leftPadWidth = 220;
 
-    private _model : TextModel = null;
+    private _buffer_state: BufferState = null;
 
     private _width : number;
     private _height: number;
@@ -75,17 +75,44 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
                 this.forceSetHeight(v.y);
             }
         });
+
+        this.title = "MDE"
     }
 
-    bind(model: TextModel) {
-        this._model = model;
+    bind(buffer: BufferState) {
+        this._buffer_state = buffer;
 
-        this._editor.bind(model);
+        this._editor.bind(this._buffer_state.model);
+
+        this._buffer_state.on("bufferStateChanged", (evt: BufferStateChanged) => {
+            this.setUnsavedState();
+        });
+
+        setTimeout(() => {
+            this.title = this._buffer_state.filename + " - MDE";
+        }, 10);
+    }
+
+    private setUnsavedState() {
+        setTimeout(() => {
+            this.title = "*" + this._buffer_state.filename + " - MDE";
+        }, 10);
+    }
+
+    private setSavedState() {
+        setTimeout(() => {
+            this.title = this._buffer_state.filename + " - MDE"
+        }, 10);
     }
 
     unbind() {
         this._editor.unbind();
-        this._model = null;
+
+        this._buffer_state = null;
+
+        setTimeout(() => {
+            this.title = "MDE";
+        }, 10);
     }
 
     private _mouseMoveHandler = null;
@@ -119,6 +146,14 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
         }
     }
 
+    get title() {
+        return document.title;
+    }
+
+    set title(title: string) {
+        document.title = title;
+    }
+
     get width() {
         return this._width;
     }
@@ -129,14 +164,6 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
         }
     }
 
-    private forceSetWidth(w: number) {
-        this._width = w;
-
-        this._editor.width = this._width - this._leftPanel.width;
-        this._editor.marginLeft = this._leftPanel.width;
-        this._splitter.marginLeft = this._leftPanel.width - this._splitter.width;
-    }
-
     get height() {
         return this._height;
     }
@@ -145,6 +172,14 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
         if (h !== this._height) {
             this.forceSetHeight(h);
         }
+    }
+
+    private forceSetWidth(w: number) {
+        this._width = w;
+
+        this._editor.width = this._width - this._leftPanel.width;
+        this._editor.marginLeft = this._leftPanel.width;
+        this._splitter.marginLeft = this._leftPanel.width - this._splitter.width;
     }
 
     private forceSetHeight(h: number) {
