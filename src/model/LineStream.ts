@@ -1,8 +1,10 @@
 import {LineModel} from "./lineModel"
 import {TextModel} from "./textModel"
 
-// The API from CodeMirror
-export interface ILineStream {
+///
+/// The API from CodeMirror
+///
+export interface IStream {
 
     // end of line
     eol(): boolean;
@@ -68,12 +70,148 @@ export interface ILineStream {
 
 }
 
-export class LineStream implements ILineStream {
+export class LineStream implements IStream {
 
-    _model : TextModel;
-    _lineModel: LineModel;
-    _line : number;
-    _index : number;
+    private _text: string;
+    private _index: number = 0;
+    private _curren_token_index: number = 0;
+
+    constructor(text: string) {
+        this._text = text;
+    }
+
+    eol() : boolean {
+        return this._index >= this._text.length;
+    }
+
+    sol() : boolean {
+        return this._index === 0;
+    }
+
+    peek(): string {
+        let next_index = this._index;
+        return next_index >= this._text.length?
+            null : this._text.charAt(next_index);
+    }
+
+    next(): string {
+        let next_index = this._index++;
+        return next_index >= this._text.length?
+            null : this._text.charAt(next_index);
+    }
+
+    eat(match: string | RegExp | ((char: string) => boolean)) : string {
+        if (typeof match == "string") {
+            return this.peek() == match ? match : undefined;
+        } else if (match instanceof RegExp) {
+            let substring = this._text.slice(this._index);
+            let result = match.exec(substring);
+            if (result) {
+                this._index += result[0].length;
+                return result[0];
+            }
+            return undefined;
+        } else if (typeof match == "function") {
+            return match(this.peek()) ? this.next() : undefined;
+        } else {
+            throw new Error("Type error:" + typeof match);
+        }
+    }
+
+    eatWhile(): boolean {
+        if (this.peek() != "\t" && this.peek() != " ") return false;
+        while (this.peek() == " " || this.peek() == "\t") this.next();
+        return true;
+    }
+
+    eatSpace(): boolean {
+        if (this.peek() != " ") return false;
+        while (this.peek() == " ") this.next();
+        return true;
+    }
+
+    skipToEnd() {
+        this._index = this._text.length;
+    }
+
+    skipTo(ch: string): boolean {
+        let index = this._index;
+        for (let index = this._index; index < this._text.length; index++) {
+            if (this._text.charAt(index) == ch) {
+                this._index = index;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    match(pattern: string, consume?: boolean, caseFold?: boolean): boolean;
+    match(pattern: RegExp, consume?: boolean): Array<string>;
+    match(pattern: string | RegExp, consume?: boolean, caseFold?: boolean) : boolean | Array<string> {
+        if (typeof pattern == "string") {
+            for (let i = 0; i < pattern.length; i++) {
+                if (this._text.charAt(this._index + i) != pattern.charAt(i)) {
+                    return false;
+                }
+            }
+            if (consume) this._index += pattern.length;
+            return true;
+        } else if (pattern instanceof RegExp) {
+            let substring = this._text.slice(this._index);
+            let result = pattern.exec(substring);
+            if (result) {
+                if (consume) {
+                    this._index += result[0].length;
+                }
+                return result;
+            }
+            return false;
+        } else {
+            throw new Error("Type error:" + typeof pattern);
+        }
+    }
+
+    backUp(num: number) {
+        if (this._index - num < 0) this._index = 0;
+        else this._index -= num;
+    }
+
+    column(): number {
+        let _col = 0;
+        let char: string;
+        do {
+            char = this._text.charAt(this._index + _col);
+            _col++;
+        } while (char == " " || char == "\t")
+        return _col;
+    }
+
+    indentation(): number  {
+        let _col = 0;
+        let char: string;
+        do {
+            char = this._text.charAt(_col);
+            _col++;
+        } while (char == " " || char == "\t")
+        return _col;
+    }
+
+    setCurrentTokenIndex() {
+        this._curren_token_index = this._index;
+    }
+
+    current(): string  {
+        return this._text.slice(this._curren_token_index, this._index);
+    }
+
+}
+
+export class TextModelStream implements IStream {
+
+    private _model : TextModel;
+    private _lineModel: LineModel;
+    private _line : number;
+    private _index : number;
 
     constructor(_model: TextModel, _line: number) {
         this._model = _model;

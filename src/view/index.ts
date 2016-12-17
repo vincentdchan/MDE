@@ -34,13 +34,3 @@ export interface ButtonOption {
     onClick?: (e : MouseEvent) => void;
     onHover?: (e : MouseEvent) => void;
 }
-
-export enum HighlightingType {
-    Bold, Underline, Italic
-}
-
-export interface HighlightingRange {
-    begin : number;
-    end: number;
-    types: Set<HighlightingType>;
-}

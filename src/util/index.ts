@@ -5,6 +5,8 @@ export {Deque} from "./queue"
 export {Host} from "./host"
 export {TickTockPair, TickTockUtil} from "./ticktock"
 export {KeyCode} from "./keyCode"
+export {ITokenizer} from "./tokenizer"
+export {MarkdownTokenType, MarkdownTokenizeState, MarkdownTokenizer} from "./markdownTokenizer"
 
 export interface IDisposable {
     dispose(): any;

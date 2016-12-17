@@ -1,21 +1,25 @@
-import {IVirtualElement, Coordinate, HighlightingType} from "."
-import {IDisposable, DomHelper} from "../util"
+import {IVirtualElement, Coordinate} from "."
+import {MarkdownTokenType, DomHelper} from "../util"
 
-export class WordView implements IDisposable {
+function addClass(elm: HTMLElement, className: string) {
+    elm.classList.add(className);
+}
 
-    private _classList: Set<HighlightingType>;
+export class WordView {
+
+    private _tokenType: MarkdownTokenType;
     private _text: string;
     private _dom: HTMLSpanElement = null;
 
-    constructor(_text: string | WordView, _classList?: Set<HighlightingType>) {
+    constructor(_text: string | WordView, tokenType: MarkdownTokenType = MarkdownTokenType.Text) {
         if (typeof _text == "string")
             this._text = _text;
         else if (_text instanceof WordView) {
             this._text = _text._text;
-            this._classList = _text._classList;
+            this._tokenType = _text._tokenType;
         }
 
-        this._classList = _classList? new Set(_classList) : new Set<HighlightingType>();
+        this._tokenType = tokenType;
 
         this._dom = DomHelper.elem("span");
 
@@ -23,20 +27,18 @@ export class WordView implements IDisposable {
         let _node = document.createTextNode(this._text);
         this._dom.appendChild(_node);
 
-        this._classList.forEach((e: HighlightingType)=> {
-            switch(e) {
-                case HighlightingType.Bold:
-                    this._dom.classList.add("mde-word-bold");
-                    break;
-                case HighlightingType.Underline:
-                    this._dom.classList.add("mde-word-underline");
-                    break;
-                case HighlightingType.Italic:
-                    this._dom.classList.add("mde-word-italic");
-                    break;
-            }
-            this._dom.classList.add(e.toString());
-        })
+        switch(this._tokenType) {
+            case MarkdownTokenType.Bold:
+                addClass(this._dom, "mde-word-bold");
+                break;
+            case MarkdownTokenType.Italic:
+                addClass(this._dom, "mde-word-italic");
+                break;
+            case MarkdownTokenType.Pre:
+                addClass(this._dom, "mde-word-pre");
+                break;
+        }
+
     }
 
     getCoordinate(offset: number) : Coordinate {
@@ -60,11 +62,12 @@ export class WordView implements IDisposable {
         }
     }
 
-    dispose() {
-    }
-
     element() {
         return this._dom;
+    }
+
+    appendTo(elm: HTMLElement) {
+        elm.appendChild(this._dom);
     }
 
     get length() {
@@ -75,8 +78,8 @@ export class WordView implements IDisposable {
         return this._text;
     }
 
-    get classList() {
-        return this._classList;
+    get tokenType() {
+        return this._tokenType;
     }
 
 }

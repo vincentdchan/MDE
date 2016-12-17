@@ -1,6 +1,6 @@
 import {WordView} from "./viewWord"
-import {IVirtualElement, Coordinate, HighlightingRange, HighlightingType} from "."
-import {LineStateManager} from "../model/lineStateManager"
+import {IVirtualElement, Coordinate} from "."
+import {LineRenderer, MarkdownToken} from "../model"
 import {IDisposable, DomHelper} from "../util"
 import {Deque} from "../util/queue"
 
@@ -83,15 +83,16 @@ export class LineView extends DomHelper.AppendableDomWrapper implements IDisposa
 
     public static readonly DefaultLeftMarginWidth = 45;
 
-    private _line_state_manager: LineStateManager;
+    private _line_renderer: LineRenderer;
 
+    private _line_index: number;
     private _leftMargin: LeftMargin;
     private _content: string;
     private _words: WordView[]; 
     private _rendered_lineNumber: number = 0;
     private _line_content_dom: HTMLElement = null;
 
-    constructor(lineStateManager: LineStateManager) {
+    constructor(index: number, lineRenderer: LineRenderer) {
         super("p", "mde-line");
 
         this._leftMargin = new LeftMargin(LineView.DefaultLeftMarginWidth);
@@ -106,104 +107,38 @@ export class LineView extends DomHelper.AppendableDomWrapper implements IDisposa
         this._dom.style.margin = "0";
         this._dom.style.cursor = "text";
 
-        this._line_state_manager = lineStateManager;
+        this._line_index = index;
+        this._line_renderer = lineRenderer;
+
+        this._line_renderer.register(index, (tokens: MarkdownToken[]) => {
+            this.renderMethod(tokens);
+        });
+    }
+
+    private renderMethod(tokens: MarkdownToken[]) {
+
+        this._words = [];
+
+        if (this._line_content_dom) {
+            this._dom.removeChild(this._line_content_dom);
+        }
+        this._line_content_dom = this.generateContentDom();
+
+        tokens.forEach((token: MarkdownToken, index: number) => {
+            let wordView = new WordView(token.text, token.type);
+            this._words.push(wordView);
+            wordView.appendTo(this._line_content_dom);
+        });
+
+        this._dom.appendChild(this._line_content_dom);
     }
 
     private generateContentDom() : HTMLElement {
-        let elem = DomHelper.elem("span", "mde-line-content");
+        let elem = DomHelper.Generic.elem<HTMLSpanElement>("span", "mde-line-content");
         elem.style.marginLeft = this._leftMargin.width + "px";
         elem.style.width = "auto";
-        // elem.style.width = "100%";
         elem.style.display = "block";
         return elem;
-    }
-
-    private static splitArr(hlr_arr : HighlightingRange[]) {
-
-        let result : HighlightingRange[] = [];
-
-        hlr_arr.sort((a : HighlightingRange, b : HighlightingRange) => {
-            return a.begin - b.begin;
-        });
-
-        let deque = new Deque<HighlightingRange>(hlr_arr);
-
-        while(!deque.empty()) {
-            let first = deque.pop_front();
-            if (deque.empty()) {
-                result.push(first);
-                break;
-            }
-            else {
-                let second = deque.pop_front();
-
-                if (first.begin === second.begin) {
-                    if (first.end > second.end) {
-
-                        let pushOne : HighlightingRange = {
-                            begin: first.begin,
-                            end: second.end,
-                            types: mergeSet(first.types, second.types),
-                        },
-                        returnOne : HighlightingRange = {
-                            begin: second.end,
-                            end: first.end,
-                            types: first.types,
-                        };
-
-                        result.push(pushOne);
-                        deque.push_front(returnOne);
-                    } else if (first.end < second.end) {
-
-                        let pushOne : HighlightingRange = {
-                            begin: first.begin,
-                            end: first.end,
-                            types: mergeSet(first.types, second.types),
-                        },
-                        returnOne : HighlightingRange = {
-                            begin: first.end,
-                            end: second.end,
-                            types: second.types,
-                        };
-
-                        result.push(pushOne);
-                        deque.push_front(returnOne);
-
-                    } else { // first.end === second.end
-
-                        result.push({
-                            begin: first.begin,
-                            end: first.end,
-                            types: mergeSet(first.types, second.types),
-                        });
-
-                    }
-                } else { // first.begin > second.begin
-
-                    if (first.end <= second.begin) {
-                        result.push(first);
-                        deque.push_front(second);
-                    } else {
-
-                        result.push({
-                            begin: first.begin,
-                            end: second.begin,
-                            types: first.types,
-                        })
-
-                        deque.push_front({
-                            begin: second.begin,
-                            end: first.end,
-                            types: first.types,
-                        })
-
-                    }
-
-                }
-            }
-        }
-
-        return result;
     }
 
     renderLineNumber(num: number) {
@@ -224,8 +159,7 @@ export class LineView extends DomHelper.AppendableDomWrapper implements IDisposa
         }
     }
 
-    render(content: string, hlr_arr? : HighlightingRange[]) {
-        hlr_arr = hlr_arr ? LineView.splitArr(hlr_arr) : [];
+    render(content: string) {
 
         this._words = [];
         if (content.length > 0 && content.charAt(content.length - 1) == '\n')
@@ -235,57 +169,14 @@ export class LineView extends DomHelper.AppendableDomWrapper implements IDisposa
         }
         this._line_content_dom = this.generateContentDom();
 
-        if (hlr_arr.length == 0) {
-            let wordView = new WordView(content);
-            this._words.push(wordView);
-            this._line_content_dom.appendChild(wordView.element());
-        } else {
-
-            function arrayStream<T>(arr: T[]) {
-                let index = 0;
-                return function () {
-                    if (index >= length)
-                        return null;
-                    else
-                        return arr[index++];
-                }
-            }
-
-            let stream = arrayStream(hlr_arr);
-
-            let nextSlice = stream();
-
-            let pos = 0;
-            while (pos < content.length) {
-                if (nextSlice === null) {
-                    let _slice = content.slice(pos);
-                    this.appendWord(_slice);
-                    pos = content.length;
-                } else if (pos < nextSlice.begin) {
-                    let _slice = content.slice(pos, nextSlice.begin);
-                    this.appendWord(_slice);
-                    pos = nextSlice.begin;
-                    nextSlice = stream();
-                } else if (pos === nextSlice.begin) {
-                    let _slice = content.slice(nextSlice.begin, nextSlice.end);
-                    this.appendWord(_slice, nextSlice.types)
-                    pos = nextSlice.end;
-                    nextSlice = stream();
-                }
-            }
-
-        }
+        let wordView = new WordView(content);
+        this._words.push(wordView);
+        this._line_content_dom.appendChild(wordView.element());
 
         this._dom.appendChild(this._line_content_dom);
 
         let evt = new RenderTextEvent(content);
         this._dom.dispatchEvent(evt);
-    }
-
-    private appendWord(content: string, ranges? : Set<HighlightingType>) {
-        let wordView = new WordView(content, ranges);
-        this._words.push(wordView);
-        this._line_content_dom.appendChild(wordView.element());
     }
 
     ///
@@ -312,6 +203,7 @@ export class LineView extends DomHelper.AppendableDomWrapper implements IDisposa
 
     dispose() {
         this._leftMargin.dispose();
+        this._line_renderer.ungister(this._line_index);
     }
 
     get leftMargin() {

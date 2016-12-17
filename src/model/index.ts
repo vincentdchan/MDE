@@ -1,8 +1,9 @@
 export {TextModel, TextEditEvent} from "./textModel"
 export {LineModel} from "./lineModel"
-export {LineStream, ILineStream} from "./lineStream"
+export {LineStream, IStream} from "./lineStream"
 export {TextEdit, TextEditType, TextEditApplier} from "./textEdit"
 export {BufferState, BufferStateChanged, BufferAbsPathChanged} from "./bufferState"
+export {LineRenderer, MarkdownToken} from "./lineRenderer"
 
 export interface Position {
     line : number;
