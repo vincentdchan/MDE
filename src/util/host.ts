@@ -1,14 +1,40 @@
 import * as Electron from "electron"
 import {ipcRenderer} from "electron"
+import {MarkdownTokenizeState, MarkdownTokenType} from "."
+import {MarkdownToken} from "../controller"
+import {initializeMarkdownTokenizerService} from "../server/tokenizer"
+import * as child_process from "child_process"
 
 export class Host {
 
     private static idCounter = 0;
     private static mapper : {[name: number]: {resolve: Function, reject: Function}} = {};
 
+    private static render_process: child_process.ChildProcess = null;
+
     private static inited = false;
     private static init() {
         if (!Host.inited) {
+
+            Host.render_process = initializeMarkdownTokenizerService();
+            Host.render_process.send("something");
+
+            Host.render_process.on("message", (msg: {type: string, data: {id: number, tokens: any, tokenizeState: any}}) => {
+                switch(msg.type) {
+                    case "tokenizeLine":
+                        if (Host.mapper[msg.data.id]) {
+                            Host.mapper[msg.data.id].resolve(msg.data.tokens, msg.data.tokenizeState);
+                            Host.mapper[msg.data.id] = null;
+                        }
+                        break;
+                }
+
+            });
+
+            Host.render_process.on("error", (error) => {
+                console.log(error);
+            })
+
             ipcRenderer.on("dialog-showOpenDialog-reply", 
                 (event: Electron.IpcRendererEvent, id: number, filenames: string[]) => {
                     if (Host.mapper[id]) {
@@ -116,6 +142,29 @@ export class Host {
                 resolve: resolve,
                 reject: reject,
             }
+        });
+    }
+
+    static tokenizeLine(copyState: MarkdownTokenizeState, content: string) : 
+        Promise<{token: MarkdownToken[], tokenizeState: MarkdownTokenizeState}> {
+
+        Host.init();
+
+        let id = Host.idCounter++;
+        return new Promise((resolve, reject) => {
+            console.log(Host.render_process);
+            Host.render_process.send({
+                type: "tokenizeLine",
+                data: {
+                    id: id,
+                    state: copyState,
+                    content: content,
+                }
+            });
+            Host.mapper[id] = {
+                resolve: resolve,
+                reject: reject,
+            };
         });
     }
 

@@ -1,6 +1,6 @@
 import {WordView} from "./viewWord"
 import {IVirtualElement, Coordinate} from "."
-import {LineRenderer, MarkdownToken} from "../model"
+import {LineRenderer, MarkdownToken} from "../controller"
 import {IDisposable, DomHelper} from "../util"
 import {Deque} from "../util/queue"
 
@@ -188,8 +188,8 @@ export class LineView extends DomHelper.AppendableDomWrapper implements IDisposa
         let count = 0;
         for (let i = 0; i < this._words.length; i++) {
             let word = this._words[i];
-            if (offset <= count + word.length) {
-                return word.getCoordinate(offset);
+            if (offset < count + word.length) {
+                return word.getCoordinate(offset - count);
             }
             count += word.length;
         }

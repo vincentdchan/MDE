@@ -4,7 +4,9 @@ import {IStream} from "../model"
 export enum MarkdownTokenType {
     Space,
     Hr,
-    Heading,
+    Heading1,
+    Heading2,
+    Heading3,
     Code,
     Table,
     BlockquoteStart,
@@ -69,14 +71,15 @@ export class MarkdownTokenizer implements ITokenizer<MarkdownTokenizeState, Mark
 
     tokenize(stream: IStream, state: MarkdownTokenizeState): MarkdownTokenType {
         if (state.inBold) {
-            let matchOnce = false;
             while (stream.skipTo("*")) {
-                matchOnce = true;
                 if (stream.match(/\*\*/, true)) {
                     state.inBold = false;
+                    return MarkdownTokenType.Bold;
+                } else {
+                    stream.next();
                 }
             }
-            if (!matchOnce) stream.skipToEnd();
+            stream.skipToEnd();
             return MarkdownTokenType.Bold;
         } else if (state.inItalic) {
             if (stream.skipTo("*")) {
@@ -88,15 +91,22 @@ export class MarkdownTokenizer implements ITokenizer<MarkdownTokenizeState, Mark
         } else if (state.inPre) {
             stream.skipTo("`");
             if (stream.match(/^`+/, true)) {
-                state.inItalic = false;
+                state.inPre = false;
                 return MarkdownTokenType.Pre;
             }
             stream.skipToEnd();
+            return MarkdownTokenType.Pre;
         } else if (state.isStartOfLine) {
             stream.eatWhile();
-            if (stream.match(/^#+/, true)) {
+            if (stream.match(/^###/, true)) {
                 stream.skipToEnd();
-                return MarkdownTokenType.Heading;
+                return MarkdownTokenType.Heading3;
+            } else if (stream.match(/^##/, true)) {
+                stream.skipToEnd();
+                return MarkdownTokenType.Heading2;
+            } else if (stream.match(/^#/, true)) {
+                stream.skipToEnd();
+                return MarkdownTokenType.Heading1;
             }
             state.isStartOfLine = false;
         } else {
@@ -111,7 +121,7 @@ export class MarkdownTokenizer implements ITokenizer<MarkdownTokenizeState, Mark
                 return MarkdownTokenType.Pre;
             }
         }
-        stream.skipTo(" ");
+        stream.next();
         return MarkdownTokenType.Text;
     }
 

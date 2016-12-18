@@ -1,7 +1,8 @@
 import {LineView} from "./viewLine"
 import {IVirtualElement, Coordinate} from "."
 import {TextModel, LineModel, Position, PositionUtil, 
-    TextEdit, TextEditType, LineRenderer} from "../model"
+    TextEdit, TextEditType} from "../model"
+import {LineRenderer} from "../controller"
 import {IDisposable, DomHelper, KeyCode} from "../util"
 import {PopAllQueue} from "../util/queue"
 import {InputerView} from "./viewInputer"
@@ -16,7 +17,8 @@ function setHeight(elm: HTMLElement, h: number) {
 }
 
 interface RenderOption {
-    rerenderLines: number[];
+    renderImdLines: number[];
+    renderLazilyLines: number[];
     appendLines?: number;
     removeTailLines?: number;
 }
@@ -109,8 +111,9 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
 
             this._lines[line.number] = vl;
 
-            vl.render(line.text);
+            // vl.render(line.text);
             vl.renderLineNumber(line.number);
+            this._line_renderer.renderLineImmdediately(line.number, line.text)
             this._container.appendChild(vl.element());
         })
 
@@ -435,9 +438,13 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
             this._lines.length -= option.removeTailLines;
         }
 
-        option.rerenderLines.forEach((num: number) => {
-            this.renderLine(num);
+        option.renderImdLines.forEach((num: number) => {
+            this._line_renderer.renderLineImmdediately(num, this._model.lineAt(num).text);
         });
+
+        option.renderLazilyLines.forEach((num: number) => {
+            this._line_renderer.renderLineLazily(num, this._model.lineAt(num).text);
+        })
 
         setTimeout(() => {
             this.checkScrollHeightChanged();
@@ -458,28 +465,45 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
 
     private calculateRenderLines(textEdit: TextEdit) : RenderOption {
         let option : RenderOption = {
-            rerenderLines: []
+            renderImdLines: [],
+            renderLazilyLines: [],
         };
         switch(textEdit.type) {
             case TextEditType.InsertText:
+                option.appendLines = textEdit.lines.length - 1;
+                let appendedLines = this._lines.length + option.appendLines;
+                for (let i = textEdit.position.line; i < appendedLines; i++) {
+                    if (i === textEdit.position.line)
+                        option.renderImdLines.push(i);
+                    else
+                        option.renderLazilyLines.push(i);
+                }
+            /*
                 if (textEdit.lines.length == 1) {
-                    option.rerenderLines.push(textEdit.position.line);
+                    option.renderImdLines.push(textEdit.position.line);
                 } else {
                     option.appendLines = textEdit.lines.length - 1;
                     let appendedLines = this._lines.length + option.appendLines;
                     for (let i = textEdit.position.line; i < appendedLines; i++) {
-                        option.rerenderLines.push(i);
+                        if (i === textEdit.position.line)
+                            option.renderImdLines.push(i);
+                        else
+                            option.renderLazilyLines.push(i);
                     }
                 }
+                */
                 break;
             case TextEditType.DeleteText:
                 if (textEdit.range.begin.line === textEdit.range.end.line) {
-                    option.rerenderLines.push(textEdit.range.begin.line);
+                    option.renderImdLines.push(textEdit.range.begin.line);
                 } else {
                     option.removeTailLines = textEdit.range.end.line - textEdit.range.begin.line;
                     let removedLines = this._lines.length - option.removeTailLines;
                     for (let i = textEdit.range.begin.line; i < removedLines; i++) {
-                        option.rerenderLines.push(i);
+                        if (i === textEdit.range.begin.line)
+                            option.renderImdLines.push(i);
+                        else
+                            option.renderLazilyLines.push(i);
                     }
                 }
                 break;
@@ -499,7 +523,10 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
                     fixedLineCount += lineOffset;
                 }
                 for (let i = textEdit.range.begin.line; i < fixedLineCount; i++) {
-                    option.rerenderLines.push(i);
+                    if (i === textEdit.range.begin.line)
+                        option.renderImdLines.push(i);
+                    else
+                        option.renderLazilyLines.push(i);
                 }
                 break;
         }
@@ -663,7 +690,8 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
     renderLine(line: number) {
         if (line <= 0 || line > this.linesCount)
             throw new Error("<index out of range> line:" + line + " LinesCount:" + this.linesCount);
-        this._lines[line].render(this._model.lineAt(line).text);
+        // this._lines[line].render(this._model.lineAt(line).text);
+        this._line_renderer.renderLineImmdediately(line, this._model.lineAt(line).text);
         this._lines[line].renderLineNumber(line);
     }
 

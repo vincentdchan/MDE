@@ -3,14 +3,12 @@ import {EventEmitter} from "events"
 import {Host, IDisposable} from "../util"
 import * as Path from "path"
 
-export class BufferAbsPathChanged extends Event {
+export class BufferAbsPathChanged {
 
     private _newPath: string;
     private _oldPath: string;
 
     constructor(newPath: string, oldPath?: string) {
-        super("bufferAbsPathChanged");
-
         this._newPath = newPath;
         this._oldPath = oldPath;
     }
@@ -25,13 +23,11 @@ export class BufferAbsPathChanged extends Event {
 
 }
 
-export class BufferStateChanged extends Event {
+export class BufferStateChanged {
 
     private _buffer_state_changed: boolean;
 
     constructor(fileStateChanged: boolean) {
-        super("bufferStateChanged");
-
         this._buffer_state_changed = fileStateChanged;
     }
 

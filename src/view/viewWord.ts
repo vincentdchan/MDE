@@ -28,6 +28,15 @@ export class WordView {
         this._dom.appendChild(_node);
 
         switch(this._tokenType) {
+            case MarkdownTokenType.Heading1:
+                addClass(this._dom, "mde-word-h1");
+                break;
+            case MarkdownTokenType.Heading2:
+                addClass(this._dom, "mde-word-h2");
+                break;
+            case MarkdownTokenType.Heading3:
+                addClass(this._dom, "mde-word-h3");
+                break;
             case MarkdownTokenType.Bold:
                 addClass(this._dom, "mde-word-bold");
                 break;
@@ -43,7 +52,7 @@ export class WordView {
 
     getCoordinate(offset: number) : Coordinate {
         if (offset > this.length)
-            throw new Error("Index out of range.");
+            throw new Error("Index out of range. offset:" + offset);
         if (offset === 0) {
             let rect = this._dom.getBoundingClientRect();
             return {

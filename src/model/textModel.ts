@@ -15,13 +15,11 @@ export interface ITextDocument {
     report(range: Range): string;
 }
 
-export class TextEditEvent extends Event {
+export class TextEditEvent {
 
     private _textEdit : TextEdit;
 
     constructor(textEdit: TextEdit) {
-        super("textEdit");
-
         this._textEdit = textEdit;
     }
 
