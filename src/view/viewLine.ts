@@ -121,6 +121,7 @@ export class LineView extends DomHelper.AppendableDomWrapper implements IDisposa
 
         if (this._line_content_dom) {
             this._dom.removeChild(this._line_content_dom);
+            this._line_content_dom = null;
         }
         this._line_content_dom = this.generateContentDom();
 

@@ -70,6 +70,23 @@ export class MarkdownTokenizer implements ITokenizer<MarkdownTokenizeState, Mark
     }
 
     tokenize(stream: IStream, state: MarkdownTokenizeState): MarkdownTokenType {
+        if (state.isStartOfLine) {
+            stream.eatWhile();
+            if (stream.match(/^###/, true)) {
+                stream.skipToEnd();
+                return MarkdownTokenType.Heading3;
+            } else if (stream.match(/^##/, true)) {
+                stream.skipToEnd();
+                return MarkdownTokenType.Heading2;
+            } else if (stream.match(/^#/, true)) {
+                stream.skipToEnd();
+                return MarkdownTokenType.Heading1;
+            } else if (stream.match(/^-/, true)) {
+                return MarkdownTokenType.ListItemStart;
+            }
+            state.isStartOfLine = false;
+        } 
+
         if (state.inBold) {
             while (stream.skipTo("*")) {
                 if (stream.match(/\*\*/, true)) {
@@ -96,19 +113,6 @@ export class MarkdownTokenizer implements ITokenizer<MarkdownTokenizeState, Mark
             }
             stream.skipToEnd();
             return MarkdownTokenType.Pre;
-        } else if (state.isStartOfLine) {
-            stream.eatWhile();
-            if (stream.match(/^###/, true)) {
-                stream.skipToEnd();
-                return MarkdownTokenType.Heading3;
-            } else if (stream.match(/^##/, true)) {
-                stream.skipToEnd();
-                return MarkdownTokenType.Heading2;
-            } else if (stream.match(/^#/, true)) {
-                stream.skipToEnd();
-                return MarkdownTokenType.Heading1;
-            }
-            state.isStartOfLine = false;
         } else {
             if (stream.match(/^\*\*/, true)) {
                 state.inBold = true;

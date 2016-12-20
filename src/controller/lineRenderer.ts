@@ -20,9 +20,10 @@ interface RenderEntry {
     renderState: RenderState;
     tokenizeState?: MarkdownTokenizeState;
     renderMethod?: IRenderer;
-    textToColor?: string;
+    textToColor: Collection.Queue<string>;
 }
 
+/*
 function copyRenderEntry(entry: RenderEntry): RenderEntry {
     return {
         renderState: entry.renderState,
@@ -30,6 +31,7 @@ function copyRenderEntry(entry: RenderEntry): RenderEntry {
         renderMethod: entry.renderMethod,
     };
 }
+*/
 
 export class LineRenderer {
 
@@ -39,11 +41,14 @@ export class LineRenderer {
 
     constructor() {
         this._tokenizer = new MarkdownTokenizer();
-        this._render_queue = new Collection.PriorityQueue<number>();
+        this._render_queue = new Collection.PriorityQueue<number>((a: number, b: number) => {
+            return a - b;
+        });
 
         this._entries = [{
             renderState: RenderState.Null,
             tokenizeState: this._tokenizer.startState(),
+            textToColor: new Collection.Queue<string>(),
         }]
     }
 
@@ -105,17 +110,18 @@ export class LineRenderer {
                             tokens = [{
                                 type: MarkdownTokenType.Text,
                                 text: content,
-                            }]
+                            }];
                             this._entries[num].renderMethod(tokens);
-                            this._entries[num].textToColor = content;
+                            this._entries[num].textToColor.enqueue(content);
 
-                            this._render_queue.add(num);
+                            this._render_queue.enqueue(num);
                             this.checkRenderQueue();
                             break;
                         case RenderState.PlainText:
                         case RenderState.Colored:
-                            this._entries[num].textToColor = content;
-                            this._render_queue.add(num);
+                            this._entries[num].textToColor.enqueue(content);
+
+                            this._render_queue.enqueue(num);
                             this.checkRenderQueue();
                             break;
                     }
@@ -127,25 +133,61 @@ export class LineRenderer {
         else throw new Error("Previous doesn't exisit. Line:" + num);
     }
 
-    private async checkRenderQueue() {
-        while (!this._render_queue.isEmpty()) {
+    private checkRenderQueue() {
+        if (!this._render_queue.isEmpty()) {
             let topNumber = this._render_queue.peek();
             if (this._entries[topNumber - 1] && this._entries[topNumber - 1].tokenizeState) {
                 let copyState = this._tokenizer.copyState(this._entries[topNumber - 1].tokenizeState);
-                if (!this._entries[topNumber].textToColor) throw new Error("fuck");
-                let result = await Host.tokenizeLine(copyState, this._entries[topNumber].textToColor);
+                // if (!this._entries[topNumber].textToColor) throw new Error("fuck")
 
-                /// check if the top of the heap is still this number
-                if (topNumber === this._render_queue.peek()) {
-                    this._entries[topNumber].tokenizeState = result.tokenizeState;
-                    this._entries[topNumber].renderMethod(result.token);
-                    this._entries[topNumber].renderState = RenderState.Colored;
-                    this._entries[topNumber].textToColor = null;
-                    this._render_queue.dequeue();
-                }
-            } else throw new Error("previous state not exisit.");
+
+                setTimeout(() => {
+
+                    let content = this._entries[topNumber].textToColor.dequeue();
+                    if (content) {
+                        this.renderLineImmdediately(topNumber, content);
+                        this._render_queue.dequeue();
+                        this.checkRenderQueue();
+                    }
+
+                }, 50);
+
+            } else {
+                throw new Error("previous state not exisit.");
+            }
         }
     }
+
+/*
+    private checkRenderQueue() {
+        if (!this._render_queue.isEmpty()) {
+            let topNumber = this._render_queue.peek();
+            if (this._entries[topNumber - 1] && this._entries[topNumber - 1].tokenizeState) {
+                let copyState = this._tokenizer.copyState(this._entries[topNumber - 1].tokenizeState);
+                if (!this._entries[topNumber].textToColor) throw new Error("fuck")
+
+                Host.asyncTokenizeLine(copyState, this._entries[topNumber].textToColor, 
+                (tokens: MarkdownToken[], tokenizeState: MarkdownTokenizeState) => {
+
+                    /// check if the top of the heap is still this number
+                    if (topNumber === this._render_queue.peek()) {
+                        this._entries[topNumber].tokenizeState = tokenizeState;
+                        this._entries[topNumber].renderMethod(tokens);
+                        this._entries[topNumber].renderState = RenderState.Colored;
+                        // this._entries[topNumber].textToColor = null;
+
+                        this._render_queue.dequeue();
+                        this.checkRenderQueue();
+                    }
+
+                })
+
+            } else {
+                throw new Error("previous state not exisit.");
+            }
+        }
+    }
+    */
 
     private renderLine(stream: LineStream, state: MarkdownTokenizeState) : MarkdownToken[] {
         let tokens : MarkdownToken[] = [];
@@ -173,6 +215,7 @@ export class LineRenderer {
         this._entries[num] = {
             renderState: RenderState.Null,
             renderMethod: renderMethod,
+            textToColor: new Collection.Queue<string>(),
         };
     }
 

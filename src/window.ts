@@ -16,6 +16,7 @@ function createWindow() {
     
     win.webContents.openDevTools();
 
+    Server.initializeMarkdownTokenizerService();
     Server.initializeBrowserWindowService(win);
     Server.initializeDialogService();
     Server.initializeFileService();

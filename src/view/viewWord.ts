@@ -46,6 +46,9 @@ export class WordView {
             case MarkdownTokenType.Pre:
                 addClass(this._dom, "mde-word-pre");
                 break;
+            case MarkdownTokenType.ListItemStart:
+                addClass(this._dom, "mde-word-listItemStart");
+                break;
         }
 
     }

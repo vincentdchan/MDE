@@ -61,6 +61,11 @@ body {
     text-decoration: underline;
 }
 
+.mde-word-listItemStart {
+    font-weight: bold;
+    color: mediumvioletred;
+}
+
 .mde-line-number {
     padding: 2px;
     font-size: 14px;

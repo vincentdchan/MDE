@@ -9,8 +9,6 @@ function renderLine(tokenizer: MarkdownTokenizer, stream: LineStream, state: Mar
     let tokens : MarkdownToken[] = [];
     while (!stream.eol()) {
         stream.setCurrentTokenIndex();
-        console.log(state);
-        console.log(state.inBold);
         let currentType = tokenizer.tokenize(stream, state);
         let currentText = stream.current();
         // this line must not be a null line
