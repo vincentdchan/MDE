@@ -78,7 +78,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
             this.width, absPosGetter, DocumentView.CursorBlinkingInternal);
         this._selection_manger.appendTo(this._dom);
 
-        this._selection_manger.on("keydown", (evt: MouseEvent) => { this.handleSelectionKeydown(evt); });
+        this._selection_manger.on("keydown", (evt: KeyboardEvent) => { this.handleSelectionKeydown(evt); });
         this._selection_manger.on("compositionstart", (evt: Event) => { this.handleSelectionCompositionStart(evt); });
         this._selection_manger.on("compositionupdate", (evt: Event) => { this.handleSelectionCompositionUpdate(evt); });
         this._selection_manger.on("compositionend", (evt: Event) => { this.handleSelectionCompositionEnd(evt); });
@@ -265,7 +265,60 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         }
     }
 
-    private handleSelectionKeydown(evt: MouseEvent) {
+    private handleSelectionKeydown(evt: KeyboardEvent) {
+
+        if (evt.shiftKey) {
+            evt.preventDefault();
+
+            return;
+        }
+
+        if (evt.ctrlKey && evt.shiftKey) {
+            evt.preventDefault();
+
+            switch(evt.which) {
+                case KeyCode.$Z:
+                    console.log("redo");
+                    break;
+            }
+
+            return;
+        }
+
+        if (evt.ctrlKey) {
+            evt.preventDefault();
+
+            switch(evt.which) {
+                case KeyCode.$C:
+                    this.copyToClipboard();
+                    break;
+                case KeyCode.$X:
+                    this.cutToClipboard();
+                    break;
+                case KeyCode.$V:
+                    this.pasteToDocument();
+                    break;
+                case KeyCode.$Z:
+                    console.log("draw back");
+                    break;
+                case KeyCode.$A:
+                    let majorSelection = this._selection_manger.selectionAt(0);
+
+                    majorSelection.beginPosition = {
+                        line: 1,
+                        offset: 0,
+                    };
+                    majorSelection.endPosition = {
+                        line: this._model.linesCount,
+                        offset: this._model.lineAt(this._model.linesCount).length,
+                    }
+
+                    majorSelection.repaint();
+                    break;
+            }
+
+            return;
+        }
 
         setTimeout(() => {
 
