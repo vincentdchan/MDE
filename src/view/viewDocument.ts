@@ -267,18 +267,15 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
 
     private handleSelectionKeydown(evt: KeyboardEvent) {
 
-        if (evt.shiftKey) {
-            evt.preventDefault();
-
-            return;
-        }
-
         if (evt.ctrlKey && evt.shiftKey) {
             evt.preventDefault();
 
             switch(evt.which) {
                 case KeyCode.$Z:
                     console.log("redo");
+                    break;
+                case KeyCode.$F:
+                    console.log("replace");
                     break;
             }
 
@@ -289,6 +286,12 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
             evt.preventDefault();
 
             switch(evt.which) {
+                case KeyCode.$F:
+                    console.log("search and replace");
+                    break;
+                case KeyCode.$S:
+                    console.log("save");
+                    break;
                 case KeyCode.$C:
                     this.copyToClipboard();
                     break;
@@ -466,12 +469,12 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
                         }
                         break;
                     default:
-                        if (majorSelection.collapsed) {
+                        let insertText = majorSelection.inputerContent;
 
-                            let insertText = majorSelection.inputerContent;
+                        // indeed input something
+                        if (insertText.length > 0) {
 
-                            // indeed input something
-                            if (insertText.length > 0) {
+                            if (majorSelection.collapsed) {
 
                                 let textEdit = new TextEdit(TextEditType.InsertText, 
                                     majorSelection.beginPosition, 
@@ -486,22 +489,23 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
                                 moveSelectionTo(majorSelection, resultPos);
                                 majorSelection.repaint();
 
+
+                            } else {
+
+                                let textEdit = new TextEdit(TextEditType.ReplaceText, {
+                                    begin: majorSelection.beginPosition,
+                                    end: majorSelection.endPosition,
+                                }, majorSelection.inputerContent);
+
+                                majorSelection.clearInputerContent();
+                                let result = this._model.applyTextEdit(textEdit);
+
+                                this.render(this.calculateRenderLines(textEdit));
+
+                                moveSelectionTo(majorSelection, result)
+                                majorSelection.repaint();
                             }
 
-                        } else {
-
-                            let textEdit = new TextEdit(TextEditType.ReplaceText, {
-                                begin: majorSelection.beginPosition,
-                                end: majorSelection.endPosition,
-                            }, majorSelection.inputerContent);
-
-                            majorSelection.clearInputerContent();
-                            let result = this._model.applyTextEdit(textEdit);
-
-                            this.render(this.calculateRenderLines(textEdit));
-
-                            moveSelectionTo(majorSelection, result)
-                            majorSelection.repaint();
                         }
 
                 }
