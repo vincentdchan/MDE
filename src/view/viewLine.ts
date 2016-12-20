@@ -113,6 +113,8 @@ export class LineView extends DomHelper.AppendableDomWrapper implements IDisposa
         this._line_renderer.register(index, (tokens: MarkdownToken[]) => {
             this.renderMethod(tokens);
         });
+
+        this.renderLineNumber(index);
     }
 
     private renderMethod(tokens: MarkdownToken[]) {
@@ -142,7 +144,7 @@ export class LineView extends DomHelper.AppendableDomWrapper implements IDisposa
         return elem;
     }
 
-    renderLineNumber(num: number) {
+    private renderLineNumber(num: number) {
         if (num !== this._rendered_lineNumber) {
             let span = DomHelper.Generic.elem<HTMLSpanElement>("span", 
                 "mde-line-number unselectable");

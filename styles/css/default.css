@@ -42,7 +42,7 @@ body {
 
 .mde-word-h3 {
     font-weight: bold;
-    color: yellow;
+    color: darkorange;
 }
 
 .mde-word-pre {
@@ -64,6 +64,10 @@ body {
 .mde-word-listItemStart {
     font-weight: bold;
     color: mediumvioletred;
+}
+
+.mde-word-blockquoteStart {
+    font-weight: bold;
 }
 
 .mde-line-number {
@@ -120,9 +124,9 @@ body {
 }
 
 .mde-document-selection-atom {
-    background: pink;
+    background: lightsteelblue;
 }
 
 .mde-document-selection-atom.major {
-    background: hotpink;
+    background: deepskyblue;
 }

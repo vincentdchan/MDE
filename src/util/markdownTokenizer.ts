@@ -90,7 +90,13 @@ export class MarkdownTokenizer implements ITokenizer<MarkdownTokenizeState, Mark
                 state.inItalic = false;
                 stream.skipToEnd();
                 return MarkdownTokenType.Heading1;
-            } else if (stream.match(/^-/, true)) {
+            } else if (stream.match(/^-([^-]+|$)/, false)) {
+                stream.next();
+                return MarkdownTokenType.ListItemStart;
+            } else if (stream.match(/^>/, true)) {
+                return MarkdownTokenType.BlockquoteStart;
+            } else if (stream.match(/^\d+\./, false)) {
+                stream.eat(/^\d+/);
                 return MarkdownTokenType.ListItemStart;
             }
             state.isStartOfLine = false;

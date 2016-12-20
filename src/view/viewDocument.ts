@@ -112,8 +112,8 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
             this._lines[line.number] = vl;
 
             // vl.render(line.text);
-            vl.renderLineNumber(line.number);
-            this._line_renderer.renderLineImmdediately(line.number, line.text)
+            // vl.renderLineNumber(line.number);
+            this._line_renderer.renderLineLazily(line.number, line.text)
             this._container.appendChild(vl.element());
         })
 
@@ -271,9 +271,48 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
 
             let majorSelection = this._selection_manger.selectionAt(0);
             if (!this._compositing) {
-
                 switch(evt.which) {
-
+                    case KeyCode.UpArrow:
+                        if (majorSelection.collapsed) {
+                            let line = majorSelection.beginPosition.line;
+                            majorSelection.beginPosition = majorSelection.endPosition = {
+                                line: line > 1? line - 1: 1,
+                                offset: majorSelection.beginPosition.offset
+                            };
+                            majorSelection.repaint();
+                        } else majorSelection.leftCollapse();
+                        break;
+                    case KeyCode.DownArrow:
+                        if (majorSelection.collapsed) {
+                            let line = majorSelection.beginPosition.line;
+                            majorSelection.beginPosition = majorSelection.endPosition = {
+                                line: line < this._model.linesCount? line + 1 : line,
+                                offset: majorSelection.beginPosition.offset,
+                            };
+                            majorSelection.repaint();
+                        } else majorSelection.rightCollapse();
+                        break;
+                    case KeyCode.LeftArrow:
+                        if (majorSelection.collapsed) {
+                            let offset = majorSelection.beginPosition.offset;
+                            majorSelection.beginPosition = majorSelection.endPosition = {
+                                line: majorSelection.beginPosition.line,
+                                offset: offset > 0? offset - 1 : 0,
+                            };
+                            majorSelection.repaint();
+                        } else majorSelection.leftCollapse();
+                        break;
+                    case KeyCode.RightArrow:
+                        if (majorSelection.collapsed) {
+                            let line = majorSelection.beginPosition.line;
+                            let offset = majorSelection.beginPosition.offset;
+                            majorSelection.beginPosition = majorSelection.endPosition = {
+                                line: majorSelection.beginPosition.line,
+                                offset: offset < this._model.lineAt(line).length ? offset + 1 : offset,
+                            };
+                            majorSelection.repaint();
+                        } else majorSelection.rightCollapse();
+                        break;
                     case KeyCode.Tab:
                         if (majorSelection.collapsed) {
                             let textEdit = new TextEdit(TextEditType.InsertText, majorSelection.beginPosition, "    ");
@@ -668,7 +707,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
                 absolute_offset += _range.startOffset;
                 break;
             }
-            absolute_offset = lineView.words[i].length;
+            absolute_offset += lineView.words[i].length;
         }
 
         return {
@@ -692,7 +731,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
             throw new Error("<index out of range> line:" + line + " LinesCount:" + this.linesCount);
         // this._lines[line].render(this._model.lineAt(line).text);
         this._line_renderer.renderLineImmdediately(line, this._model.lineAt(line).text);
-        this._lines[line].renderLineNumber(line);
+        // this._lines[line].renderLineNumber(line);
     }
 
     // delete line from [begin] to [end - 1]
