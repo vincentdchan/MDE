@@ -73,12 +73,21 @@ export class MarkdownTokenizer implements ITokenizer<MarkdownTokenizeState, Mark
         if (state.isStartOfLine) {
             stream.eatWhile();
             if (stream.match(/^###/, true)) {
+                state.inPre = false;
+                state.inBold = false;
+                state.inItalic = false;
                 stream.skipToEnd();
                 return MarkdownTokenType.Heading3;
             } else if (stream.match(/^##/, true)) {
+                state.inPre = false;
+                state.inBold = false;
+                state.inItalic = false;
                 stream.skipToEnd();
                 return MarkdownTokenType.Heading2;
             } else if (stream.match(/^#/, true)) {
+                state.inPre = false;
+                state.inBold = false;
+                state.inItalic = false;
                 stream.skipToEnd();
                 return MarkdownTokenType.Heading1;
             } else if (stream.match(/^-/, true)) {

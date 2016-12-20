@@ -93,38 +93,26 @@ export class LineRenderer {
             if (this._entries[num].renderMethod) {
                 let tokens: MarkdownToken[];
                 
-                //
-                // if the content is empty string
-                // render immediately
-                //
-                if (content == "") {
-                    tokens = [{
-                        type: MarkdownTokenType.Text,
-                        text: content,
-                    }]
-                    this._entries[num].renderMethod(tokens);
-                } else {
-                    switch(this._entries[num].renderState) {
-                        // if this line doesn't render. then render it into plain text.
-                        case RenderState.Null:
-                            tokens = [{
-                                type: MarkdownTokenType.Text,
-                                text: content,
-                            }];
-                            this._entries[num].renderMethod(tokens);
-                            this._entries[num].textToColor.enqueue(content);
+                switch(this._entries[num].renderState) {
+                    // if this line doesn't render. then render it into plain text.
+                    case RenderState.Null:
+                        tokens = [{
+                            type: MarkdownTokenType.Text,
+                            text: content,
+                        }];
+                        this._entries[num].renderMethod(tokens);
+                        this._entries[num].textToColor.enqueue(content);
 
-                            this._render_queue.enqueue(num);
-                            this.checkRenderQueue();
-                            break;
-                        case RenderState.PlainText:
-                        case RenderState.Colored:
-                            this._entries[num].textToColor.enqueue(content);
+                        this._render_queue.enqueue(num);
+                        this.checkRenderQueue();
+                        break;
+                    case RenderState.PlainText:
+                    case RenderState.Colored:
+                        this._entries[num].textToColor.enqueue(content);
 
-                            this._render_queue.enqueue(num);
-                            this.checkRenderQueue();
-                            break;
-                    }
+                        this._render_queue.enqueue(num);
+                        this.checkRenderQueue();
+                        break;
                 }
             }
             else
@@ -135,26 +123,19 @@ export class LineRenderer {
 
     private checkRenderQueue() {
         if (!this._render_queue.isEmpty()) {
-            let topNumber = this._render_queue.peek();
-            if (this._entries[topNumber - 1] && this._entries[topNumber - 1].tokenizeState) {
-                let copyState = this._tokenizer.copyState(this._entries[topNumber - 1].tokenizeState);
-                // if (!this._entries[topNumber].textToColor) throw new Error("fuck")
+            let topNumber = this._render_queue.dequeue();
 
+            setTimeout(() => {
 
-                setTimeout(() => {
+                let content = this._entries[topNumber].textToColor.dequeue();
+                if (content !== undefined) {
+                    this.renderLineImmdediately(topNumber, content);
 
-                    let content = this._entries[topNumber].textToColor.dequeue();
-                    if (content) {
-                        this.renderLineImmdediately(topNumber, content);
-                        this._render_queue.dequeue();
-                        this.checkRenderQueue();
-                    }
+                    this.checkRenderQueue();
+                }
 
-                }, 50);
+            }, 50);
 
-            } else {
-                throw new Error("previous state not exisit.");
-            }
         }
     }
 
