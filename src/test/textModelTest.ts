@@ -1,4 +1,4 @@
-import {TextModel, LineModel, TextEdit, TextEditType, Position, Range} from "../model"
+import {TextModel, LineModel, TextEdit, TextEditType, Position, PositionUtil, Range} from "../model"
 import assert = require("assert");
 
 // total 8 lines
@@ -181,6 +181,94 @@ console.log("Delete text testing...");
     assert(tm1.lineAt(1).text == "#thing else\n", tm1.lineAt(1).text);
     assert(tm1.lineAt(2).text == "\n", tm1.lineAt(2).text);
     assert(tm1.lineAt(3).text == "- first line\n", tm1.lineAt(3).text);
+})();
+
+console.log("cancellable API test...");
+
+(() => {
+
+
+    console.log("cancellable insert");
+
+    let tm1 = new TextModel(testText1);
+    let result = tm1.applyCancellableTextEdit(
+        new TextEdit(TextEditType.InsertText, {line: 1, offset: 0}, "(insert)"));
+    assert.equal(tm1.lineAt(1).text, "(insert)# Title\n");
+    assert.strictEqual(result.reverse.type, TextEditType.DeleteText, "reverse type error");
+    assert(PositionUtil.equalPostion(result.reverse.range.begin, {line: 1, offset: 0}), "reverse range begin");
+    assert(PositionUtil.equalPostion(result.reverse.range.end, result.pos), "reverse range end.");
+
+    tm1.applyTextEdit(result.reverse);
+    assert.equal(tm1.lineAt(1).text, "# Title\n", "reverse result error");
+
+    console.log("cancellable multi-lines insert");
+
+    tm1 = new TextModel(testText1);
+    let inputText  = "(insert)\n(secondline)";
+    result = tm1.applyCancellableTextEdit(new TextEdit(TextEditType.InsertText, {
+        line: 1, offset: 0,
+    }, inputText));
+    assert.equal(tm1.lineAt(1).text, "(insert)\n");
+    assert.equal(tm1.lineAt(2).text, "(secondline)# Title\n");
+    assert.strictEqual(result.reverse.type, TextEditType.DeleteText, "reverse type error");
+
+    tm1.applyTextEdit(result.reverse);
+    assert.equal(tm1.lineAt(1).text, "# Title\n", "reverse result#1 error");
+    assert.equal(tm1.lineAt(2).text, "\n", "reverse result#2 error");
+
+})();
+
+(() => {
+
+    console.log("cancellable delete API...");
+
+    let tm1 = new TextModel(testText1);
+
+    let result = tm1.applyCancellableTextEdit(new TextEdit(TextEditType.DeleteText, {
+        begin: {line: 1, offset: 2},
+        end: {line: 1, offset: 3},
+    }));
+    assert.strictEqual(result.reverse.type, TextEditType.InsertText, "reverse type error");
+    assert.equal(tm1.lineAt(1).text, "# itle\n");
+
+    tm1.applyTextEdit(result.reverse);
+    assert.equal(tm1.lineAt(1).text, "# Title\n", "reverse result#1 error.");
+
+    console.log("cancellable delete multi-lines API...");
+
+    tm1 = new TextModel(testText1);
+    result = tm1.applyCancellableTextEdit(new TextEdit(TextEditType.DeleteText, {
+        begin: {line: 1, offset: 2},
+        end: {line: 3, offset: 1},
+    }));
+
+    assert.equal(tm1.lineAt(1).text, "# aragraph 1\n", "delete result error");
+    assert.equal(tm1.lineAt(2).text, "something else\n");
+
+    tm1.applyTextEdit(result.reverse);
+    assert.equal(tm1.lineAt(1).text, "# Title\n", "reverse result#1 error.");
+    assert.equal(tm1.lineAt(2).text, "\n", "reverse result#2 error.");
+    assert.equal(tm1.lineAt(3).text, "paragraph 1\n", "reverse result#3 error.");
+
+})();
+
+(() => {
+
+    console.log("cancellable replace API...");
+
+    let tm1 = new TextModel(testText1);
+    let result = tm1.applyCancellableTextEdit(new TextEdit(TextEditType.ReplaceText, {
+        begin: {line: 3, offset: 0},
+        end:  {line: 4, offset: 1}
+    }, "(replace)"));
+
+    assert.strictEqual(result.reverse.type, TextEditType.ReplaceText, "replace API");
+    assert.equal(tm1.lineAt(3).text, "(replace)omething else\n", "indeed replace error");
+
+    tm1.applyTextEdit(result.reverse);
+    assert.equal(tm1.lineAt(3).text, "paragraph 1\n");
+    assert.equal(tm1.lineAt(4).text, "something else\n");
+
 })();
 
 console.log("All test done.");

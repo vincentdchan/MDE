@@ -106,6 +106,7 @@ export class TextModel extends EventEmitter implements TextEditApplier, ITextDoc
         let _reverse: TextEdit;
         switch(textEdit.type) {
             case TextEditType.InsertText:
+            {
                 if (textEdit.lines.length === 1) {
                     _reverse = new TextEdit(TextEditType.DeleteText, {
                         begin: PositionUtil.clonePosition(textEdit.position),
@@ -125,14 +126,18 @@ export class TextModel extends EventEmitter implements TextEditApplier, ITextDoc
                 }
                 _pos = this.insertText(textEdit);
                 break;
+            }
             case TextEditType.DeleteText:
+            {
                 let lostPart = this.report(textEdit.range);
                 _reverse = new TextEdit(TextEditType.InsertText, 
                 PositionUtil.clonePosition(textEdit.range.begin), lostPart);
                 _pos = this.deleteText(textEdit);
                 break;
+            }
             case TextEditType.ReplaceText:
-                let postPart = this.report(textEdit.range),
+            {
+                let lostPart = this.report(textEdit.range),
                     beginPos = PositionUtil.clonePosition(textEdit.range.begin),
                     replacedPos = this.replaceText(textEdit);
                 _reverse = new TextEdit(TextEditType.ReplaceText, {
@@ -141,6 +146,7 @@ export class TextModel extends EventEmitter implements TextEditApplier, ITextDoc
                 }, lostPart);
                 _pos = replacedPos;
                 break;
+            }
         }
         return {
             reverse: _reverse,
