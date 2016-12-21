@@ -383,9 +383,27 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
                         }
                         break;
                     case KeyCode.PageUp:
+                        evt.preventDefault();
+                        setTimeout(() => {
+                            let scrollHeight = this._dom.scrollHeight,
+                                scrollTop = this._dom.scrollTop,
+                                windowHeight = window.outerHeight,
+                                tmp = scrollTop - windowHeight;
+                            this.scrollTop = tmp >= 0? tmp : scrollTop;
+                        }, 10);
                         break;
                     case KeyCode.PageDown:
+                    {
+                        evt.preventDefault();
+                        setTimeout(() => {
+                            let scrollHeight = this._dom.scrollHeight,
+                                scrollTop = this._dom.scrollTop,
+                                windowHeight = window.outerHeight,
+                                tmp = scrollTop + windowHeight;
+                            this.scrollTop = tmp <= scrollHeight ? tmp : scrollTop;
+                        }, 10);
                         break;
+                    }
                     case KeyCode.Home:
                         majorSelection.endPosition = majorSelection.beginPosition = {
                             line: majorSelection.beginPosition.line,

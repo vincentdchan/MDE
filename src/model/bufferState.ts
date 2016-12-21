@@ -82,7 +82,8 @@ export class BufferState extends EventEmitter implements IDisposable {
         this._text_model.on("textEdit", this._textModelChangedHandler);
     }
 
-    async readFileContentToModel(encoding: string = "utf8"): Promise<boolean> {
+    async readFileContentToModel(encoding?: string): Promise<boolean> {
+        encoding = encoding ? encoding : "utf8";
         if (this._text_model === null) {
             let content = await Host.readFile(this._abs_path, encoding);
             this.initTextModel(content);
@@ -91,11 +92,12 @@ export class BufferState extends EventEmitter implements IDisposable {
         return false;
     }
 
-    async writeContentToFile(path: string, encoding: string = "utf8"): Promise<boolean> {
+    async writeContentToFile(path: string, encoding?: string ): Promise<boolean> {
+        encoding = encoding? encoding : "utf8";
         if (this._text_model) {
             let content = this._text_model.reportAll();
 
-            let result = await Host.writeStringToFile(path, "utf8", content);
+            let result = await Host.writeStringToFile(path, encoding, content);
             if (result) {
                 this._is_modified = false;
                 let evt = new BufferStateChanged(false);
