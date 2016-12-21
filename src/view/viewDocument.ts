@@ -67,7 +67,6 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         this._lines = [];
 
         this._line_renderer = new LineRenderer();
-        this._history_handler = new HistoryHandler();
 
         let absPosGetter = (pos: Position) => {
             let clientCo = this.getCoordinate(pos);
@@ -106,6 +105,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
 
     bind(model: TextModel) {
         this._model = model;
+        this._history_handler = new HistoryHandler();
 
         this._lines[0] = null;
         this._model.forEach((line: LineModel) => {
@@ -127,6 +127,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
 
     unbind() {
         this._selection_manger.clearAll();
+        this._history_handler = null;
 
         this._lines.forEach((e: LineView) => {
             if (e) {
@@ -211,7 +212,6 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
 
             let textContent = clipboard.readText();
             let textEdit: TextEdit,
-                result: Position,
                 renderOption: RenderOption;
 
             if (majorSelection.collapsed) {
@@ -224,11 +224,12 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
                 }, textContent);
             }
 
-            result = this._model.applyTextEdit(textEdit);
+            let result = this._model.applyCancellableTextEdit(textEdit);
             renderOption = this.calculateRenderLines(textEdit);
             this.render(renderOption);
+            this._history_handler.push(result.reverse);
 
-            moveSelectionTo(majorSelection, result);
+            moveSelectionTo(majorSelection, result.pos);
         }
     }
 
@@ -256,12 +257,13 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
             let textContent = this._model.report(range);
 
             let textEdit = new TextEdit(TextEditType.DeleteText, range);
-            let result = this._model.applyTextEdit(textEdit);
+            let result = this._model.applyCancellableTextEdit(textEdit);
 
             let renderOption = this.calculateRenderLines(textEdit);
             this.render(renderOption);
+            this._history_handler.push(result.reverse);
 
-            moveSelectionTo(majorSelection, result);
+            moveSelectionTo(majorSelection, result.pos);
 
             clipboard.writeText(textContent);
         }

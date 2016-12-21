@@ -1,5 +1,5 @@
 import {Deque} from "../util"
-import {TextEdit} from "../model"
+import {TextEdit, TextEditType, PositionUtil, Position} from "../model"
 
 export class HistoryHandler {
 
@@ -16,7 +16,24 @@ export class HistoryHandler {
 
     push(textEdit: TextEdit) {
         if (this._history.size() === this._limit_size)  this._history.pop_front();
-        this._history.push_back(textEdit);
+
+        if (this._history.empty()) {
+            this._history.push_back(textEdit);
+        } else {
+            let previous = this._history.pop_back();
+            if (textEdit.type === TextEditType.DeleteText && 
+            previous.type === TextEditType.DeleteText && 
+            PositionUtil.equalPostion(previous.range.end, textEdit.range.begin)) {
+                let tmp = new TextEdit(TextEditType.DeleteText, {
+                    begin: PositionUtil.clonePosition(previous.range.begin),
+                    end: PositionUtil.clonePosition(textEdit.range.end),
+                });
+                this._history.push_back(tmp);
+            } else {
+                this._history.push_back(previous);
+                this._history.push_back(textEdit);
+            }
+        }
     }
 
     pop() : TextEdit {

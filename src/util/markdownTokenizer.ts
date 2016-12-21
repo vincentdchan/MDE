@@ -72,6 +72,10 @@ export class MarkdownTokenizer implements ITokenizer<MarkdownTokenizeState, Mark
     tokenize(stream: IStream, state: MarkdownTokenizeState): MarkdownTokenType {
         if (state.isStartOfLine) {
             stream.eatWhile();
+
+            if (stream.match(/^>/, true))
+                return MarkdownTokenType.BlockquoteStart;
+
             if (stream.match(/^###/, true)) {
                 state.inPre = false;
                 state.inBold = false;
@@ -93,8 +97,9 @@ export class MarkdownTokenizer implements ITokenizer<MarkdownTokenizeState, Mark
             } else if (stream.match(/^-([^-]+|$)/, false)) {
                 stream.next();
                 return MarkdownTokenType.ListItemStart;
-            } else if (stream.match(/^>/, true)) {
-                return MarkdownTokenType.BlockquoteStart;
+            } else if (stream.match(/^\+([^\+]+|$)/, false)) {
+                stream.next();
+                return MarkdownTokenType.ListItemStart;
             } else if (stream.match(/^\d+\./, false)) {
                 stream.eat(/^\d+/);
                 return MarkdownTokenType.ListItemStart;
