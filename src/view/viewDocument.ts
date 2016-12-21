@@ -2,7 +2,7 @@ import {LineView} from "./viewLine"
 import {IVirtualElement, Coordinate} from "."
 import {TextModel, LineModel, Position, PositionUtil, 
     TextEdit, TextEditType} from "../model"
-import {LineRenderer} from "../controller"
+import {LineRenderer, HistoryHandler} from "../controller"
 import {IDisposable, DomHelper, KeyCode} from "../util"
 import {PopAllQueue} from "../util/queue"
 import {InputerView} from "./viewInputer"
@@ -37,6 +37,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
     public static readonly CursorBlinkingInternal = 500;
 
     private _line_renderer: LineRenderer;
+    private _history_handler: HistoryHandler;
 
     private _model: TextModel = null;
     private _container: HTMLDivElement;
@@ -66,6 +67,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         this._lines = [];
 
         this._line_renderer = new LineRenderer();
+        this._history_handler = new HistoryHandler();
 
         let absPosGetter = (pos: Position) => {
             let clientCo = this.getCoordinate(pos);
@@ -302,7 +304,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
                     this.pasteToDocument();
                     break;
                 case KeyCode.$Z:
-                    console.log("draw back");
+                    this.undo();
                     break;
                 case KeyCode.$A:
                     let majorSelection = this._selection_manger.selectionAt(0);
@@ -432,11 +434,12 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
                                     },
                                     end: majorSelection.endPosition,
                                 });
-                                let result = this._model.applyTextEdit(textEdit);
+                                let result = this._model.applyCancellableTextEdit(textEdit);
 
                                 this.renderLine(majorSelection.beginPosition.line);
+                                this._history_handler.push(result.reverse);
 
-                                moveSelectionTo(majorSelection, result);
+                                moveSelectionTo(majorSelection, result.pos);
                             } else {
                                 let pos = majorSelection.beginPosition;
                                 if (pos.line > 1) {
@@ -449,11 +452,12 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
                                         end: pos
                                     });
 
-                                    let result = this._model.applyTextEdit(textEdit);
+                                    let result = this._model.applyCancellableTextEdit(textEdit);
                                     let renderOption = this.calculateRenderLines(textEdit);
                                     this.render(renderOption);
+                                    this._history_handler.push(result.reverse);
 
-                                    moveSelectionTo(majorSelection, result);
+                                    moveSelectionTo(majorSelection, result.pos);
                                 }
                             }
 
@@ -463,7 +467,8 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
                                 end: majorSelection.endPosition
                             });
 
-                            let result = this._model.applyTextEdit(textEdit);
+                            let result = this._model.applyCancellableTextEdit(textEdit);
+                            this._history_handler.push(result.reverse);
 
                             if (majorSelection.beginPosition.line === majorSelection.endPosition.line) {
                                 this.renderLine(majorSelection.beginPosition.line);
@@ -483,7 +488,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
                                 }
                             }
 
-                            moveSelectionTo(majorSelection, result);
+                            moveSelectionTo(majorSelection, result.pos);
                         }
                         break;
                     default:
@@ -498,15 +503,14 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
                                     majorSelection.beginPosition, 
                                     majorSelection.inputerContent);
                                 
-                                let resultPos = this._model.applyTextEdit(textEdit);
+                                let result = this._model.applyCancellableTextEdit(textEdit);
                                 let beginPos = this._selection_manger.selectionAt(0).beginPosition;
 
+                                this._history_handler.push(result.reverse);
                                 this.render(this.calculateRenderLines(textEdit));
 
                                 majorSelection.clearInputerContent();
-                                moveSelectionTo(majorSelection, resultPos);
-                                majorSelection.repaint();
-
+                                moveSelectionTo(majorSelection, result.pos);
 
                             } else {
 
@@ -516,22 +520,34 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
                                 }, majorSelection.inputerContent);
 
                                 majorSelection.clearInputerContent();
-                                let result = this._model.applyTextEdit(textEdit);
+                                let result = this._model.applyCancellableTextEdit(textEdit);
 
+                                this._history_handler.push(result.reverse);
                                 this.render(this.calculateRenderLines(textEdit));
 
-                                moveSelectionTo(majorSelection, result)
-                                majorSelection.repaint();
+                                moveSelectionTo(majorSelection, result.pos)
                             }
-
                         }
-
                 }
-
             }
 
         }, 10);
 
+    }
+
+    private undo() : boolean {
+        let textEdit = this._history_handler.pop();
+        let majorSelection = this._selection_manger.selectionAt(0);
+        if (textEdit) {
+            let result = this._model.applyTextEdit(textEdit);
+            this.render(this.calculateRenderLines(textEdit));
+            setTimeout(() => {
+                moveSelectionTo(majorSelection, result);
+            }, 50);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     private render(option: RenderOption) {

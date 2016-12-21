@@ -10,8 +10,8 @@ export interface IDeque<T> {
 
 class DequeNode<T> {
     
-    private _prev: DequeNode<T>;
-    private _next: DequeNode<T>;
+    private _prev: DequeNode<T> = null;
+    private _next: DequeNode<T> = null;
     private _value : T;
     
     constructor() {

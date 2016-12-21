@@ -1,5 +1,5 @@
 # MDE
-MDE is a MarkDown Editor based on Electron, written in Typescript.
+MDE(Markdown Editor) is a Markdown editor based on Electron, written in Typescript.
 
 - ✔ String datastructure(Lines Chains)
 - ✔ Basic UI
