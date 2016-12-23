@@ -2,6 +2,7 @@ import * as Electron from "electron"
 import {dialog} from "electron"
 import * as fs from "fs"
 export {initializeMarkdownTokenizerService} from "./tokenizer"
+export {default as  renderServer} from "./render"
 
 export function initializeBrowserWindowService(bw: Electron.BrowserWindow) {
 

@@ -92,6 +92,26 @@ export class EditorView extends DomHelper.FixedElement
 
     }
 
+    copyToClipboard() {
+        this._document.copyToClipboard();
+    }
+
+    pasteToDocument() {
+        this._document.pasteToDocument();
+    }
+
+    cutToClipboard() {
+        this._document.cutToClipboard();
+    }
+
+    undo() {
+        this._document.undo();
+    }
+
+    redo() {
+        this._document.redo();
+    }
+
     bind(model: TextModel) {
         this._model = model;
         this._document.bind(this._model);

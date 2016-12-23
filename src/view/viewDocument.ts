@@ -182,7 +182,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         menu.popup(remote.getCurrentWindow());
     }
 
-    private copyToClipboard() {
+    copyToClipboard() {
         if (this._selection_manger.length > 0) {
             let majorSelection = this._selection_manger.selectionAt(0);
             if (majorSelection.collapsed) {
@@ -206,7 +206,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         }
     }
 
-    private pasteToDocument() {
+    pasteToDocument() {
         if (this._selection_manger.length > 0) {
             let majorSelection = this._selection_manger.selectionAt(0);
 
@@ -227,13 +227,13 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
             let result = this._model.applyCancellableTextEdit(textEdit);
             renderOption = this.calculateRenderLines(textEdit);
             this.render(renderOption);
-            this._history_handler.push(result.reverse);
+            this._history_handler.pushUndo(result.reverse);
 
             moveSelectionTo(majorSelection, result.pos);
         }
     }
 
-    private cutToClipboard() {
+    cutToClipboard() {
         if (this._selection_manger.length > 0) {
             let majorSelection = this._selection_manger.selectionAt(0);
 
@@ -261,7 +261,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
 
             let renderOption = this.calculateRenderLines(textEdit);
             this.render(renderOption);
-            this._history_handler.push(result.reverse);
+            this._history_handler.pushUndo(result.reverse);
 
             moveSelectionTo(majorSelection, result.pos);
 
@@ -276,7 +276,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
 
             switch(evt.which) {
                 case KeyCode.$Z:
-                    console.log("redo");
+                    this.redo();
                     break;
                 case KeyCode.$F:
                     console.log("replace");
@@ -439,7 +439,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
                                 let result = this._model.applyCancellableTextEdit(textEdit);
 
                                 this.renderLine(majorSelection.beginPosition.line);
-                                this._history_handler.push(result.reverse);
+                                this._history_handler.pushUndo(result.reverse);
 
                                 moveSelectionTo(majorSelection, result.pos);
                             } else {
@@ -457,7 +457,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
                                     let result = this._model.applyCancellableTextEdit(textEdit);
                                     let renderOption = this.calculateRenderLines(textEdit);
                                     this.render(renderOption);
-                                    this._history_handler.push(result.reverse);
+                                    this._history_handler.pushUndo(result.reverse);
 
                                     moveSelectionTo(majorSelection, result.pos);
                                 }
@@ -470,7 +470,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
                             });
 
                             let result = this._model.applyCancellableTextEdit(textEdit);
-                            this._history_handler.push(result.reverse);
+                            this._history_handler.pushUndo(result.reverse);
 
                             if (majorSelection.beginPosition.line === majorSelection.endPosition.line) {
                                 this.renderLine(majorSelection.beginPosition.line);
@@ -508,7 +508,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
                                 let result = this._model.applyCancellableTextEdit(textEdit);
                                 let beginPos = this._selection_manger.selectionAt(0).beginPosition;
 
-                                this._history_handler.push(result.reverse);
+                                this._history_handler.pushUndo(result.reverse);
                                 this.render(this.calculateRenderLines(textEdit));
 
                                 majorSelection.clearInputerContent();
@@ -524,7 +524,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
                                 majorSelection.clearInputerContent();
                                 let result = this._model.applyCancellableTextEdit(textEdit);
 
-                                this._history_handler.push(result.reverse);
+                                this._history_handler.pushUndo(result.reverse);
                                 this.render(this.calculateRenderLines(textEdit));
 
                                 moveSelectionTo(majorSelection, result.pos)
@@ -537,18 +537,61 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
 
     }
 
-    private undo() : boolean {
-        let textEdit = this._history_handler.pop();
+    undo() : boolean {
+        let textEdit = this._history_handler.popUndo();
         let majorSelection = this._selection_manger.selectionAt(0);
         if (textEdit) {
-            let result = this._model.applyTextEdit(textEdit);
+            let result = this._model.applyCancellableTextEdit(textEdit);
             this.render(this.calculateRenderLines(textEdit));
+            this._history_handler.pushRedo(result.reverse);
             setTimeout(() => {
-                moveSelectionTo(majorSelection, result);
+                moveSelectionTo(majorSelection, result.pos);
             }, 50);
             return true;
         } else {
             return false;
+        }
+    }
+
+    redo() : boolean {
+        let textEdit = this._history_handler.popRedo();
+        let majorSelection = this._selection_manger.selectionAt(0);
+        if (textEdit) {
+            let result = this._model.applyCancellableTextEdit(textEdit);
+            this.render(this.calculateRenderLines(textEdit));
+            this._history_handler.pushUndo(result.reverse);
+            setTimeout(() => {
+                moveSelectionTo(majorSelection, result.pos);
+            }, 50);
+            return true;
+        }
+        return false;
+    }
+
+    private renderAccordingToTextEdit(textEdit: TextEdit) {
+        switch(textEdit.type) {
+            case TextEditType.InsertText:
+                if (textEdit.lines.length === 1) {
+
+                } else {
+
+                }
+                break;
+            case TextEditType.DeleteText:
+                if (textEdit.range.begin.line === textEdit.range.end.line) {
+
+                } else {
+
+                }
+                break;
+            case TextEditType.ReplaceText:
+                if (textEdit.range.begin.line === textEdit.range.end.line &&
+                textEdit.lines.length === 1) {
+
+                } else {
+
+                }
+                break;
         }
     }
 
@@ -699,7 +742,16 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         }
     }
 
-    private handleSelectionCompositionEnd(evt: Event) {
+    private handleSelectionCompositionEnd(evt: any) {
+
+        let undoTextEdit = new TextEdit(TextEditType.DeleteText, {
+            begin: PositionUtil.clonePosition(this._compositing_position),
+            end: {
+                line: this._compositing_position.line,
+                offset: this._compositing_position.offset + evt.data.length,
+            }
+        });
+        this._history_handler.pushUndo(undoTextEdit);
 
         setTimeout(() => {
             this._compositing = false;

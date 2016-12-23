@@ -39,6 +39,7 @@ export class MainMenuView extends EventEmitter {
                 submenu: [
                     {
                         label: "New File",
+                        accelerator: "Ctrl+N",
                         click: () => { this.emitMenuClickEvent(MenuButtonType.NewFile) }
                     },
                     {
@@ -46,14 +47,17 @@ export class MainMenuView extends EventEmitter {
                     },
                     {
                         label: "Open",
+                        accelerator: "Ctrl+O",
                         click: () => { this.emitMenuClickEvent(MenuButtonType.OpenFile) }
                     },
                     {
                         label: "Save",
+                        accelerator: "Ctrl+S",
                         click: () => { this.emitMenuClickEvent(MenuButtonType.Save) }
                     },
                     {
                         label: "Save as",
+                        accelerator: "Ctrl+Shift+S",
                         click: () => { this.emitMenuClickEvent(MenuButtonType.SaveAs) }
                     },
                     {
@@ -73,30 +77,36 @@ export class MainMenuView extends EventEmitter {
                 label: "Edit",
                 submenu: [
                     {
-                        role: "undo",
+                        label: "Undo",
+                        accelerator: "Ctrl+Z",
                         click: () => { this.emitMenuClickEvent(MenuButtonType.Undo) }
                     },
                     {
-                        role: "redo",
+                        label: "Redo",
+                        accelerator: "Ctrl+Shift+Z",
                         click: () => { this.emitMenuClickEvent(MenuButtonType.Redo) }
                     },
                     {
                         type: "separator"
                     }, 
                     {
-                        role: "cut",
+                        label: "Cut",
+                        accelerator: "Ctrl+X",
                         click: () => { this.emitMenuClickEvent(MenuButtonType.Cut) }
                     },
                     {
-                        role: "copy",
+                        label: "Copy",
+                        accelerator: "Ctrl+C",
                         click: () => { this.emitMenuClickEvent(MenuButtonType.Copy) }
                     },
                     {
-                        role: "paste",
+                        label: "Paste",
+                        accelerator: "Ctrl+V",
                         click: () => { this.emitMenuClickEvent(MenuButtonType.Paste) }
                     },
                     {
-                        role: "selectall",
+                        label: "Select All",
+                        accelerator: "Ctrl+A",
                         click: () => { this.emitMenuClickEvent(MenuButtonType.SelectAll) }
                     },
                 ]

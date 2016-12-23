@@ -69,6 +69,21 @@ export class MDE implements IDisposable {
             case MenuButtonType.OpenDevTools:
                 Host.openDevTools();
                 break;
+            case MenuButtonType.Redo:
+                this._view.editorView.redo();
+                break;
+            case MenuButtonType.Undo:
+                this._view.editorView.undo();
+                break;
+            case MenuButtonType.Copy:
+                this._view.editorView.copyToClipboard();
+                break;
+            case MenuButtonType.Paste:
+                this._view.editorView.pasteToDocument();
+                break;
+            case MenuButtonType.Cut:
+                this._view.editorView.cutToClipboard();
+                break;
             case MenuButtonType.Reload:
                 Host.reload();
                 break;

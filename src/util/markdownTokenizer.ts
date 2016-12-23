@@ -70,6 +70,10 @@ export class MarkdownTokenizer implements ITokenizer<MarkdownTokenizeState, Mark
     }
 
     tokenize(stream: IStream, state: MarkdownTokenizeState): MarkdownTokenType {
+        if (stream.match(/^\\(\\|`|\*|_|\{|\}|\[|\]|\(|\)|#|\+|-|.|!)/, true)) {
+            return MarkdownTokenType.Text;
+        }
+
         if (state.isStartOfLine) {
             stream.eatWhile();
 

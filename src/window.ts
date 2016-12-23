@@ -1,4 +1,3 @@
-
 import {app, BrowserWindow} from "electron"
 import * as Server from "./server"
 
@@ -14,7 +13,7 @@ function createWindow() {
     
     win.loadURL("file://" + __dirname + "/../index.html");
     
-    win.webContents.openDevTools();
+    // win.webContents.openDevTools();
 
     Server.initializeMarkdownTokenizerService();
     Server.initializeBrowserWindowService(win);
