@@ -8,12 +8,12 @@ function createWindow() {
         width: 800, 
         height : 600,
         minWidth: 300,
-        minHeight: 300,
+        minHeight: 400,
     });
     
     win.loadURL("file://" + __dirname + "/../index.html");
     
-    // win.webContents.openDevTools();
+    win.webContents.openDevTools();
 
     Server.initializeMarkdownTokenizerService();
     Server.initializeBrowserWindowService(win);

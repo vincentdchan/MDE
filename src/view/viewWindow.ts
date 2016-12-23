@@ -1,7 +1,7 @@
 import {DomHelper, IDisposable, Vector2} from "../util"
-import {LeftPanelView} from "./viewLeftPanel"
 import {EditorView} from "./viewEditor"
 import {SplitterView} from "./viewSplitter"
+import {PreviewView} from "./viewPreview"
 import {TextModel, BufferState, BufferStateChanged, BufferAbsPathChanged} from "../model"
 import * as Electron from "electron"
 import {remote} from "electron"
@@ -15,9 +15,10 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
     private _width : number;
     private _height: number;
 
-    private _leftPanel : LeftPanelView;
-    private _splitter : SplitterView;
+    // private _leftPanel : LeftPanelView;
     private _editor : EditorView;
+    private _splitter : SplitterView;
+    private _preview : PreviewView;
 
     constructor() {
         super("div", "mde-window");
@@ -31,52 +32,25 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
         }
 
         window.addEventListener("resize", (e : Event) => {
-            setTimeout(updateLayoutThunk, 20);
+            setTimeout(updateLayoutThunk, 10);
         });
-
-        this._leftPanel = new LeftPanelView(WindowView.leftPadWidth, this._height);
-        this._leftPanel.appendTo(this._dom);
-
-        this._splitter = new SplitterView();
-        this._splitter.appendTo(this._dom);
 
         this._editor = new EditorView();
         this._editor.appendTo(this._dom);
 
+        this._splitter = new SplitterView();
+        this._splitter.appendTo(this._dom);
+
+        this._preview = new PreviewView();
+        this._preview.appendTo(this._dom);
+
         updateLayoutThunk.call(this);
 
-        this._splitter.marginLeft = this._leftPanel.width - this._splitter.width;
+        this._splitter.marginLeft = this._editor.width;
         this._splitter.element().style.opacity = "0.5";
         this._splitter.on("mousedown", this.handleSplitterMouseDown.bind(this));
 
         window.addEventListener("mouseup", this.handleWindowMouseUp.bind(this), true);
-
-        this._editor.marginLeft = this._leftPanel.width;
-
-        this._leftPanel.on("collapsed", (evt: Event) => {
-            this._splitter.element().style.display = "none";
-        });
-
-        this._leftPanel.on("expanded", (evt: Event) => {
-            this._splitter.element().style.display = "block";
-        });
-
-        this._leftPanel.navView.on("click", (evt: MouseEvent) => {
-            if (this._leftPanel.collapsed) {
-                this._leftPanel.collapsed = false;
-                this._leftPanel.width = WindowView.leftPadWidth;
-
-                let v = this.requestWindowSize();
-                this.forceSetWidth(v.x);
-                this.forceSetHeight(v.y);
-            } else {
-                this._leftPanel.collapsed = true;
-
-                let v = this.requestWindowSize();
-                this.forceSetWidth(v.x);
-                this.forceSetHeight(v.y);
-            }
-        });
 
         window.onbeforeunload = (e: Event) => {
             if (this._buffer_state.isModified) {
@@ -86,13 +60,22 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
             }
         };
 
-        this.title = "MDE"
+        setTimeout(() => {
+            let rect = this._dom.getBoundingClientRect();
+
+            let tmp = rect.width / 2;
+            this._editor.width = tmp;
+            this._splitter.marginLeft = tmp;
+            this._preview.marginLeft = tmp;
+            this._preview.width = tmp;
+        }, 10);
     }
 
     bind(buffer: BufferState) {
         this._buffer_state = buffer;
 
         this._editor.bind(this._buffer_state.model);
+        this._preview.bind(this._buffer_state.model);
 
         this._buffer_state.on("bufferStateChanged", (evt: BufferStateChanged) => {
             if (evt.bufferStateChanged)
@@ -112,7 +95,7 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
 
     private setUnsavedState() {
         setTimeout(() => {
-            this.setTitle("*" + this._buffer_state.filename);
+            this.setTitle(`*${this._buffer_state.filename}`);
         }, 100);
     }
 
@@ -123,11 +106,12 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
     }
 
     private setTitle(content: string) {
-        this.title = content + " - MDE";
+        this.title = `${content} - MDE`;
     }
 
     unbind() {
         this._editor.unbind();
+        this._preview.unbind();
 
         this._buffer_state = null;
 
@@ -150,20 +134,20 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
     }
 
     private handleWindowMouseMove(evt: MouseEvent) {
+        let size = this.requestWindowSize();
+
+        let minWidth = Math.floor(size.x * (2/5)),
+            maxWidth = Math.floor(size.x * (4/5));
+
         let offsetX = evt.clientX;
+        if (offsetX >= minWidth && offsetX <= maxWidth) {
 
-        if (offsetX < LeftPanelView.MinWidth) {
-            this._leftPanel.collapsed = true;
+            this._editor.width = offsetX;
+            this._splitter.marginLeft = offsetX;
 
-            this._editor.width = this._width - this._leftPanel.width;
-            this._editor.marginLeft = this._leftPanel.width;
-        } else if (offsetX >= LeftPanelView.MinWidth && offsetX <= this._width - EditorView.MinWidth) {
-            if (this._leftPanel.collapsed)
-                this._leftPanel.collapsed = false;
-            this._leftPanel.width = offsetX;
-            this._splitter.marginLeft = offsetX - this._splitter.width;
-            this._editor.width = this._width - offsetX;
-            this._editor.marginLeft = offsetX;
+            this._preview.width = this._width - offsetX;
+            this._preview.marginLeft = offsetX;
+
         }
     }
 
@@ -190,34 +174,39 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
     }
 
     set height(h: number) {
-        if (h !== this._height) {
+        if (this._height !== h) {
             this.forceSetHeight(h);
         }
     }
 
     private forceSetWidth(w: number) {
+        let srcWidth = this._width,
+            srcEditorWidth = this._editor.width;
+
         this._width = w;
 
-        this._editor.width = this._width - this._leftPanel.width;
-        this._editor.marginLeft = this._leftPanel.width;
-        this._splitter.marginLeft = this._leftPanel.width - this._splitter.width;
+        let leftMargin = Math.floor(w * (srcEditorWidth / srcWidth));
+        this._editor.width = leftMargin;
+        this._splitter.marginLeft = leftMargin;
+        this._preview.marginLeft = leftMargin;
+        this._preview.width = w - leftMargin;
     }
 
     private forceSetHeight(h: number) {
         this._height = h;
-        this._leftPanel.height = h;
+        try {
+            this._editor.height = h;
+        } catch (e) {
+            console.log(e);
+        }
         this._splitter.height = h;
-        this._editor.height = h;
-    }
-
-    get leftPanelView() {
-        return this._leftPanel
+        this._preview.height = h;
     }
 
     private requestWindowSize() : Vector2 {
         return {
-            x: document.documentElement.clientWidth,
-            y: document.documentElement.clientHeight,
+            x: window.innerWidth,
+            y: window.innerHeight,
         }
     }
 
@@ -230,13 +219,13 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
     }
 
     dispose() {
-        this._leftPanel.dispose();
-        this._splitter.dispose();
         this._editor.dispose();
+        this._splitter.dispose();
+        this._preview.dispose();
 
-        this._leftPanel = null;
-        this._splitter = null;
         this._editor = null;
+        this._splitter = null;
+        this._preview = null;
 
         if (this._mouseMoveHandler !== null) {
             window.removeEventListener("mousemove", this._mouseMoveHandler, true);

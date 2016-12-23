@@ -148,6 +148,9 @@ export class TextModel extends EventEmitter implements TextEditApplier, ITextDoc
                 break;
             }
         }
+
+        let evt = new TextEditEvent(textEdit);
+        this.emit("textEdit", evt);
         return {
             reverse: _reverse,
             pos: _pos,

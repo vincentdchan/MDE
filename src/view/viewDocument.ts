@@ -92,7 +92,8 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         this._nullArea = new NullElement("div", "mde-document-null");
         this._nullArea.appendTo(this._dom);
 
-        this.on("mousedown", this.handleDocMouseDown.bind(this));
+        this.on("mouseup", (evt:  MouseEvent) => { this.handleDocMouseUp(evt); });
+        this.on("mousedown", (evt: MouseEvent) => { this.handleDocMouseDown(evt); });
 
         this._window_mousemove_handler = (evt: MouseEvent) => { this.handleWindowMouseMove(evt); }
         this._window_mouseup_handler = (evt: MouseEvent) => { this.handleWindowMouseUp(evt); }
@@ -807,10 +808,13 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         }
     }
 
+    private handleDocMouseUp(evt: MouseEvent) {
+        this._selection_manger.focus();
+    }
+
     private handleWindowMouseUp(evt: MouseEvent) {
         this._mouse_pressed = false;
         if (this._selection_manger.focusedSelection) this._selection_manger.endSelecting();
-        this._selection_manger.focus();
     }
 
     private handleWindowKeydown(evt: KeyboardEvent) {
