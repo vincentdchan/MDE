@@ -1,0 +1,25 @@
+{
+    "file": "文件",
+    "file.newFile": "新建文件",
+    "file.open": "打开",
+    "file.save": "保存",
+    "file.saveAs": "另存为",
+    "file.preference": "设置",
+    "file.exit": "退出",
+
+    "edit": "编辑",
+    "edit.undo": "撤销",
+    "edit.redo": "恢复",
+    "edit.cut": "剪切",
+    "edit.copy": "复制",
+    "edit.paste": "粘贴",
+    "edit.selectAll": "全选",
+
+    "view": "视图",
+    "view.openDevTools": "打开开发者工具",
+    "view.reload": "重新加载",
+
+    "help": "帮助",
+    "help.documentation": "文档",
+    "help.about": "关于"
+}

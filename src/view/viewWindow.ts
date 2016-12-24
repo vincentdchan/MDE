@@ -1,4 +1,4 @@
-import {DomHelper, IDisposable, Vector2} from "../util"
+import {DomHelper, IDisposable, Vector2, KeyCode, i18n as $} from "../util"
 import {EditorView, TooglePreviewEvent} from "./viewEditor"
 import {SplitterView} from "./viewSplitter"
 import {PreviewView} from "./viewPreview"
@@ -22,6 +22,7 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
     private _preview : PreviewView;
 
     private _preview_opened: boolean;
+    private _resize_handler: (e: Event) => void;
 
     constructor() {
         super("div", "mde-window");
@@ -34,9 +35,11 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
             this.height = size.y;
         }
 
-        window.addEventListener("resize", (e : Event) => {
+        this._resize_handler = (e : Event) => {
             setTimeout(updateLayoutThunk, 10);
-        });
+        };
+
+        window.addEventListener("resize", this._resize_handler);
 
         this._editor = new EditorView();
         this._editor.appendTo(this._dom);
@@ -67,7 +70,7 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
 
         window.onbeforeunload = (e: Event) => {
             if (this._buffer_state.isModified) {
-                let result = window.confirm("File not saved, sure to close?");
+                let result = window.confirm($.getString("window.fileNotSaved"));
 
                 if (!result) e.returnValue = false;
             }
@@ -276,6 +279,8 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
         this._editor = null;
         this._splitter = null;
         this._preview = null;
+
+        window.removeEventListener("resize", this._resize_handler);
 
         if (this._mouseMoveHandler !== null) {
             window.removeEventListener("mousemove", this._mouseMoveHandler, true);

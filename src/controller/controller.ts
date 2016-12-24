@@ -1,7 +1,7 @@
 import {TextModel, LineModel, TextEdit, TextEditType, 
      Position, BufferState} from "../model"
 import {EditorView, Coordinate, WindowView} from "../view"
-import {IDisposable, Host} from "../util"
+import {IDisposable, Host, KeyCode} from "../util"
 import {remote, ipcRenderer} from "electron"
 import {MainMenuView, MenuClickEvent, MenuButtonType} from "../view/menu"
 const {Menu, MenuItem} = remote
@@ -39,6 +39,22 @@ export class MDE implements IDisposable {
         this._view = new WindowView();
         this._view.bind(this._buffer_state);
 
+        this._view.on("keydown", (e: KeyboardEvent) => {
+
+            if (e.ctrlKey) {
+                switch(e.keyCode) {
+                    case KeyCode.$S:
+                        try {
+                            this.handleSaveFile(SaveFilter);
+                        } catch (e) {
+                            console.log(e);
+                        }
+                        break;
+                }
+            }
+
+        });
+
     }
 
     private reloadBuffer(buffer: BufferState) {
@@ -59,7 +75,11 @@ export class MDE implements IDisposable {
                 this.handleOpenFile();
                 break;
             case MenuButtonType.Save:
-                this.handleSaveFile(SaveFilter);
+                try {
+                    this.handleSaveFile(SaveFilter);
+                } catch (e) {
+                    console.log(e);
+                }
                 break;
             case MenuButtonType.SaveAs:
                 this.handleSaveAsFile(SaveFilter);

@@ -7,6 +7,7 @@ export {TickTockPair, TickTockUtil} from "./ticktock"
 export {KeyCode} from "./keyCode"
 export {ITokenizer} from "./tokenizer"
 export {MarkdownTokenType, MarkdownTokenizeState, MarkdownTokenizer} from "./markdownTokenizer"
+export {i18n} from "./i18n"
 
 export interface IDisposable {
     dispose(): any;

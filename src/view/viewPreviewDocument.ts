@@ -1,4 +1,4 @@
-import {IDisposable, DomHelper, KeyCode} from "../util"
+import {IDisposable, DomHelper, KeyCode, i18n as $} from "../util"
 import {TextModel, TextEditEvent, TextEdit} from "../model"
 import * as marked  from "marked"
 import * as Electron from "electron"
@@ -54,7 +54,7 @@ export class PreviewDocumentView extends DomHelper.AbsoluteElement implements ID
 
         let options: Electron.MenuItemOptions[] = [
             {
-                label: "Copy",
+                label: $.getString("contextmenu.copy"),
                 accelerator: "Control+C",
                 click: () => { this.copyToClipboard() }
             },

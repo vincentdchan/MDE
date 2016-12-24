@@ -15,6 +15,8 @@ function createWindow() {
     
     win.webContents.openDevTools();
 
+    global["appLocales"] = app.getLocale();
+    Server.initializeLocalesWindowService(app.getLocale());
     Server.initializeMarkdownTokenizerService();
     Server.initializeBrowserWindowService(win);
     Server.initializeDialogService();

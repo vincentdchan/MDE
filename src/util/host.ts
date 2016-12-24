@@ -8,10 +8,20 @@ export class Host {
 
     private static idCounter = 0;
     private static mapper : {[name: number]: {resolve: Function, reject: Function}} = {};
+    private static locales : string = null;
+    private static waiting_locales : Function[] = [];
 
     private static inited = false;
     private static init() {
         if (!Host.inited) {
+
+            ipcRenderer.on("getLocales-reply", (event: Electron.IpcRendererEvent, data: string) => {
+                Host.locales = data; // cache
+
+                Host.waiting_locales.forEach((fun: Function) => {
+                    fun(data);
+                });
+            })
 
             ipcRenderer.on("tokenizeLine-reply", (event: Electron.IpcRendererEvent, id: number, tokens: MarkdownToken[], state: MarkdownTokenizeState) => {
                 if (Host.mapper[id]) {
@@ -127,6 +137,19 @@ export class Host {
                 resolve: resolve,
                 reject: reject,
             }
+        });
+    }
+
+    static getLocales() : Promise<string> {
+        Host.init();
+
+        return new Promise((resolve, reject) => {
+            if (Host.locales) {
+                resolve(Host.locales);
+                return;
+            }
+            Host.waiting_locales.push(resolve);
+            ipcRenderer.send("getLocales");
         });
     }
 

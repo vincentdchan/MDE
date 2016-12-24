@@ -1,0 +1,15 @@
+{
+    "window.fileNotSaved": "File is not saved, are you sure to close it?",
+
+    "toolbar.bold": "Bold",
+    "toolbar.italic": "Italic",
+    "toolbar.underline": "Underline",
+    "toolbar.orderedList": "Ordered List",
+    "toolbar.unorderedList": "Unordered List",
+
+    "toolbar.tooglePreview": "Toogle Preview",
+
+    "contextmenu.copy": "Copy",
+    "contextmenu.cut": "Cut",
+    "contextmenu.paste": "Paste"
+}

@@ -1,4 +1,4 @@
-import {IDisposable, DomHelper} from "../util"
+import {IDisposable, DomHelper, i18n as $} from "../util"
 import {Coordinate} from "."
 import {DocumentView} from "./viewDocument"
 import {ScrollHeightChangedEvent} from "./events"
@@ -24,27 +24,27 @@ function clonePosition(pos: Position) : Position {
 let toolbarButtons : ButtonOption[] = [
     {
         name: "bold",
-        text: "Bold",
+        text: $.getString("toolbar.bold"),
         icon: "fa fa-bold",
     },
     {
         name: "italic",
-        text: "Italic",
+        text: $.getString("toolbar.italic"),
         icon: "fa fa-italic",
     }, 
     {
         name: "underline",
-        text: "Underline",
+        text: $.getString("toolbar.underline"),
         icon: "fa fa-underline",
     },
     {
         name: "orderedlist",
-        text: "Ordered List",
+        text: $.getString("toolbar.orderedList"),
         icon: "fa fa-list-ol",
     }, 
     {
         name: "unorderedlist",
-        text: "Unordered List",
+        text: $.getString("toolbar.unorderedList"),
         icon: "fa fa-list-ul",
     }
 ]
@@ -61,7 +61,7 @@ function generateRightButtons(editorView: EditorView) : ButtonOption[] {
     return [
         {
             name: "tooglePreview",
-            text: "Toogle Preview",
+            text: $.getString("toolbar.tooglePreview"),
             icon: "fa fa-eye",
             onClick: (e: MouseEvent) => {
                 let evt = new TooglePreviewEvent();

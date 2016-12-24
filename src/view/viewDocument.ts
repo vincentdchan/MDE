@@ -3,7 +3,7 @@ import {IVirtualElement, Coordinate} from "."
 import {TextModel, LineModel, Position, PositionUtil, 
     TextEdit, TextEditType} from "../model"
 import {LineRenderer, HistoryHandler} from "../controller"
-import {IDisposable, DomHelper, KeyCode} from "../util"
+import {IDisposable, DomHelper, KeyCode, i18n as $} from "../util"
 import {PopAllQueue} from "../util/queue"
 import {InputerView} from "./viewInputer"
 import {CursorView} from "./viewCursor"
@@ -170,17 +170,17 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
 
         let options: Electron.MenuItemOptions[] = [
             {
-                label: "Cut",
+                label: $.getString("contextmenu.cut"),
                 accelerator: "Control+X",
                 click: () => { this.cutToClipboard(); }
             },
             {
-                label: "Copy",
+                label: $.getString("contextmenu.copy"),
                 accelerator: "Control+C",
                 click: () => { this.copyToClipboard(); }
             },
             {
-                label: "Paste",
+                label: $.getString("contextmenu.paste"),
                 accelerator: "Control+V",
                 click: () => { this.pasteToDocument(); }
             },
@@ -302,9 +302,6 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
                 case KeyCode.$F:
                     console.log("search and replace");
                     break;
-                case KeyCode.$S:
-                    console.log("save");
-                    break;
                 case KeyCode.$C:
                     this.copyToClipboard();
                     break;
@@ -344,21 +341,34 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
                     case KeyCode.UpArrow:
                         if (majorSelection.collapsed) {
                             let line = majorSelection.beginPosition.line;
-                            majorSelection.beginPosition = majorSelection.endPosition = {
-                                line: line > 1? line - 1: 1,
-                                offset: majorSelection.beginPosition.offset
-                            };
-                            majorSelection.repaint();
+
+                            if (line > 1) {
+                                let currentOffset = majorSelection.beginPosition.offset,
+                                    previousLength = this._model.lineAt(line - 1).length;
+
+                                majorSelection.beginPosition = majorSelection.endPosition = {
+                                    line: line - 1,
+                                    offset: currentOffset > previousLength ? previousLength - 1 : currentOffset,
+                                };
+                                majorSelection.repaint();
+                            }
                         } else majorSelection.leftCollapse();
                         break;
                     case KeyCode.DownArrow:
                         if (majorSelection.collapsed) {
                             let line = majorSelection.beginPosition.line;
-                            majorSelection.beginPosition = majorSelection.endPosition = {
-                                line: line < this._model.linesCount? line + 1 : line,
-                                offset: majorSelection.beginPosition.offset,
-                            };
-                            majorSelection.repaint();
+
+                            if (line < this._model.linesCount) {
+                                let currentOffset = majorSelection.beginPosition.offset,
+                                    nextLength = this._model.lineAt(line + 1).length
+
+                                majorSelection.beginPosition = majorSelection.endPosition = {
+                                    line: line + 1,
+                                    offset: currentOffset > nextLength ? 
+                                        (nextLength > 0? nextLength - 1 : 0) : currentOffset,
+                                };
+                                majorSelection.repaint();
+                            }
                         } else majorSelection.rightCollapse();
                         break;
                     case KeyCode.LeftArrow:

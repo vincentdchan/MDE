@@ -4,6 +4,14 @@ import * as fs from "fs"
 export {initializeMarkdownTokenizerService} from "./tokenizer"
 export {default as  renderServer} from "./render"
 
+export function initializeLocalesWindowService(locales: string) {
+
+    Electron.ipcMain.on("getLocales", (event: Electron.IpcMainEvent) => {
+        event.sender.send("getLocales-reply", locales);
+    })
+
+}
+
 export function initializeBrowserWindowService(bw: Electron.BrowserWindow) {
 
     Electron.ipcMain.on("window-openDevTools", (event: Electron.IpcMainEvent, options?: any) => {

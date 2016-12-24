@@ -3,6 +3,7 @@ const {Menu, MenuItem} = remote
 import {MDE} from "../controller"
 import {EventEmitter} from "events"
 import * as Electron from "electron"
+import {i18n as $} from "../util"
 
 export enum MenuButtonType {
     NewFile, OpenFile, Save, SaveAs, Preference,
@@ -33,12 +34,17 @@ export class MainMenuView extends EventEmitter {
     constructor() {
         super();
 
+        this.buildMenu();
+    }
+
+    private buildMenu() {
+
         let options: Electron.MenuItemOptions[] = [
             {
-                label: "File",
+                label: $.getString("file"),
                 submenu: [
                     {
-                        label: "New File",
+                        label: $.getString("file.newFile"),
                         accelerator: "Ctrl+N",
                         click: () => { this.emitMenuClickEvent(MenuButtonType.NewFile) }
                     },
@@ -46,43 +52,43 @@ export class MainMenuView extends EventEmitter {
                         type: "separator",
                     },
                     {
-                        label: "Open",
+                        label: $.getString("file.open"),
                         accelerator: "Ctrl+O",
                         click: () => { this.emitMenuClickEvent(MenuButtonType.OpenFile) }
                     },
                     {
-                        label: "Save",
+                        label: $.getString("file.save"),
                         accelerator: "Ctrl+S",
                         click: () => { this.emitMenuClickEvent(MenuButtonType.Save) }
                     },
                     {
-                        label: "Save as",
+                        label: $.getString("file.saveAs"),
                         accelerator: "Ctrl+Shift+S",
                         click: () => { this.emitMenuClickEvent(MenuButtonType.SaveAs) }
                     },
                     {
-                        label: "Preference",
+                        label: $.getString("file.preference"),
                         click: () => { this.emitMenuClickEvent(MenuButtonType.Preference) }
                     },
                     {
                         type: "separator"
                     },
                     {
-                        label: "Exit",
+                        label: $.getString("file.exit"),
                         click: () => { this.emitMenuClickEvent(MenuButtonType.Exit) }
                     }
                 ]
             },
             {
-                label: "Edit",
+                label: $.getString("edit"),
                 submenu: [
                     {
-                        label: "Undo",
+                        label: $.getString("edit.undo"),
                         accelerator: "Ctrl+Z",
                         click: () => { this.emitMenuClickEvent(MenuButtonType.Undo) }
                     },
                     {
-                        label: "Redo",
+                        label: $.getString("edit.redo"),
                         accelerator: "Ctrl+Shift+Z",
                         click: () => { this.emitMenuClickEvent(MenuButtonType.Redo) }
                     },
@@ -90,52 +96,52 @@ export class MainMenuView extends EventEmitter {
                         type: "separator"
                     }, 
                     {
-                        label: "Cut",
+                        label: $.getString("edit.cut"),
                         accelerator: "Ctrl+X",
                         click: () => { this.emitMenuClickEvent(MenuButtonType.Cut) }
                     },
                     {
-                        label: "Copy",
+                        label: $.getString("edit.copy"),
                         accelerator: "Ctrl+C",
                         click: () => { this.emitMenuClickEvent(MenuButtonType.Copy) }
                     },
                     {
-                        label: "Paste",
+                        label: $.getString("edit.paste"),
                         accelerator: "Ctrl+V",
                         click: () => { this.emitMenuClickEvent(MenuButtonType.Paste) }
                     },
                     {
-                        label: "Select All",
+                        label: $.getString("edit.selectAll"),
                         accelerator: "Ctrl+A",
                         click: () => { this.emitMenuClickEvent(MenuButtonType.SelectAll) }
                     },
                 ]
             },
             {
-                label: "View",
+                label: $.getString("view"),
                 submenu: [
                     {
-                        label: "Open dev tools",
+                        label: $.getString("view.openDevTools"),
                         click: () => { this.emitMenuClickEvent(MenuButtonType.OpenDevTools) }
                     },
                     {
-                        label: "Reload",
+                        label: $.getString("view.reload"),
                         click: () => { this.emitMenuClickEvent(MenuButtonType.Reload) }
                     }
                 ]
             },
             {
-                label: "Help",
+                label: $.getString("help"),
                 submenu: [
                     {
-                        label: "Documentation",
+                        label: $.getString("help.documentation"),
                         click: () => { this.emitMenuClickEvent(MenuButtonType.Documentation) }
                     },
                     {
                         type: "separator"
                     },
                     {
-                        label: "About",
+                        label: $.getString("help.about"),
                         click: () => { this.emitMenuClickEvent(MenuButtonType.About) }
                     }
                 ]

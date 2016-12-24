@@ -1,0 +1,15 @@
+{
+    "window.fileNotSaved": "文件尚未保存，是否确认关闭？",
+
+    "toolbar.bold": "加粗",
+    "toolbar.italic": "斜体",
+    "toolbar.underline": "下划线",
+    "toolbar.orderedList": "有序列表",
+    "toolbar.unorderedList": "无序列表",
+
+    "toolbar.tooglePreview": "打开/关闭预览",
+
+    "contextmenu.copy": "复制",
+    "contextmenu.cut": "剪切",
+    "contextmenu.paste": "粘贴"
+}

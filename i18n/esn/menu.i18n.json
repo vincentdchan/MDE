@@ -1,0 +1,25 @@
+{
+    "file": "File",
+    "file.newFile": "New File",
+    "file.open": "Open",
+    "file.save": "Save",
+    "file.saveAs": "Save as",
+    "file.preference": "Preference",
+    "file.exit": "Exit",
+
+    "edit": "Edit",
+    "edit.undo": "Undo",
+    "edit.redo": "Redo",
+    "edit.cut": "Cut",
+    "edit.copy": "Copy",
+    "edit.paste": "Paste",
+    "edit.selectAll": "Select All",
+
+    "view": "View",
+    "view.openDevTools": "Open Dev tools",
+    "view.reload": "Reload",
+
+    "help": "Help",
+    "help.documentation": "Documentation",
+    "help.about": "About"
+}
