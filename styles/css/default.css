@@ -114,6 +114,10 @@ body {
     padding: 22px;
 }
 
+.mde-preview {
+    overflow-y: hidden;
+}
+
 .mde-preview::-webkit-scrollbar {
     display: none;
 }

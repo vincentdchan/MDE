@@ -27,6 +27,14 @@ class NullElement extends DomHelper.ResizableElement {
 
 }
 
+class NotInRangeError extends Error {
+
+    constructor() {
+        super("Not in range.")
+    }
+
+}
+
 ///
 /// Event:
 ///
@@ -418,12 +426,19 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
                         break;
                     case KeyCode.End:
                         {
-                            let _offset = this._model.lineAt(majorSelection.endPosition.line).length - 1;
-                            majorSelection.endPosition = majorSelection.beginPosition = {
-                                line: majorSelection.endPosition.line,
-                                offset: _offset
-                            };
-                            majorSelection.repaint();
+                            let lineModel = this._model.lineAt(majorSelection.endPosition.line);
+                            if (lineModel.text.length > 0) {
+                                let _offset: number;
+                                if (lineModel.text.charAt(lineModel.length - 1) === '\n')
+                                    _offset = this._model.lineAt(majorSelection.endPosition.line).length - 1;
+                                else
+                                    _offset = this._model.lineAt(majorSelection.endPosition.line).length;
+                                majorSelection.endPosition = majorSelection.beginPosition = {
+                                    line: majorSelection.endPosition.line,
+                                    offset: _offset
+                                };
+                                majorSelection.repaint();
+                            }
                         }
                         break;
                     case KeyCode.BackSpace:
@@ -768,10 +783,22 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
     private handleDocMouseDown(evt: MouseEvent) {
         this._mouse_pressed = true;
 
-        let begin_pos = this.getPositionFromCoordinate({
-            x: evt.clientX,
-            y: evt.clientY,
-        });
+        let begin_pos: Position;
+
+        try {
+
+            begin_pos = this.getPositionFromCoordinate({
+                x: evt.clientX,
+                y: evt.clientY,
+            });
+
+        } catch (e) {
+            if (e instanceof NotInRangeError) {
+                return
+            } else {
+                throw e;
+            }
+        }
 
         let absPosGetter = (pos: Position) => {
             let clientCo = this.getCoordinate(pos);
@@ -845,7 +872,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         }
 
         if (line_number === undefined)
-            throw new Error("Not in range.");
+            throw new NotInRangeError();
 
         let lineView = this.lines[line_number];
         let lineElm = lineView.element();

@@ -11,11 +11,10 @@ export class PreviewView extends DomHelper.FixedElement implements IDisposable {
     private _document : PreviewDocumentView;
 
     private _textEdit_handler: (evt: TextEditEvent) => void;
+    private _render_counter: number = 0;
 
     constructor() {
         super("div", "mde-preview");
-
-        this._dom.style.overflowY = "hidden";
 
         this._scrollbar = new ScrollBarView();
         this._scrollbar.appendTo(this._dom);
@@ -29,12 +28,20 @@ export class PreviewView extends DomHelper.FixedElement implements IDisposable {
         this._document.appendTo(this._dom);
 
         this._textEdit_handler = (evt: TextEditEvent) => {
-            this._document.renderImd();
+            this._render_counter++;
+
             setTimeout(() => {
-                let docRect = this._document.element().getBoundingClientRect();
-                this._scrollbar.trainHeightPercentage = docRect.height / this._document.element().scrollHeight;
-                this._scrollbar.trainPositionPercentage = 0;
-            }, 10);
+                this._render_counter--;
+                if (this._render_counter === 0) {
+                    this._document.renderImd();
+
+                    setTimeout(() => {
+                        this._scrollbar.trainHeightPercentage = this._document.element().clientHeight / this._document.element().scrollHeight;
+                        this._scrollbar.trainPositionPercentage = 0;
+                    }, 10);
+                }
+            }, 850);
+
         }
 
         function fixed(num: number, fixed: number) {
@@ -56,6 +63,12 @@ export class PreviewView extends DomHelper.FixedElement implements IDisposable {
         this._model.on("textEdit", this._textEdit_handler);
 
         this._document.bind(model);
+
+        setTimeout(() => {
+            let elm = this._document.element();
+
+            this._scrollbar.trainHeightPercentage = elm.clientHeight / elm.scrollHeight;
+        }, 50);
     }
 
     unbind() {
@@ -84,6 +97,10 @@ export class PreviewView extends DomHelper.FixedElement implements IDisposable {
 
         this._document.height = h;
         this._scrollbar.height = h;
+    }
+
+    get documentView() {
+        return this._document;
     }
 
     dispose() {

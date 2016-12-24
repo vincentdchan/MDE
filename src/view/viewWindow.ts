@@ -2,40 +2,10 @@ import {DomHelper, IDisposable, Vector2} from "../util"
 import {EditorView, TooglePreviewEvent} from "./viewEditor"
 import {SplitterView} from "./viewSplitter"
 import {PreviewView} from "./viewPreview"
+import {TrainMoveEvent} from "./viewScrollbar"
 import {TextModel, BufferState, BufferStateChanged, BufferAbsPathChanged} from "../model"
 import * as Electron from "electron"
 import {remote} from "electron"
-
-export class PreviewButtonView extends DomHelper.AbsoluteElement implements IDisposable {
-
-    public static readonly DefaultWidth = 50;
-    public static readonly DefaultHeight = 50;
-
-    private _icon_elm: HTMLElement;
-
-    constructor() {
-        super("div", "mde-preview-button");
-
-        this._icon_elm = DomHelper.elem("i");
-        this._icon_elm.setAttribute("aria-hidden", "true");
-        this._dom.appendChild(this._icon_elm);
-
-        this.width = PreviewButtonView.DefaultWidth;
-        this.height = PreviewButtonView.DefaultHeight;
-    }
-
-    setEyeIcon() {
-        this._icon_elm.setAttribute("class", "fa fa-eye");
-    }
-
-    setArrowIcon() {
-        this._icon_elm.setAttribute("class", "fa fa-chevron-right");
-    }
-
-    dispose() {
-    }
-
-}
 
 export class WindowView extends DomHelper.AppendableDomWrapper implements IDisposable {
 
@@ -73,6 +43,12 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
         this._editor.on("tooglePreview", (e: TooglePreviewEvent) => {
             this.tooglePreview();
         })
+        this._editor.documentView.on("scroll", (e: Event) => {
+            let docElem = this._editor.documentView.element(),
+                renderDocElem = this._preview.documentView.element();
+            let percentage = docElem.scrollTop / (docElem.scrollHeight - docElem.clientHeight);
+            renderDocElem.scrollTop = Math.floor(percentage * (renderDocElem.scrollHeight - renderDocElem.clientHeight));
+        })
 
         this._splitter = new SplitterView();
         this._splitter.appendTo(this._dom);
@@ -85,9 +61,9 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
 
         this._splitter.marginLeft = this._editor.width;
         this._splitter.element().style.opacity = "0.5";
-        this._splitter.on("mousedown", this.handleSplitterMouseDown.bind(this));
+        this._splitter.on("mousedown", (e: MouseEvent) => { this.handleSplitterMouseDown(e) });
 
-        window.addEventListener("mouseup", this.handleWindowMouseUp.bind(this), true);
+        window.addEventListener("mouseup", (e: MouseEvent) => { this.handleWindowMouseUp(e) }, true);
 
         window.onbeforeunload = (e: Event) => {
             if (this._buffer_state.isModified) {
@@ -98,9 +74,7 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
         };
 
         setTimeout(() => {
-            let rect = this._dom.getBoundingClientRect();
-
-            let tmp = rect.width / 2;
+            let tmp = this._dom.clientWidth / 2;
             this._editor.width = tmp;
             this._splitter.marginLeft = tmp;
             this._preview.marginLeft = tmp;

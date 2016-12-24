@@ -85,6 +85,7 @@ export class ScrollBarView
     }
 
     set trainHeightPercentage(hp: number) {
+        hp = Math.floor(hp * 100) / 100;
         if (hp < 0 || hp > 1)
             throw new Error("Data should be between 0 and 1: " + hp);
         this._train.height = this.height * hp;
@@ -95,6 +96,7 @@ export class ScrollBarView
     }
 
     set trainPositionPercentage(per: number) {
+        per = Math.floor(per * 10000) / 10000;
         if (per < 0 || per > 1)
             throw new Error("Data should be between 0 and 1: " + per);
         this._train.top = (this.height - this._train.height) * per;

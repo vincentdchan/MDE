@@ -2,7 +2,7 @@ import {DomHelper, IDisposable, TickTockUtil, KeyCode} from "../util"
 import {Position, PositionUtil, Range} from "../model"
 import {Coordinate} from "."
 import {InputerView} from "./viewInputer"
-import {CursorView} from "./viewCursor"
+import {CursorView, CursorState} from "./viewCursor"
 
 export class SelectionAtom extends DomHelper.AbsoluteElement {
 
@@ -52,12 +52,19 @@ export class SelectionHandler implements IDisposable {
         this._coGetter = absCoGetter;
 
         this._cursor = new CursorView(isMajor, ticktock);
+
         if (this._isMajor) {
             this._inputer = new InputerView();
 
             this._inputer.on("keydown", (evt: KeyboardEvent) => {
                 this.handleInputerKeydown(evt);
             });
+            this._inputer.on("focus", (e: Event) => {
+                this._cursor.state = CursorState.Blink;
+            })
+            this._inputer.on("blur", (e: Event) => {
+                this._cursor.state = CursorState.AlwaysOn;
+            })
         }
     }
 

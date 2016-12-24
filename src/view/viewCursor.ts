@@ -1,6 +1,10 @@
 import {IDisposable, DomHelper, TickTockPair, TickTockUtil} from "../util"
 import {Coordinate, IHidable} from "."
 
+export enum CursorState {
+    Blink, AlwaysOn, AlwaysOff
+}
+
 export class CursorView extends DomHelper.AppendableDomWrapper implements IDisposable, IHidable {
 
     // private _internal : NodeJS.Timer;
@@ -9,6 +13,7 @@ export class CursorView extends DomHelper.AppendableDomWrapper implements IDispo
     private _tock_thunk: () => void;
     private _ticktock_pair: TickTockPair;
     private _isMajor: boolean;
+    private _state: CursorState = CursorState.Blink;
 
     constructor(isMajor, ticktock: TickTockUtil) {
         super("div", "mde-cursor");
@@ -29,8 +34,12 @@ export class CursorView extends DomHelper.AppendableDomWrapper implements IDispo
     private initializeBlinking() {
 
         this._ticktock_pair = {
-            tick: () => { this._dom.style.opacity = "1" },
-            tock: () => { this._dom.style.opacity = "0" },
+            tick: () => { 
+                if (this._state !== CursorState.AlwaysOff) this._dom.style.opacity = "1" 
+            },
+            tock: () => { 
+                if (this._state !== CursorState.AlwaysOn) this._dom.style.opacity = "0" 
+            },
         }
 
         this._ticktock.register(this._ticktock_pair);
@@ -39,6 +48,14 @@ export class CursorView extends DomHelper.AppendableDomWrapper implements IDispo
 
     private clearInterval() {
         this._ticktock.unregister(this._ticktock_pair);
+    }
+
+    get state() {
+        return this._state;
+    }
+
+    set state(s: CursorState) {
+        this._state = s;
     }
 
     hide() {
