@@ -99,6 +99,16 @@ body {
     display: none;
 }
 
+.mde-preview-button {
+    z-index: 50;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: grey;
+    opacity: 0.8;
+}
+
 .mde-preview-document-container {
     word-wrap: break-word;
     padding: 22px;

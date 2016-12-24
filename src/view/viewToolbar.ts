@@ -10,7 +10,7 @@ export class ToolbarView extends DomHelper.FixedElement implements IDisposable {
     private buttonNamesMap : Map<string, number>;
     private _name : string;
 
-    constructor(options: ButtonOption[]) {
+    constructor(options: ButtonOption[], rightOptions?: ButtonOption[]) {
         super("div", "mde-toolbar");
 
         this.height = ToolbarView.DefaultHeight;
@@ -23,6 +23,7 @@ export class ToolbarView extends DomHelper.FixedElement implements IDisposable {
 
         this.buttonViews = [];
         this.buttonNamesMap = new Map<string, number>();
+
         options.forEach((value: ButtonOption, index:number) => {
             let bv = new ButtonView(ToolbarView.DefaultHeight, ToolbarView.DefaultHeight);
 
@@ -33,7 +34,37 @@ export class ToolbarView extends DomHelper.FixedElement implements IDisposable {
 
             bv.element().style.position = "relative"
             bv.appendTo(this.buttonContainer);
+
+            if (value.onClick) {
+                bv.on("click", (e: MouseEvent) => {
+                    value.onClick(e);
+                })
+            }
+
         });
+
+        if (rightOptions) {
+            rightOptions.forEach((value: ButtonOption, index: number) => {
+                let bv = new ButtonView(ToolbarView.DefaultHeight, ToolbarView.DefaultHeight);
+
+                bv.setContentFromOption(value);
+
+                this.buttonViews.push(bv);
+                this.buttonNamesMap.set(value.name, index);
+
+                bv.element().style.position = "relative"
+                bv.element().style.cssFloat = "right";
+                bv.appendTo(this.buttonContainer);
+
+                if (value.onClick) {
+                    bv.on("click", (e: MouseEvent) => {
+                        value.onClick(e);
+                    })
+                }
+
+            });
+        }
+
     }
 
     getButtonViewByIndex(index: number) : ButtonView {

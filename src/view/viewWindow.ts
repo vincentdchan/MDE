@@ -1,10 +1,41 @@
 import {DomHelper, IDisposable, Vector2} from "../util"
-import {EditorView} from "./viewEditor"
+import {EditorView, TooglePreviewEvent} from "./viewEditor"
 import {SplitterView} from "./viewSplitter"
 import {PreviewView} from "./viewPreview"
 import {TextModel, BufferState, BufferStateChanged, BufferAbsPathChanged} from "../model"
 import * as Electron from "electron"
 import {remote} from "electron"
+
+export class PreviewButtonView extends DomHelper.AbsoluteElement implements IDisposable {
+
+    public static readonly DefaultWidth = 50;
+    public static readonly DefaultHeight = 50;
+
+    private _icon_elm: HTMLElement;
+
+    constructor() {
+        super("div", "mde-preview-button");
+
+        this._icon_elm = DomHelper.elem("i");
+        this._icon_elm.setAttribute("aria-hidden", "true");
+        this._dom.appendChild(this._icon_elm);
+
+        this.width = PreviewButtonView.DefaultWidth;
+        this.height = PreviewButtonView.DefaultHeight;
+    }
+
+    setEyeIcon() {
+        this._icon_elm.setAttribute("class", "fa fa-eye");
+    }
+
+    setArrowIcon() {
+        this._icon_elm.setAttribute("class", "fa fa-chevron-right");
+    }
+
+    dispose() {
+    }
+
+}
 
 export class WindowView extends DomHelper.AppendableDomWrapper implements IDisposable {
 
@@ -19,6 +50,8 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
     private _editor : EditorView;
     private _splitter : SplitterView;
     private _preview : PreviewView;
+
+    private _preview_opened: boolean;
 
     constructor() {
         super("div", "mde-window");
@@ -37,12 +70,16 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
 
         this._editor = new EditorView();
         this._editor.appendTo(this._dom);
+        this._editor.on("tooglePreview", (e: TooglePreviewEvent) => {
+            this.tooglePreview();
+        })
 
         this._splitter = new SplitterView();
         this._splitter.appendTo(this._dom);
 
         this._preview = new PreviewView();
         this._preview.appendTo(this._dom);
+        this._preview_opened = true;
 
         updateLayoutThunk.call(this);
 
@@ -71,11 +108,24 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
         }, 10);
     }
 
+    private openPreview() {
+        this._preview.element().style.display = "block";
+        if (this._buffer_state) this._preview.bind(this._buffer_state.model);
+        this._preview_opened = true;
+    }
+
+    private closePreview() {
+        this._preview.element().style.display = "none";
+        this._preview.unbind();
+        this._preview_opened = false;
+    }
+
     bind(buffer: BufferState) {
         this._buffer_state = buffer;
 
         this._editor.bind(this._buffer_state.model);
-        this._preview.bind(this._buffer_state.model);
+        if (this._preview)
+            this._preview.bind(this._buffer_state.model);
 
         this._buffer_state.on("bufferStateChanged", (evt: BufferStateChanged) => {
             if (evt.bufferStateChanged)
@@ -91,6 +141,23 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
         setTimeout(() => {
             this.setTitle(this._buffer_state.filename);
         }, 100);
+    }
+
+    tooglePreview() {
+        if (this._preview_opened) {
+            this.closePreview();
+            this._editor.width = this.width;
+            this._splitter.element().style.display = "none";
+        } else {
+            this.openPreview();
+
+            this._splitter.element().style.display = "block";
+            let mid = Math.floor(window.innerWidth / 2);
+            this._editor.width = mid;
+            this._splitter.marginLeft = mid;
+            this._preview.marginLeft = mid;
+            this._preview.width = window.innerWidth - mid;
+        }
     }
 
     private setUnsavedState() {
@@ -111,7 +178,8 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
 
     unbind() {
         this._editor.unbind();
-        this._preview.unbind();
+        if (this._preview)
+            this._preview.unbind();
 
         this._buffer_state = null;
 
@@ -180,16 +248,22 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
     }
 
     private forceSetWidth(w: number) {
-        let srcWidth = this._width,
-            srcEditorWidth = this._editor.width;
+        if (this._preview_opened) {
+            let srcWidth = this._width,
+                srcEditorWidth = this._editor.width;
 
-        this._width = w;
+            this._width = w;
 
-        let leftMargin = Math.floor(w * (srcEditorWidth / srcWidth));
-        this._editor.width = leftMargin;
-        this._splitter.marginLeft = leftMargin;
-        this._preview.marginLeft = leftMargin;
-        this._preview.width = w - leftMargin;
+            let leftMargin = Math.floor(w * (srcEditorWidth / srcWidth));
+            this._editor.width = leftMargin;
+            this._splitter.marginLeft = leftMargin;
+
+            this._preview.marginLeft = leftMargin;
+            this._preview.width = w - leftMargin;
+        } else {
+            this._width = w;
+            this._editor.width = w;
+        }
     }
 
     private forceSetHeight(h: number) {
@@ -200,7 +274,9 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
             console.log(e);
         }
         this._splitter.height = h;
-        this._preview.height = h;
+
+        if (this._preview)
+            this._preview.height = h;
     }
 
     private requestWindowSize() : Vector2 {

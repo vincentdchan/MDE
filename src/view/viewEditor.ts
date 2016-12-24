@@ -49,6 +49,28 @@ let toolbarButtons : ButtonOption[] = [
     }
 ]
 
+export class TooglePreviewEvent extends Event {
+
+    constructor() {
+        super("tooglePreview");
+    }
+
+}
+
+function generateRightButtons(editorView: EditorView) : ButtonOption[] {
+    return [
+        {
+            name: "tooglePreview",
+            text: "Toogle Preview",
+            icon: "fa fa-eye",
+            onClick: (e: MouseEvent) => {
+                let evt = new TooglePreviewEvent();
+                editorView.element().dispatchEvent(evt);
+            }
+        }
+    ]
+}
+
 export class EditorView extends DomHelper.FixedElement 
     implements IDisposable {
 
@@ -65,7 +87,7 @@ export class EditorView extends DomHelper.FixedElement
     constructor() {
         super("div", "mde-editor");
 
-        this._toolbar = new ToolbarView(toolbarButtons);
+        this._toolbar = new ToolbarView(toolbarButtons, generateRightButtons(this));
         this._toolbar.top = 0;
 
         this._document = new DocumentView();
