@@ -340,9 +340,46 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
                 switch(evt.which) {
                     case KeyCode.Delete:
                         if (majorSelection.collapsed) {
-                            console.log("delete press");
-                        } else
-                            console.log("delete press");
+                            let currentLineLength = this._model.lineAt(majorSelection.beginPosition.line).length;
+                            if (this._model.lineAt(majorSelection.beginPosition.line).text.charAt(currentLineLength - 1) == "\n")
+                                currentLineLength--;
+
+                            let endPosition: Position;
+                            if (majorSelection.beginPosition.offset < currentLineLength) {
+                                endPosition = {
+                                    line: majorSelection.beginPosition.line,
+                                    offset: majorSelection.beginPosition.offset + 1,
+                                };
+                            } else if (majorSelection.beginPosition.line < this._model.linesCount) {
+                                endPosition = {
+                                    line: majorSelection.beginPosition.line + 1,
+                                    offset: 0
+                                };
+                            } else
+                                return;
+
+                            let textEdit = new TextEdit(TextEditType.DeleteText, {
+                                begin: PositionUtil.clonePosition(majorSelection.beginPosition),
+                                end: endPosition, 
+                            });
+
+                            let result = this._model.applyCancellableTextEdit(textEdit);
+                            this.render(this.calculateRenderLines(textEdit));
+                            this._history_handler.pushUndo(result.reverse);
+
+                            moveSelectionTo(majorSelection, result.pos);
+                        } else {
+                            let textEdit = new TextEdit(TextEditType.DeleteText, {
+                                begin: majorSelection.beginPosition,
+                                end: majorSelection.endPosition
+                            });
+
+                            let result = this._model.applyCancellableTextEdit(textEdit);
+                            this.render(this.calculateRenderLines(textEdit));
+                            this._history_handler.pushUndo(result.reverse);
+
+                            moveSelectionTo(majorSelection, result.pos);
+                        }
                         break;
                     case KeyCode.UpArrow:
                         if (majorSelection.collapsed) {
@@ -506,25 +543,8 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
                             });
 
                             let result = this._model.applyCancellableTextEdit(textEdit);
+                            this.render(this.calculateRenderLines(textEdit));
                             this._history_handler.pushUndo(result.reverse);
-
-                            if (majorSelection.beginPosition.line === majorSelection.endPosition.line) {
-                                this.renderLine(majorSelection.beginPosition.line);
-                            } else {
-                                let offset = majorSelection.endPosition.line - majorSelection.beginPosition.line;
-
-                                for (let i = this._lines.length - offset; i < this._lines.length; i++ ) {
-                                    this._lines[i].dispose();
-                                    this._lines[i].remove();
-                                    this._lines[i] = null;
-                                }
-
-                                this._lines.length -= offset;
-
-                                for (let i=majorSelection.beginPosition.line; i < this._lines.length; i++) {
-                                    this.renderLine(i);
-                                }
-                            }
 
                             moveSelectionTo(majorSelection, result.pos);
                         }
