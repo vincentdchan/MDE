@@ -24,11 +24,15 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
     private _preview_opened: boolean;
     private _resize_handler: (e: Event) => void;
 
-    constructor() {
+    private _cssElement: HTMLElement;
+    private _theme_filename: string;
+
+    constructor(themeFilename? : string) {
         super("div", "mde-window");
+        this._theme_filename = themeFilename ? themeFilename : "white-theme.css";
+        this.loadThemeCss();
 
         this.requestWindowSize();
-
         let updateLayoutThunk = () => {
             let size = this.requestWindowSize();
             this.width = size.x;
@@ -95,6 +99,18 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
         this._preview.element().style.display = "none";
         this._preview.unbind();
         this._preview_opened = false;
+    }
+
+    private loadThemeCss() {
+        if (this._cssElement) {
+            document.head.removeChild(this._cssElement);
+            this._cssElement = null;
+        }
+
+        this._cssElement = document.createElement("link");
+        this._cssElement.setAttribute("rel", "stylesheet");
+        this._cssElement.setAttribute("href", "./styles/css/" + this._theme_filename);
+        document.head.appendChild(this._cssElement);
     }
 
     bind(buffer: BufferState) {
@@ -194,6 +210,15 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
             this._preview.marginLeft = offsetX;
 
         }
+    }
+
+    get themeFilename() {
+        return this._theme_filename;
+    }
+
+    set themeFilename(filename: string) {
+        this._theme_filename = filename;
+        this.loadThemeCss();
     }
 
     get title() {

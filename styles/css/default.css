@@ -21,11 +21,21 @@ body {
     margin-right: 10px;
 }
 
+.mde-document {
+    z-index: -1;
+}
+
+.mde-document-container {
+    z-index: 1;
+}
+
 .mde-cursor {
+    z-index: 0;
     background: grey;
 }
 
 .mde-cursor.major {
+    z-index: 0;
     background: black;
 }
 
@@ -47,6 +57,14 @@ body {
 
 .mde-word-pre {
     color: grey;
+}
+
+.mde-word-htmlAttribute {
+    color: rebeccapurple;
+}
+
+.mde-word-htmlString {
+    color: #753D15;
 }
 
 .mde-word-bold {

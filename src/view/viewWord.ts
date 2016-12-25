@@ -34,9 +34,6 @@ export class WordView {
             case MarkdownTokenType.Heading2:
                 addClass(this._dom, "mde-word-h2");
                 break;
-            case MarkdownTokenType.Heading3:
-                addClass(this._dom, "mde-word-h3");
-                break;
             case MarkdownTokenType.Bold:
                 addClass(this._dom, "mde-word-bold");
                 break;
@@ -51,6 +48,24 @@ export class WordView {
                 break;
             case MarkdownTokenType.BlockquoteStart:
                 addClass(this._dom, "mde-word-blockquoteStart");
+                break;
+            case MarkdownTokenType.HTMLPunct:
+                addClass(this._dom, "mde-word-htmlPunct");
+                break;
+            case MarkdownTokenType.HTMLComment:
+                addClass(this._dom, "mde-word-htmlComment");
+                break;
+            case MarkdownTokenType.HTMLTag:
+                addClass(this._dom, "mde-word-htmlTag");
+                break;
+            case MarkdownTokenType.HTMLAttribute:
+                addClass(this._dom, "mde-word-htmlAttribute");
+                break;
+            case MarkdownTokenType.HTMLString:
+                addClass(this._dom, "mde-word-htmlString");
+                break;
+            case MarkdownTokenType.SquareBracket:
+                addClass(this._dom, "mde-word-squareBracket");
                 break;
         }
 

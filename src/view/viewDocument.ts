@@ -338,6 +338,12 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
             let majorSelection = this._selection_manger.selectionAt(0);
             if (!this._compositing) {
                 switch(evt.which) {
+                    case KeyCode.Delete:
+                        if (majorSelection.collapsed) {
+                            console.log("delete press");
+                        } else
+                            console.log("delete press");
+                        break;
                     case KeyCode.UpArrow:
                         if (majorSelection.collapsed) {
                             let line = majorSelection.beginPosition.line;
@@ -385,9 +391,13 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
                         if (majorSelection.collapsed) {
                             let line = majorSelection.beginPosition.line;
                             let offset = majorSelection.beginPosition.offset;
+
+                            let currentLineLength = this._model.lineAt(line).length;
+                            if (this._model.lineAt(line).text.charAt(currentLineLength - 1) === '\n')
+                                currentLineLength--;
                             majorSelection.beginPosition = majorSelection.endPosition = {
                                 line: majorSelection.beginPosition.line,
-                                offset: offset < this._model.lineAt(line).length ? offset + 1 : offset,
+                                offset: offset < currentLineLength ? offset + 1 : offset,
                             };
                             majorSelection.repaint();
                         } else majorSelection.rightCollapse();

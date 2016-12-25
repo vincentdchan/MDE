@@ -1,0 +1,110 @@
+.mde-cursor {
+    background: grey;
+}
+
+.mde-cursor.major {
+    background: #F8F8F0;
+}
+
+.mde-document {
+    background: #0D0D0D;
+    color: #F8F8F2;
+}
+
+.mde-word-h1 {
+    color: #A6E22E;
+}
+
+.mde-word-h2 {
+    color: #A6E22E;
+}
+
+.mde-word-pre {
+    color: #999999;
+}
+
+/*
+.mde-word-htmlPunct {
+    color: #121289;
+}
+*/
+
+.mde-word-htmlTag {
+    color: #F92672;
+}
+
+.mde-word-htmlAttribute {
+    color: #FD971F;
+}
+
+.mde-word-htmlString {
+    color: #FFEE99;
+}
+
+.mde-word-listItemStart {
+    color: #FF80F4;
+}
+
+.mde-word-blockquoteStart {
+    color: #222222;
+}
+
+.mde-word-squareBracket {
+    font-weight: bold;
+}
+
+.mde-word-htmlComment {
+    color: #8C8C8C;
+}
+
+.mde-splitter {
+    background: lightgrey;
+}
+
+.mde-toolbar {
+    background: #0D0D0D;
+    border-style: none none solid none;
+    border-color: lightgrey;
+}
+
+.mde-scrollbar {
+    background: #0D0D0D;
+}
+
+.mde-scrollbar-train {
+    background: #8C8C8C;
+    opacity: 0.5;
+}
+
+.mde-preview-button {
+    background: grey;
+}
+
+.mde-button {
+    color: white;
+}
+
+.mde-left-panel {
+    background: lightgrey;
+}
+
+.mde-left-panel-nav {
+    background: grey;
+}
+
+.mde-document-selection-atom {
+    background: #A63A62;
+}
+
+.mde-document-selection-atom.major {
+    background: #A63A62;
+}
+
+.mde-preview-document {
+    background: black;
+    color: white;
+}
+
+.mde-preview-document a {
+    color: deeppink;
+}

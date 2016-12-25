@@ -16,6 +16,8 @@
     "edit.selectAll": "Select All",
 
     "view": "View",
+    "view.whiteTheme": "White Theme",
+    "view.blackTheme": "Black Theme",
     "view.openDevTools": "Open Dev tools",
     "view.reload": "Reload",
 

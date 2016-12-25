@@ -1,0 +1,92 @@
+.mde-cursor {
+    background: grey;
+}
+
+.mde-cursor.major {
+    background: #000000;
+}
+
+.mde-document {
+    background: #F8F8FF;
+}
+
+.mde-word-h1 {
+    color: #445588;
+}
+
+.mde-word-h2 {
+    color: #990000;
+}
+
+.mde-word-pre {
+    color: #999999;
+}
+
+.mde-word-htmlPunct {
+    color: #121289;
+}
+
+.mde-word-htmlAttribute {
+    color: #0A8585;
+}
+
+.mde-word-htmlString {
+    color: #DD1144;
+}
+
+.mde-word-listItemStart {
+    color: #009999;
+}
+
+.mde-word-blockquoteStart {
+    color: #222222;
+}
+
+.mde-word-squareBracket {
+    font-weight: bold;
+}
+
+.mde-word-htmlComment {
+    color: #999988;
+}
+
+.mde-splitter {
+    background: black;
+}
+
+.mde-toolbar {
+    background: grey;
+}
+
+.mde-scrollbar {
+    background: lightgray;
+}
+
+.mde-scrollbar-train {
+    background: grey;
+    opacity: 0.5;
+}
+
+.mde-preview-button {
+    background: grey;
+}
+
+.mde-button {
+    color: white;
+}
+
+.mde-left-panel {
+    background: lightgrey;
+}
+
+.mde-left-panel-nav {
+    background: grey;
+}
+
+.mde-document-selection-atom {
+    background: lightsteelblue;
+}
+
+.mde-document-selection-atom.major {
+    background: #26ABF2;
+}

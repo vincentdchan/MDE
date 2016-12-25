@@ -8,7 +8,7 @@ import {i18n as $} from "../util"
 export enum MenuButtonType {
     NewFile, OpenFile, Save, SaveAs, Preference,
     Exit, Undo, Redo, Cut, Copy, Paste, SelectAll,
-    OpenDevTools, Reload, Documentation, About,
+    OpenDevTools, Reload, Documentation, About, WhiteTheme, BlackTheme,
 }
 
 export class MenuClickEvent extends Event {
@@ -120,6 +120,17 @@ export class MainMenuView extends EventEmitter {
             {
                 label: $.getString("view"),
                 submenu: [
+                    {
+                        label: $.getString("view.whiteTheme"),
+                        click: () => { this.emitMenuClickEvent(MenuButtonType.WhiteTheme) },
+                    },
+                    {
+                        label: $.getString("view.blackTheme"),
+                        click: () => { this.emitMenuClickEvent(MenuButtonType.BlackTheme) }
+                    },
+                    {
+                        type: "separator"
+                    }, 
                     {
                         label: $.getString("view.openDevTools"),
                         click: () => { this.emitMenuClickEvent(MenuButtonType.OpenDevTools) }

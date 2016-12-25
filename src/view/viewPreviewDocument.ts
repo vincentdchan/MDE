@@ -2,7 +2,7 @@ import {IDisposable, DomHelper, KeyCode, i18n as $} from "../util"
 import {TextModel, TextEditEvent, TextEdit} from "../model"
 import * as marked  from "marked"
 import * as Electron from "electron"
-import {remote, clipboard} from "electron"
+import {remote, clipboard, shell} from "electron"
 
 export class PreviewDocumentView extends DomHelper.AbsoluteElement implements IDisposable {
 
@@ -16,6 +16,16 @@ export class PreviewDocumentView extends DomHelper.AbsoluteElement implements ID
 
         this._dom.addEventListener("mouseup", (evt: MouseEvent) => {
             this.handleDocMouseUp(evt);
+        }, false);
+
+        this._dom.addEventListener("click", (evt: MouseEvent) => {
+            let targetElm = <any>evt.target;
+            if (targetElm.tagName && targetElm.tagName == "A") {
+                evt.preventDefault();
+
+                let anchor = <HTMLAnchorElement>targetElm;
+                shell.openExternal(anchor.href);
+            }
         })
     }
 

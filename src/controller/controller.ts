@@ -95,6 +95,12 @@ export class MDE implements IDisposable {
             case MenuButtonType.Undo:
                 this._view.editorView.undo();
                 break;
+            case MenuButtonType.WhiteTheme:
+                this._view.themeFilename = "white-theme.css"
+                break;
+            case MenuButtonType.BlackTheme:
+                this._view.themeFilename = "black-theme.css"
+                break;
             case MenuButtonType.Copy:
                 this._view.editorView.copyToClipboard();
                 break;
