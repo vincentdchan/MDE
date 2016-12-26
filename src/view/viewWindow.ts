@@ -109,10 +109,10 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
             this._platformCssElement = null;
         }
 
-        this._cssElement = document.createElement("link");
-        this._cssElement.setAttribute("rel", "stylesheet");
-        this._cssElement.setAttribute("href", "./styles/css/" + "platform-win.css");
-        document.head.appendChild(this._cssElement);
+        this._platformCssElement = document.createElement("link");
+        this._platformCssElement.setAttribute("rel", "stylesheet");
+        this._platformCssElement.setAttribute("href", "./styles/css/" + "platform-win.css");
+        document.head.appendChild(this._platformCssElement);
     }
 
     private loadLinuxCss() {
@@ -121,10 +121,10 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
             this._platformCssElement = null;
         }
 
-        this._cssElement = document.createElement("link");
-        this._cssElement.setAttribute("rel", "stylesheet");
-        this._cssElement.setAttribute("href", "./styles/css/" + "platform-linux.css");
-        document.head.appendChild(this._cssElement);
+        this._platformCssElement = document.createElement("link");
+        this._platformCssElement.setAttribute("rel", "stylesheet");
+        this._platformCssElement.setAttribute("href", "./styles/css/" + "platform-linux.css");
+        document.head.appendChild(this._platformCssElement);
     }
 
     private loadMacCss() {
@@ -133,10 +133,10 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
             this._platformCssElement = null;
         }
 
-        this._cssElement = document.createElement("link");
-        this._cssElement.setAttribute("rel", "stylesheet");
-        this._cssElement.setAttribute("href", "./styles/css/" + "platform-mac.css");
-        document.head.appendChild(this._cssElement);
+        this._platformCssElement = document.createElement("link");
+        this._platformCssElement.setAttribute("rel", "stylesheet");
+        this._platformCssElement.setAttribute("href", "./styles/css/" + "platform-mac.css");
+        document.head.appendChild(this._platformCssElement);
     }
 
     private openPreview() {
