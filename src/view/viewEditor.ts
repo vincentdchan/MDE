@@ -74,7 +74,6 @@ function generateRightButtons(editorView: EditorView) : ButtonOption[] {
 export class EditorView extends DomHelper.FixedElement 
     implements IDisposable {
 
-    public static readonly PxPerLine = 16;
     public static readonly DefaultLineMarginWidth = 40;
     public static readonly MinWidth = 100;
 
@@ -103,8 +102,6 @@ export class EditorView extends DomHelper.FixedElement
         this._toolbar.appendTo(this._dom);
         this._document.appendTo(this._dom);
         this._scrollbar.appendTo(this._dom);
-
-        this.stylish();
 
         this._scrollbar.on("trainMove", this.handleScrollBarTrainMove.bind(this));
 
@@ -146,13 +143,6 @@ export class EditorView extends DomHelper.FixedElement
     unbind() {
         this._document.unbind();
         this._model = null;
-    }
-
-    private stylish()
-    {
-        this._dom.style.overflowY = "hidden"
-        this._dom.style.fontSize = EditorView.PxPerLine + "px";
-        this._dom.style.fontFamily = "微软雅黑";
     }
 
     private handleScrollBarTrainMove(evt: TrainMoveEvent) {

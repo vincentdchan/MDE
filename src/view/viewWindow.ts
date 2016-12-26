@@ -6,6 +6,7 @@ import {TrainMoveEvent} from "./viewScrollbar"
 import {TextModel, BufferState, BufferStateChanged, BufferAbsPathChanged} from "../model"
 import * as Electron from "electron"
 import {remote} from "electron"
+import * as os from "os"
 
 export class WindowView extends DomHelper.AppendableDomWrapper implements IDisposable {
 
@@ -25,6 +26,7 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
     private _resize_handler: (e: Event) => void;
 
     private _cssElement: HTMLElement;
+    private _platformCssElement: HTMLElement;
     private _theme_filename: string;
 
     constructor(themeFilename? : string) {
@@ -87,6 +89,54 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
             this._preview.marginLeft = tmp;
             this._preview.width = tmp;
         }, 10);
+
+        switch(os.platform()) {
+            case "win32":
+                this.loadWindowsCss();
+                break;
+            case "darwin":
+                this.loadMacCss();
+                break;
+            case "linux":
+                this.loadLinuxCss();
+                break;
+        }
+    }
+
+    private loadWindowsCss() {
+        if (this._platformCssElement) {
+            document.head.removeChild(this._platformCssElement);
+            this._platformCssElement = null;
+        }
+
+        this._cssElement = document.createElement("link");
+        this._cssElement.setAttribute("rel", "stylesheet");
+        this._cssElement.setAttribute("href", "./styles/css/" + "platform-win.css");
+        document.head.appendChild(this._cssElement);
+    }
+
+    private loadLinuxCss() {
+        if (this._platformCssElement) {
+            document.head.removeChild(this._platformCssElement);
+            this._platformCssElement = null;
+        }
+
+        this._cssElement = document.createElement("link");
+        this._cssElement.setAttribute("rel", "stylesheet");
+        this._cssElement.setAttribute("href", "./styles/css/" + "platform-linux.css");
+        document.head.appendChild(this._cssElement);
+    }
+
+    private loadMacCss() {
+        if (this._platformCssElement) {
+            document.head.removeChild(this._platformCssElement);
+            this._platformCssElement = null;
+        }
+
+        this._cssElement = document.createElement("link");
+        this._cssElement.setAttribute("rel", "stylesheet");
+        this._cssElement.setAttribute("href", "./styles/css/" + "platform-mac.css");
+        document.head.appendChild(this._cssElement);
     }
 
     private openPreview() {

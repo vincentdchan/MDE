@@ -12,6 +12,11 @@ body {
     user-select: none;
 }
 
+.mde-editor {
+    overflow-y: "hidden";
+    font-size: "18px";
+}
+
 .mde-inputer {
     width: 0.1px;
     height: 0.1px;
@@ -49,10 +54,10 @@ body {
 }
 
 .mde-word-h1 {
-    font-size: 20px;
     font-weight: bold;
 }
 
+/*
 .mde-word-h2 {
     font-weight: bold;
 }
@@ -60,6 +65,7 @@ body {
 .mde-word-h3 {
     font-weight: bold;
 }
+*/
 
 .mde-word-bold {
     font-weight: bold;
@@ -117,7 +123,6 @@ body {
 }
 
 .mde-preview-document-container {
-    font-family: Arial, Helvetica, sans-serif;
     word-wrap: break-word;
     padding: 22px;
 }
@@ -157,4 +162,12 @@ body {
 
 .mde-left-panel-nav {
     background: grey;
+}
+
+.mde-preview-document-container code {
+    overflow-x: auto;
+}
+
+.mde-preview-document-container pre {
+    overflow-x: auto;
 }

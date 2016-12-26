@@ -1,0 +1,19 @@
+.mde-editor {
+    font-family: "Hiragino Sans GB", sans-serif;
+}
+
+.mde-preview-document-container {
+    font-family: "Hiragino Sans GB", sans-serif;
+}
+
+.mde-preview-document-container code {
+    font-family: "consolas", "Hiragino Sans GB";
+}
+
+.mde-preview-document-container pre {
+    font-family: "consolas", "Hiragino Sans GB";
+}
+
+.mde-word-pre {
+    font-family: "consolas", "Hiragino Sans GB";
+}
