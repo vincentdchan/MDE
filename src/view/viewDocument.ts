@@ -1,15 +1,18 @@
 import {LineView} from "./viewLine"
 import {IVirtualElement, Coordinate} from "."
 import {TextModel, LineModel, Position, PositionUtil, 
-    TextEdit, TextEditType} from "../model"
-import {LineRenderer, HistoryHandler} from "../controller"
-import {IDisposable, DomHelper, KeyCode, i18n as $} from "../util"
+    TextEdit, TextEditType, LineStream, IStream} from "../model"
+import {HistoryHandler} from "../controller"
+import {IDisposable, DomHelper, KeyCode, i18n as $, MarkdownTokenizer, 
+    MarkdownTokenizeState, MarkdownTokenType} from "../util"
+import {hd, tl, last} from "../util/fn"
 import {PopAllQueue} from "../util/queue"
 import {InputerView} from "./viewInputer"
 import {CursorView} from "./viewCursor"
 import {SelectionManager, moveSelectionTo} from "./viewSelection"
 import {remote, clipboard} from "electron"
 import {CursorMoveEvent, ScrollHeightChangedEvent} from "./events"
+import * as Collection from "typescript-collections"
 import * as Electron from "electron"
 
 function setHeight(elm: HTMLElement, h: number) {
@@ -18,13 +21,34 @@ function setHeight(elm: HTMLElement, h: number) {
 
 interface RenderOption {
     renderImdLines: number[];
-    renderLazilyLines: number[];
-    appendLines?: number;
+    enqueueLine: number;
+    lineNumberFrom?: number;
+    renderLazilyLines?: number[];
+    appendLines?: {after: number, count: number};
+    removeLines?: {begin: number, end: number};
     removeTailLines?: number;
 }
 
 class NullElement extends DomHelper.ResizableElement {
 
+}
+
+export interface MarkdownToken {
+    type: MarkdownTokenType;
+    text: string;
+}
+
+interface IRenderer {
+    (tokens: MarkdownToken[]): void;
+}
+
+enum RenderState {
+    Null, PlainText, Colored,
+}
+
+interface RenderEntry {
+    renderState: RenderState;
+    tokenizeState?: MarkdownTokenizeState;
 }
 
 class NotInRangeError extends Error {
@@ -42,9 +66,9 @@ class NotInRangeError extends Error {
 ///
 export class DocumentView extends DomHelper.AbsoluteElement implements IDisposable {
 
+    public static readonly LazyRenderTime = 420;
     public static readonly CursorBlinkingInternal = 500;
 
-    private _line_renderer: LineRenderer;
     private _history_handler: HistoryHandler;
 
     private _model: TextModel = null;
@@ -68,13 +92,23 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
 
     private _compositing_position: Position;
 
+    private _tokenizer: MarkdownTokenizer;
+    private _entries: RenderEntry[];
+    private _render_queue: Collection.PriorityQueue<number>;
+    private _waiting_times = 0;
+
     constructor(allowMultiselections: boolean = false) {
         super("div", "mde-document unselectable");
 
+        this._tokenizer = new MarkdownTokenizer();
+        this._render_queue = new Collection.PriorityQueue<number>();
         this._allow_multiselections = allowMultiselections;
-        this._lines = [];
+        this._entries = [{
+            renderState: RenderState.Null,
+            tokenizeState: this._tokenizer.startState(),
+        }];
 
-        this._line_renderer = new LineRenderer();
+        this._lines = [];
 
         let absPosGetter = (pos: Position) => {
             let clientCo = this.getCoordinate(pos);
@@ -109,7 +143,12 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         this._window_keyup_handler = (evt: KeyboardEvent) => { this.handleWindowKeyup(evt); }
 
         this.bindingEvent();
-        this.stylish();
+    }
+
+    private initRenderQueue() {
+        this._render_queue = new Collection.PriorityQueue<number>((a: number, b: number) => {
+            return a - b;
+        })
     }
 
     bind(model: TextModel) {
@@ -118,15 +157,16 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
 
         this._lines[0] = null;
         this._model.forEach((line: LineModel) => {
-            var vl = new LineView(line.number, this._line_renderer);
+            var vl = new LineView(line.number);
 
             this._lines[line.number] = vl;
-
-            // vl.render(line.text);
-            // vl.renderLineNumber(line.number);
-            this._line_renderer.renderLineLazily(line.number, line.text)
             this._container.appendChild(vl.element());
+
+            vl.renderPlainText(line.text);
         })
+
+        this.renderLineImd(1);
+        if (this._model.linesCount > 1) this.enqueueRender(2);
 
         setTimeout(() => {
             this._nullArea.height = this._dom.clientHeight / 2;
@@ -147,15 +187,6 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
 
         this._lines = [null];
         this._model = null;
-    }
-
-    private stylish() {
-        this._dom.style.overflowY = "scroll";
-        this._dom.style.overflowX = "auto";
-
-        this._dom.style.wordBreak = "normal";
-        this._dom.style.wordWrap = "break-word";
-        this._dom.style.whiteSpace = "pre-wrap";
     }
 
     private bindingEvent() {
@@ -444,7 +475,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
                             let textEdit = new TextEdit(TextEditType.InsertText, majorSelection.beginPosition, "    ");
                             let result = this._model.applyTextEdit(textEdit);
 
-                            this.renderLine(majorSelection.beginPosition.line);
+                            this.render(this.calculateRenderLines(textEdit));
                             moveSelectionTo(majorSelection, result);
 
                             setTimeout(() => {
@@ -511,7 +542,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
                                 });
                                 let result = this._model.applyCancellableTextEdit(textEdit);
 
-                                this.renderLine(majorSelection.beginPosition.line);
+                                this.render(this.calculateRenderLines(textEdit));
                                 this._history_handler.pushUndo(result.reverse);
 
                                 moveSelectionTo(majorSelection, result.pos);
@@ -624,58 +655,63 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         return false;
     }
 
-    private renderAccordingToTextEdit(textEdit: TextEdit) {
-        switch(textEdit.type) {
-            case TextEditType.InsertText:
-                if (textEdit.lines.length === 1) {
-
-                } else {
-
-                }
-                break;
-            case TextEditType.DeleteText:
-                if (textEdit.range.begin.line === textEdit.range.end.line) {
-
-                } else {
-
-                }
-                break;
-            case TextEditType.ReplaceText:
-                if (textEdit.range.begin.line === textEdit.range.end.line &&
-                textEdit.lines.length === 1) {
-
-                } else {
-
-                }
-                break;
-        }
-    }
-
+    ///
+    /// remove first then append
+    ///
     private render(option: RenderOption) {
-        if (option.appendLines) {
-            for (let i = 0; i < option.appendLines; i++) {
-                let newLV = new LineView(this._lines.length, this._line_renderer);
-                this._lines.push(newLV);
-                newLV.appendTo(this._container);
-            }
+
+        if (option.removeLines) {
+            let prefix = this._lines.slice(0, option.removeLines.begin),
+                middleArr = this._lines.slice(option.removeLines.begin, option.removeLines.end),
+                postfix = this._lines.slice(option.removeLines.end);
+
+            middleArr.forEach((value: LineView) => {
+                value.dispose();
+                this._container.removeChild(value.element());
+            })
+
+            this._lines = prefix.concat(postfix);
         }
 
-        if (option.removeTailLines) {
-            for (let i = this._lines.length - option.removeTailLines; i < this._lines.length; i++) {
-                this._lines[i].dispose();
-                this._lines[i].remove();
-                this._lines[i] = null;
+        if (option.appendLines) {
+            if (option.appendLines.after === this._lines.length - 1) {
+                for (let i = 0; i < option.appendLines.count; i++) {
+                    let newLV = new LineView(option.appendLines.after + i + 1);
+                    option.renderImdLines.push(option.appendLines.after + i + 1);
+                    this._lines.push(newLV);
+                    newLV.appendTo(this._container);
+                }
+            } else {
+                let nextLineElem = this._lines[option.appendLines.after + 1].element();
+
+                let pushArr: LineView[] = [];
+                for (let i = 0; i< option.appendLines.count; i++) {
+                    let newLV = new LineView(option.appendLines.after + i + 1);
+                    pushArr.push(newLV);
+                    this._container.insertBefore(newLV.element(), nextLineElem);
+                }
+
+                let prefix = this._lines.slice(0, option.appendLines.after + 1),
+                    postfix = this._lines.slice(option.appendLines.after + 1);
+
+                this._lines = prefix.concat(pushArr).concat(postfix);
             }
-            this._lines.length -= option.removeTailLines;
+
+        }
+
+        if (option.lineNumberFrom) {
+            let linesCount = this._model.linesCount
+            for (let i = option.lineNumberFrom; i <= linesCount; i++) {
+                this._lines[i].renderLineNumber(i);
+            }
         }
 
         option.renderImdLines.forEach((num: number) => {
-            this._line_renderer.renderLineImmdediately(num, this._model.lineAt(num).text);
+            this.renderLineImd(num);
         });
 
-        option.renderLazilyLines.forEach((num: number) => {
-            this._line_renderer.renderLineLazily(num, this._model.lineAt(num).text);
-        })
+        if (option.enqueueLine)
+            this.enqueueRender(option.enqueueLine);
 
         setTimeout(() => {
             this.checkScrollHeightChanged();
@@ -697,67 +733,74 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
     private calculateRenderLines(textEdit: TextEdit) : RenderOption {
         let option : RenderOption = {
             renderImdLines: [],
-            renderLazilyLines: [],
+            enqueueLine: null,
         };
+        let appendLineCount : number,
+            beginNum : number,
+            endNum : number;
         switch(textEdit.type) {
             case TextEditType.InsertText:
-                option.appendLines = textEdit.lines.length - 1;
-                let appendedLines = this._lines.length + option.appendLines;
-                for (let i = textEdit.position.line; i < appendedLines; i++) {
-                    if (i === textEdit.position.line)
-                        option.renderImdLines.push(i);
-                    else
-                        option.renderLazilyLines.push(i);
+                appendLineCount = textEdit.lines.length - 1;
+
+                option.renderImdLines.push(textEdit.position.line);
+                for (let i = 0; i < appendLineCount; i++) {
+                    option.renderImdLines.push(textEdit.position.line + i + 1);
                 }
-            /*
-                if (textEdit.lines.length == 1) {
-                    option.renderImdLines.push(textEdit.position.line);
-                } else {
-                    option.appendLines = textEdit.lines.length - 1;
-                    let appendedLines = this._lines.length + option.appendLines;
-                    for (let i = textEdit.position.line; i < appendedLines; i++) {
-                        if (i === textEdit.position.line)
-                            option.renderImdLines.push(i);
-                        else
-                            option.renderLazilyLines.push(i);
-                    }
-                }
-                */
+
+                if (appendLineCount > 0) option.lineNumberFrom = textEdit.position.line + 1;
+                option.enqueueLine = textEdit.position.line + textEdit.lines.length;
+
+                option.appendLines = {
+                    after: textEdit.position.line,
+                    count: appendLineCount,
+                };
                 break;
             case TextEditType.DeleteText:
                 if (textEdit.range.begin.line === textEdit.range.end.line) {
                     option.renderImdLines.push(textEdit.range.begin.line);
+                    if (textEdit.range.end.line <= this._model.linesCount)
+                        option.enqueueLine = textEdit.range.end.line + 1;
                 } else {
-                    option.removeTailLines = textEdit.range.end.line - textEdit.range.begin.line;
-                    let removedLines = this._lines.length - option.removeTailLines;
-                    for (let i = textEdit.range.begin.line; i < removedLines; i++) {
-                        if (i === textEdit.range.begin.line)
-                            option.renderImdLines.push(i);
-                        else
-                            option.renderLazilyLines.push(i);
-                    }
+                    beginNum = textEdit.range.begin.line + 1,
+                    endNum = textEdit.range.end.line + 1;
+
+                    option.renderImdLines.push(textEdit.range.begin.line);
+                    option.enqueueLine = endNum;
+                    option.lineNumberFrom = textEdit.range.begin.line + 1;
+
+                    option.removeLines = {
+                        begin: beginNum,
+                        end: endNum,
+                    };
                 }
                 break;
             case TextEditType.ReplaceText:
-                let lineOffset = 0;
-                if (textEdit.lines.length > 1) lineOffset = textEdit.lines.length - 1;
-                if (textEdit.range.end.line > textEdit.range.begin.line)
-                    lineOffset -= textEdit.range.end.line - textEdit.range.begin.line;
+                beginNum = textEdit.range.begin.line + 1,
+                endNum = textEdit.range.end.line + 1;
+                if (beginNum !== endNum) {
+                    option.removeLines = {
+                        begin: beginNum,
+                        end: endNum,
+                    };
+                }
 
-                let fixedLineCount = this._lines.length;
-                if (lineOffset > 0) {
-                    option.appendLines = lineOffset;
-                    fixedLineCount += lineOffset;
+                appendLineCount = textEdit.lines.length - 1;
+                if (appendLineCount > 0) {
+                    option.appendLines = {
+                        after: textEdit.range.begin.line,
+                        count: appendLineCount,
+                    };
                 }
-                else if (lineOffset < 0) {
-                    option.removeTailLines = -lineOffset;
-                    fixedLineCount += lineOffset;
-                }
-                for (let i = textEdit.range.begin.line; i < fixedLineCount; i++) {
-                    if (i === textEdit.range.begin.line)
-                        option.renderImdLines.push(i);
-                    else
-                        option.renderLazilyLines.push(i);
+
+                if (appendLineCount === 0) {
+                    option.renderImdLines.push(textEdit.range.begin.line);
+                    option.enqueueLine = textEdit.range.begin.line + 1;
+                } else {
+                    for (let i = 0; i < appendLineCount; i++) {
+                        option.renderImdLines.push(textEdit.range.begin.line + i + 1);
+                    }
+                    if (textEdit.range.begin.line + appendLineCount < this._model.linesCount)
+                        option.enqueueLine = textEdit.range.begin.line + appendLineCount + 1;
                 }
                 break;
         }
@@ -942,12 +985,80 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         return co;
     }
 
-    renderLine(line: number) {
-        if (line <= 0 || line > this.linesCount)
-            throw new Error("<index out of range> line:" + line + " LinesCount:" + this.linesCount);
-        // this._lines[line].render(this._model.lineAt(line).text);
-        this._line_renderer.renderLineImmdediately(line, this._model.lineAt(line).text);
-        // this._lines[line].renderLineNumber(line);
+    renderLineImd(lineNum: number) {
+        if (lineNum <= 0 || lineNum > this.linesCount)
+            throw new Error("<index out of range> line:" + lineNum + " LinesCount:" + this.linesCount);
+        
+        let content = this._model.lineAt(lineNum).text;
+        if (content.length > 0) {
+            content = content.charAt(content.length - 1) == "\n" ? content.slice(0, content.length - 1) : content;
+        }
+
+        let previousEntry = this._entries[lineNum - 1];
+        if (previousEntry && previousEntry.tokenizeState) {
+            let copyState = this._tokenizer.copyState(previousEntry.tokenizeState);
+            if (this._entries[lineNum] === undefined) {
+                this._entries[lineNum] = {
+                    renderState: RenderState.Null,
+                };
+            }
+            this._entries[lineNum].tokenizeState = copyState;
+
+            let tokens: MarkdownToken[];
+            if (content == "") {
+                tokens = [{
+                    type: MarkdownTokenType.Text,
+                    text: content,
+                }]
+            } else {
+                let lineStream = new LineStream(content);
+                tokens = this.tokenizeLine(lineStream, copyState);
+            }
+            this._entries[lineNum].renderState = RenderState.Colored;
+            this._lines[lineNum].renderTokens(tokens);
+        } 
+        else throw new Error("Previous doesn't exisit. Line:" + lineNum);
+    }
+
+    private tokenizeLine(stream: LineStream, state: MarkdownTokenizeState) : MarkdownToken[] {
+        let tokens : MarkdownToken[] = [];
+        while (!stream.eol()) {
+            stream.setCurrentTokenIndex();
+            let currentType = this._tokenizer.tokenize(stream, state);
+            let currentText = stream.current();
+            // this line must not be a null line
+            if (currentText == "") throw new Error("Null text");
+
+            let previous = last(tokens);
+            if (previous && previous.type === currentType) {
+                previous.text += currentText;
+            } else {
+                tokens.push({
+                    type: currentType,
+                    text: currentText,
+                });
+            }
+        }
+        return tokens;
+    }
+
+    private enqueueRender(lineNum: number) {
+        this._waiting_times++;
+        this._render_queue.enqueue(lineNum);
+
+        setTimeout(() => {
+            this._waiting_times--;
+
+            if (this._waiting_times === 0) {
+                let top = this._render_queue.dequeue();
+
+                let linesCount = this._model.linesCount;
+                for (let i = top; i <= linesCount; i++) {
+                    this.renderLineImd(i);
+                }
+                this.initRenderQueue();
+            }
+        }, DocumentView.LazyRenderTime);
     }
 
     // delete line from [begin] to [end - 1]

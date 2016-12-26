@@ -83,8 +83,6 @@ export class LineView extends DomHelper.AppendableDomWrapper implements IDisposa
 
     public static readonly DefaultLeftMarginWidth = 45;
 
-    private _line_renderer: LineRenderer;
-
     private _line_index: number;
     private _leftMargin: LeftMargin;
     private _content: string;
@@ -92,7 +90,7 @@ export class LineView extends DomHelper.AppendableDomWrapper implements IDisposa
     private _rendered_lineNumber: number = 0;
     private _line_content_dom: HTMLElement = null;
 
-    constructor(index: number, lineRenderer: LineRenderer) {
+    constructor(index: number) {
         super("p", "mde-line");
 
         this._leftMargin = new LeftMargin(LineView.DefaultLeftMarginWidth);
@@ -108,16 +106,11 @@ export class LineView extends DomHelper.AppendableDomWrapper implements IDisposa
         this._dom.style.cursor = "text";
 
         this._line_index = index;
-        this._line_renderer = lineRenderer;
-
-        this._line_renderer.register(index, (tokens: MarkdownToken[]) => {
-            this.renderMethod(tokens);
-        });
 
         this.renderLineNumber(index);
     }
 
-    private renderMethod(tokens: MarkdownToken[]) {
+    renderTokens(tokens: MarkdownToken[]) {
 
         this._words = [];
 
@@ -136,15 +129,7 @@ export class LineView extends DomHelper.AppendableDomWrapper implements IDisposa
         this._dom.appendChild(this._line_content_dom);
     }
 
-    private generateContentDom() : HTMLElement {
-        let elem = DomHelper.Generic.elem<HTMLSpanElement>("span", "mde-line-content");
-        elem.style.marginLeft = this._leftMargin.width + "px";
-        elem.style.width = "auto";
-        elem.style.display = "block";
-        return elem;
-    }
-
-    private renderLineNumber(num: number) {
+    renderLineNumber(num: number) {
         if (num !== this._rendered_lineNumber) {
             let span = DomHelper.Generic.elem<HTMLSpanElement>("span", 
                 "mde-line-number unselectable");
@@ -162,7 +147,15 @@ export class LineView extends DomHelper.AppendableDomWrapper implements IDisposa
         }
     }
 
-    render(content: string) {
+    private generateContentDom() : HTMLElement {
+        let elem = DomHelper.Generic.elem<HTMLSpanElement>("span", "mde-line-content");
+        elem.style.marginLeft = this._leftMargin.width + "px";
+        elem.style.width = "auto";
+        elem.style.display = "block";
+        return elem;
+    }
+
+    renderPlainText(content: string) {
 
         this._words = [];
         if (content.length > 0 && content.charAt(content.length - 1) == '\n')
@@ -206,7 +199,6 @@ export class LineView extends DomHelper.AppendableDomWrapper implements IDisposa
 
     dispose() {
         this._leftMargin.dispose();
-        this._line_renderer.ungister(this._line_index);
     }
 
     get leftMargin() {

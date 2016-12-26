@@ -12,6 +12,12 @@ body {
     user-select: none;
 }
 
+.mde-inputer {
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+}
+
 .mde-line-leftMargin {
     cursor: default;
     text-align: right;
@@ -23,6 +29,11 @@ body {
 
 .mde-document {
     z-index: -1;
+    overflow-y: scroll;
+    overflow-x: auto;
+    word-break: normal;
+    word-wrap: break-word;
+    white-space: pre-wrap;
 }
 
 .mde-document-container {
@@ -31,40 +42,23 @@ body {
 
 .mde-cursor {
     z-index: 0;
-    background: grey;
 }
 
 .mde-cursor.major {
     z-index: 0;
-    background: black;
 }
 
 .mde-word-h1 {
     font-size: 20px;
     font-weight: bold;
-    color: rebeccapurple;
 }
 
 .mde-word-h2 {
     font-weight: bold;
-    color: darkblue;
 }
 
 .mde-word-h3 {
     font-weight: bold;
-    color: darkorange;
-}
-
-.mde-word-pre {
-    color: grey;
-}
-
-.mde-word-htmlAttribute {
-    color: rebeccapurple;
-}
-
-.mde-word-htmlString {
-    color: #753D15;
 }
 
 .mde-word-bold {
@@ -81,7 +75,6 @@ body {
 
 .mde-word-listItemStart {
     font-weight: bold;
-    color: mediumvioletred;
 }
 
 .mde-word-blockquoteStart {
@@ -96,16 +89,12 @@ body {
 
 .mde-splitter {
     z-index: 10;
-    background: black;
     cursor: col-resize;
 }
 
 .mde-toolbar {
     background: grey;
-}
-
-.mde-scrollbar {
-    background: lightgray;
+    z-index: 5;
 }
 
 .mde-scrollbar-train {
@@ -168,12 +157,4 @@ body {
 
 .mde-left-panel-nav {
     background: grey;
-}
-
-.mde-document-selection-atom {
-    background: lightsteelblue;
-}
-
-.mde-document-selection-atom.major {
-    background: deepskyblue;
 }

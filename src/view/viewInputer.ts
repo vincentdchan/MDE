@@ -12,10 +12,6 @@ DomHelper.Generic.AbsoluteElement<HTMLTextAreaElement> implements IDisposable, I
     constructor() {
         super("textarea", "mde-inputer");
 
-        this._dom.style.height = "0.1px";
-        this._dom.style.width = "0.1px";
-        this._dom.style.opacity = "0.3";
-
         this._dom.addEventListener("focus", (evt: FocusEvent) => {
             this._focused = true;
         })

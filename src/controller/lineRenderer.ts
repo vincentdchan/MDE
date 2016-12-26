@@ -38,18 +38,23 @@ export class LineRenderer {
     private _tokenizer: MarkdownTokenizer;
     private _entries: RenderEntry[];
     private _render_queue: Collection.PriorityQueue<number>;
+    private _waiting_times = 0;
 
     constructor() {
         this._tokenizer = new MarkdownTokenizer();
-        this._render_queue = new Collection.PriorityQueue<number>((a: number, b: number) => {
-            return a - b;
-        });
+        this.initQueue();
 
         this._entries = [{
             renderState: RenderState.Null,
             tokenizeState: this._tokenizer.startState(),
             textToColor: new Collection.Queue<string>(),
         }]
+    }
+
+    private initQueue() {
+        this._render_queue = new Collection.PriorityQueue<number>((a: number, b: number) => {
+            return a - b;
+        })
     }
 
     renderLineImmdediately(num: number, content: string) {
@@ -79,6 +84,21 @@ export class LineRenderer {
                 throw new Error("Render method not found. Line:" + num);
         } 
         else throw new Error("Previous doesn't exisit. Line:" + num);
+    }
+
+    addRenderQueue(num: number) {
+        this._waiting_times++;
+
+        setTimeout(() => {
+            this._waiting_times--;
+
+            if (this._waiting_times === 0) {
+                let from = this._render_queue.dequeue();
+
+                this.initQueue();
+            }
+
+        }, 200);
     }
 
     renderLineLazily(num: number, content: string) {
@@ -138,37 +158,6 @@ export class LineRenderer {
 
         }
     }
-
-/*
-    private checkRenderQueue() {
-        if (!this._render_queue.isEmpty()) {
-            let topNumber = this._render_queue.peek();
-            if (this._entries[topNumber - 1] && this._entries[topNumber - 1].tokenizeState) {
-                let copyState = this._tokenizer.copyState(this._entries[topNumber - 1].tokenizeState);
-                if (!this._entries[topNumber].textToColor) throw new Error("fuck")
-
-                Host.asyncTokenizeLine(copyState, this._entries[topNumber].textToColor, 
-                (tokens: MarkdownToken[], tokenizeState: MarkdownTokenizeState) => {
-
-                    /// check if the top of the heap is still this number
-                    if (topNumber === this._render_queue.peek()) {
-                        this._entries[topNumber].tokenizeState = tokenizeState;
-                        this._entries[topNumber].renderMethod(tokens);
-                        this._entries[topNumber].renderState = RenderState.Colored;
-                        // this._entries[topNumber].textToColor = null;
-
-                        this._render_queue.dequeue();
-                        this.checkRenderQueue();
-                    }
-
-                })
-
-            } else {
-                throw new Error("previous state not exisit.");
-            }
-        }
-    }
-    */
 
     private renderLine(stream: LineStream, state: MarkdownTokenizeState) : MarkdownToken[] {
         let tokens : MarkdownToken[] = [];
