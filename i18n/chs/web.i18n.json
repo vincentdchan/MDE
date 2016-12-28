@@ -1,5 +1,11 @@
 {
-    "window.fileNotSaved": "文件尚未保存，是否确认关闭？",
+    "yes": "是",
+    "no": "否",
+    "save": "保存",
+    "notSave": "不保存",
+    "cancel": "取消",
+    "window.fileNotSaved": "文件 {0} 尚未保存，是否保存？",
+    "window.name": "墨德",
 
     "toolbar.bold": "加粗",
     "toolbar.italic": "斜体",

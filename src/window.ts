@@ -1,4 +1,4 @@
-import {app, BrowserWindow} from "electron"
+import {app, BrowserWindow, dialog} from "electron"
 import * as Server from "./server"
 
 let win;

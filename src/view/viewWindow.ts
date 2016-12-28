@@ -82,14 +82,6 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
 
         window.addEventListener("mouseup", (e: MouseEvent) => { this.handleWindowMouseUp(e) }, true);
 
-        window.onbeforeunload = (e: Event) => {
-            if (this._buffer_state.isModified) {
-                let result = window.confirm($.getString("window.fileNotSaved"));
-
-                if (!result) e.returnValue = false;
-            }
-        };
-
         setTimeout(() => {
             let tmp = this._dom.clientWidth / 2;
             this._editor.width = tmp;

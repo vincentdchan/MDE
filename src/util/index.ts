@@ -13,6 +13,14 @@ export interface IDisposable {
     dispose(): any;
 }
 
+export function StringFormat(src: string, ...args: string[]) : string {
+    for(var i=0; i < args.length; i++) {
+        let re = new RegExp('\\{' + (i) + '\\}','gm');
+        src = src.replace(re, args[i]);
+    }
+    return src;
+}
+
 export interface Vector2 {
     x: number;
     y: number;

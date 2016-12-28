@@ -1,7 +1,7 @@
 import {TextModel, LineModel, TextEdit, TextEditType, 
      Position, BufferState} from "../model"
 import {EditorView, Coordinate, WindowView} from "../view"
-import {IDisposable, Host, KeyCode} from "../util"
+import {IDisposable, Host, KeyCode, i18n as $, StringFormat} from "../util"
 import {remote, ipcRenderer} from "electron"
 import {MainMenuView, MenuClickEvent, MenuButtonType} from "../view/menu"
 const {Menu, MenuItem} = remote
@@ -39,13 +39,33 @@ export class MDE implements IDisposable {
         this._view = new WindowView();
         this._view.bind(this._buffer_state);
 
+        window.onbeforeunload = (e: Event) => {
+            if (this._buffer_state.isModified) {
+
+                let result = this.confirmSaveFile();
+                
+                switch(result) {
+                    case 0:
+                        this.handleSyncSaveFile(SaveFilter);
+                        break;
+                    case 1:
+                        break;
+                    case 2:
+                        e.returnValue = false;
+                        break;
+                }
+                // let result = window.confirm(StringFormat($.getString("window.fileNotSaved"), this._buffer_state.filename));
+            }
+        };
+
         this._view.on("keydown", (e: KeyboardEvent) => {
 
             if (e.ctrlKey) {
                 switch(e.keyCode) {
                     case KeyCode.$S:
                         try {
-                            this.handleSaveFile(SaveFilter);
+                            if (this._buffer_state.isModified)
+                                this.handleSaveFile(SaveFilter);
                         } catch (e) {
                             console.log(e);
                         }
@@ -116,9 +136,37 @@ export class MDE implements IDisposable {
         }
     }
 
-    private handleNewFile() {
-        let newBuffer = new BufferState();
-        this.reloadBuffer(newBuffer);
+    private async handleNewFile() {
+        if (this._buffer_state.isModified) {
+            let id = await this.confirmSaveFile();
+
+            switch(id) {
+                case 0:
+                    await this.handleSaveFile(SaveFilter);
+                case 1:
+                    let newBuffer = new BufferState();
+                    this.reloadBuffer(newBuffer);
+                    break;
+                case 2:
+                    break;
+            }
+        }
+    }
+
+    ///
+    /// 0 for save file
+    /// 1 for not save file
+    /// 2 for cancel
+    ///
+    private confirmSaveFile() : number {
+
+        let id = remote.dialog.showMessageBox({
+            buttons: [$.getString("save"), $.getString("notSave"), $.getString("cancel")],
+            title: $.getString("window.name"),
+            message: StringFormat($.getString("window.fileNotSaved"), this._buffer_state.filename),
+        });
+
+        return id;
     }
 
     private async handleOpenFile() {
@@ -160,6 +208,28 @@ export class MDE implements IDisposable {
         }
 
         let result = await this._buffer_state.writeContentToFile(
+            this._buffer_state.absolutePath
+        );
+
+    }
+
+    private handleSyncSaveFile(_saveFilter) {
+
+        let path: string;
+        if (!this._buffer_state.absolutePath) {
+            let paths = remote.dialog.showSaveDialog({
+                title: "Save",
+                filters: _saveFilter,
+            });
+
+            if (paths) {
+                this._buffer_state.absolutePath = paths;
+            } else {
+                throw new Error("Illegal path.");
+            }
+        }
+
+        let result = this._buffer_state.syncWriteContentToFile(
             this._buffer_state.absolutePath
         );
 

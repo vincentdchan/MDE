@@ -2,6 +2,7 @@ import {TextModel, TextEditEvent} from "./textModel"
 import {EventEmitter} from "events"
 import {Host, IDisposable} from "../util"
 import * as Path from "path"
+import * as fs from "fs"
 
 export class BufferAbsPathChanged {
 
@@ -104,6 +105,23 @@ export class BufferState extends EventEmitter implements IDisposable {
                 this.emit("bufferStateChanged", evt);
                 return true;
             }
+        }
+        return false;
+    }
+
+    syncWriteContentToFile(path: string, encoding?: string) : boolean {
+        encoding = encoding? encoding : "utf8";
+        if (this._text_model) {
+            let content = this._text_model.reportAll();
+
+            fs.writeFileSync(path, content, {
+                encoding: encoding
+            })
+
+            this._is_modified = false;
+            let evt = new BufferStateChanged(false);
+            this.emit("bufferStateChanged", evt);
+            return true;
         }
         return false;
     }

@@ -22,6 +22,12 @@ export function initializeBrowserWindowService(bw: Electron.BrowserWindow) {
         bw.reload();
     });
 
+    Electron.ipcMain.on("window-onClose", (event: Electron.IpcMainEvent) => {
+        bw.on("close", (e: Event) => {
+
+        })
+    })
+
 }
 
 export function initializeDialogService() {

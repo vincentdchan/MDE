@@ -1,5 +1,11 @@
 {
-    "window.fileNotSaved": "File is not saved, are you sure to close it?",
+    "yes": "Yes",
+    "no": "No",
+    "save": "Save",
+    "notSave": "Not Save",
+    "cancel": "Cancel",
+    "window.fileNotSaved": "File {0} is not saved, save it?",
+    "window.name": "MDE",
 
     "toolbar.bold": "Bold",
     "toolbar.italic": "Italic",
