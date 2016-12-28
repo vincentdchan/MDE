@@ -11,5 +11,6 @@
 
     "contextmenu.copy": "Copy",
     "contextmenu.cut": "Cut",
-    "contextmenu.paste": "Paste"
+    "contextmenu.paste": "Paste",
+    "contextmenu.selectAll": "Select All"
 }

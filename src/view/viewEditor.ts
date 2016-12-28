@@ -1,4 +1,5 @@
 import {IDisposable, DomHelper, i18n as $} from "../util"
+import {last} from "../util/fn"
 import {Coordinate} from "."
 import {DocumentView} from "./viewDocument"
 import {ScrollHeightChangedEvent} from "./events"
@@ -7,47 +8,9 @@ import {CursorView} from "./viewCursor"
 import {InputerView} from "./viewInputer"
 import {ToolbarView} from "./viewToolbar"
 import {TextModel, TextEdit, TextEditType, 
-    TextEditApplier, Position} from "../model"
+    TextEditApplier, Position, Snippet, PositionUtil} from "../model"
 import {ButtonOption} from "."
 
-function lastCharactor(str: string) {
-    return str[str.length - 1];
-}
-
-function clonePosition(pos: Position) : Position {
-    return {
-        line: pos.line,
-        offset: pos.offset
-    };
-}
-
-let toolbarButtons : ButtonOption[] = [
-    {
-        name: "bold",
-        text: $.getString("toolbar.bold"),
-        icon: "fa fa-bold",
-    },
-    {
-        name: "italic",
-        text: $.getString("toolbar.italic"),
-        icon: "fa fa-italic",
-    }, 
-    {
-        name: "underline",
-        text: $.getString("toolbar.underline"),
-        icon: "fa fa-underline",
-    },
-    {
-        name: "orderedlist",
-        text: $.getString("toolbar.orderedList"),
-        icon: "fa fa-list-ol",
-    }, 
-    {
-        name: "unorderedlist",
-        text: $.getString("toolbar.unorderedList"),
-        icon: "fa fa-list-ul",
-    }
-]
 
 export class TooglePreviewEvent extends Event {
 
@@ -76,6 +39,7 @@ export class EditorView extends DomHelper.FixedElement
 
     public static readonly DefaultLineMarginWidth = 40;
     public static readonly MinWidth = 100;
+    private static readonly SnippetRegex = /\$\{\d+:\w+\}/g;
 
     private _model: TextModel = null;
 
@@ -86,7 +50,7 @@ export class EditorView extends DomHelper.FixedElement
     constructor() {
         super("div", "mde-editor");
 
-        this._toolbar = new ToolbarView(toolbarButtons, generateRightButtons(this));
+        this._toolbar = new ToolbarView(this.generateToolbarMenus(), generateRightButtons(this));
         this._toolbar.top = 0;
 
         this._document = new DocumentView();
@@ -145,6 +109,132 @@ export class EditorView extends DomHelper.FixedElement
         this._model = null;
     }
 
+    private snippetBold() {
+        if (this._document.selectionManager.length > 0 ) {
+            let majorSelection = this._document.selectionManager.selectionAt(0);
+            let pos = PositionUtil.clonePosition(majorSelection.beginPosition);
+
+            if (majorSelection.collapsed) {
+                let textEdit = new TextEdit(TextEditType.InsertText, majorSelection.beginPosition, "****");
+                this._document.applyTextEdit(textEdit);
+            } else {
+                let textEdit = new TextEdit(TextEditType.ReplaceText, {
+                    begin: majorSelection.beginPosition,
+                    end: majorSelection.endPosition
+                }, "****");
+                this._document.applyTextEdit(textEdit);
+            }
+
+            setTimeout(() => {
+                let tmp = PositionUtil.clonePosition(pos);
+                tmp.offset += 2;
+                majorSelection.beginPosition = majorSelection.endPosition = tmp;
+                majorSelection.repaint();
+                majorSelection.focus();
+            }, 25);
+        }
+    }
+
+    private snippetItalic() {
+        if (this._document.selectionManager.length > 0 ) {
+            let majorSelection = this._document.selectionManager.selectionAt(0);
+            let pos = PositionUtil.clonePosition(majorSelection.beginPosition);
+
+            if (majorSelection.collapsed) {
+                let textEdit = new TextEdit(TextEditType.InsertText, majorSelection.beginPosition, "**");
+                this._document.applyTextEdit(textEdit);
+            } else {
+                let textEdit = new TextEdit(TextEditType.ReplaceText, {
+                    begin: majorSelection.beginPosition,
+                    end: majorSelection.endPosition
+                }, "**");
+                this._document.applyTextEdit(textEdit);
+            }
+
+            setTimeout(() => {
+                let tmp = PositionUtil.clonePosition(pos);
+                tmp.offset += 1;
+                majorSelection.beginPosition = majorSelection.endPosition = tmp;
+                majorSelection.repaint();
+                majorSelection.focus();
+            }, 25);
+        }
+    }
+
+    private snippetUnderline() {
+        if (this._document.selectionManager.length > 0 ) {
+            let majorSelection = this._document.selectionManager.selectionAt(0);
+            let pos = PositionUtil.clonePosition(majorSelection.beginPosition);
+
+            if (majorSelection.collapsed) {
+                let textEdit = new TextEdit(TextEditType.InsertText, majorSelection.beginPosition, "____");
+                this._document.applyTextEdit(textEdit);
+            } else {
+                let textEdit = new TextEdit(TextEditType.ReplaceText, {
+                    begin: majorSelection.beginPosition,
+                    end: majorSelection.endPosition
+                }, "____");
+                this._document.applyTextEdit(textEdit);
+            }
+
+            setTimeout(() => {
+                let tmp = PositionUtil.clonePosition(pos);
+                tmp.offset += 2;
+                majorSelection.beginPosition = majorSelection.endPosition = tmp;
+                majorSelection.repaint();
+                majorSelection.focus();
+            }, 25);
+        }
+    }
+
+    private snippetOrderedList() {
+        if (this._document.selectionManager.length > 0 ) {
+            let majorSelection = this._document.selectionManager.selectionAt(0);
+            let pos: Position;
+
+            if (majorSelection.collapsed) {
+                let textEdit = new TextEdit(TextEditType.InsertText, majorSelection.beginPosition, "\n1. ");
+                pos = this._document.applyTextEdit(textEdit);
+            } else {
+                let textEdit = new TextEdit(TextEditType.ReplaceText, {
+                    begin: majorSelection.beginPosition,
+                    end: majorSelection.endPosition
+                }, "\n1. ");
+                pos = this._document.applyTextEdit(textEdit);
+            }
+
+            setTimeout(() => {
+                majorSelection.beginPosition = majorSelection.endPosition = pos;
+                majorSelection.repaint();
+                majorSelection.focus();
+            }, 25);
+        }
+    }
+
+    private snippetUnorderedList() {
+        if (this._document.selectionManager.length > 0 ) {
+            let majorSelection = this._document.selectionManager.selectionAt(0);
+            let pos: Position;
+
+            if (majorSelection.collapsed) {
+                let textEdit = new TextEdit(TextEditType.InsertText, majorSelection.beginPosition, "\n- ");
+                pos = this._document.applyTextEdit(textEdit);
+            } else {
+                let textEdit = new TextEdit(TextEditType.ReplaceText, {
+                    begin: majorSelection.beginPosition,
+                    end: majorSelection.endPosition
+                }, "\n- ");
+                pos = this._document.applyTextEdit(textEdit);
+            }
+
+            setTimeout(() => {
+                majorSelection.beginPosition = majorSelection.endPosition = pos;
+                majorSelection.repaint();
+                majorSelection.focus();
+            }, 25);
+        }
+    }
+
     private handleScrollBarTrainMove(evt: TrainMoveEvent) {
         let tmp = this._document.element().scrollHeight - this._document.element().clientHeight;
         this._document.scrollTop = tmp * evt.percentage;
@@ -170,6 +260,51 @@ export class EditorView extends DomHelper.FixedElement
     private handleDocumentScrollHeightChanged(evt: ScrollHeightChangedEvent) {
         this._scrollbar.trainHeightPercentage = this.getScrollTrainHeightPercentage();
         this._scrollbar.trainPositionPercentage = this.getScrollPercentage();
+    }
+
+    private generateToolbarMenus() : ButtonOption[] {
+        return [
+            {
+                name: "bold",
+                text: $.getString("toolbar.bold"),
+                icon: "fa fa-bold",
+                onClick: (e: MouseEvent) => {
+                    this.snippetBold();
+                }
+            },
+            {
+                name: "italic",
+                text: $.getString("toolbar.italic"),
+                icon: "fa fa-italic",
+                onClick: (e: MouseEvent) => {
+                    this.snippetItalic();
+                }
+            }, 
+            {
+                name: "underline",
+                text: $.getString("toolbar.underline"),
+                icon: "fa fa-underline",
+                onClick: (e: MouseEvent) => {
+                    this.snippetUnderline();
+                }
+            },
+            {
+                name: "orderedlist",
+                text: $.getString("toolbar.orderedList"),
+                icon: "fa fa-list-ol",
+                onClick: (e: MouseEvent) => {
+                    this.snippetOrderedList();
+                }
+            }, 
+            {
+                name: "unorderedlist",
+                text: $.getString("toolbar.unorderedList"),
+                icon: "fa fa-list-ul",
+                onClick: (e: MouseEvent) => {
+                    this.snippetUnorderedList();
+                }
+            }
+        ];
     }
 
     get documentView() : DocumentView {

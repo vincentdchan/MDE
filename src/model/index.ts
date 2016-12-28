@@ -3,6 +3,7 @@ export {LineModel} from "./lineModel"
 export {LineStream, IStream} from "./lineStream"
 export {TextEdit, TextEditType, TextEditApplier} from "./textEdit"
 export {BufferState, BufferStateChanged, BufferAbsPathChanged} from "./bufferState"
+export {Snippet} from "./snippet"
 
 export interface Position {
     line : number;

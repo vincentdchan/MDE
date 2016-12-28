@@ -3,10 +3,12 @@ import {EditorView, TooglePreviewEvent} from "./viewEditor"
 import {SplitterView} from "./viewSplitter"
 import {PreviewView} from "./viewPreview"
 import {TrainMoveEvent} from "./viewScrollbar"
-import {TextModel, BufferState, BufferStateChanged, BufferAbsPathChanged} from "../model"
+import {TextModel, BufferState, BufferStateChanged, BufferAbsPathChanged, Snippet} from "../model"
 import * as Electron from "electron"
 import {remote} from "electron"
 import * as os from "os"
+import * as fs from "fs";
+import * as path from "path";
 
 export class WindowView extends DomHelper.AppendableDomWrapper implements IDisposable {
 
@@ -47,6 +49,12 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
 
         window.addEventListener("resize", this._resize_handler);
 
+        // ============================================
+        // let defaultSnippet = path.join(__dirname, "../../snippets/", "default.json");
+
+        // let snippetMapper : Snippet.ISnippetMap = JSON.parse(fs.readFileSync(defaultSnippet, "utf8"));
+        // this._editor = new EditorView(snippetMapper);
+        // ============================================
         this._editor = new EditorView();
         this._editor.appendTo(this._dom);
         this._editor.on("tooglePreview", (e: TooglePreviewEvent) => {

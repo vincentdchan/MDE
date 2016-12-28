@@ -188,12 +188,16 @@ export class MarkdownTokenizer implements ITokenizer<MarkdownTokenizeState, Mark
                 stream.skipToEnd();
             return MarkdownTokenType.Italic;
         } else if (state.inPre) {
-            stream.skipTo("`");
-            if (stream.match(/^`+/, true)) {
-                state.inPre = false;
-                return MarkdownTokenType.Pre;
+            while (!stream.eol()) {
+                if (stream.match(/^`+/, true)) {
+                    state.inPre = false;
+                    return MarkdownTokenType.Pre;
+                } else if (stream.match(/^"("|(\\"|[^"])*")/, true) ||
+                    stream.match(/^'('|(\\'|[^'])*')/, true)) {
+                    // string
+                }
+                stream.next();
             }
-            stream.skipToEnd();
             return MarkdownTokenType.Pre;
         } else {
             if (stream.match(/^(\*\*|__)/, true)) {

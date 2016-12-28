@@ -1,0 +1,36 @@
+{
+    "bold": {
+        "prefix": "",
+        "body": [
+            "**${1:text}**"
+        ],
+        "description": "Bold text"
+    },
+    "italic": {
+        "prefix": "",
+        "body": [
+            "*${1:text}**"
+        ],
+        "description": "Itaitc text"
+    },
+    "unorderedList": {
+        "prefix": "",
+        "body": [
+            "",
+            "- ${1:text1}",
+            "- ${2:text2}",
+            "- ${3:text3}"
+        ],
+        "description": "Unordered List"
+    },
+    "orderedlist": {
+        "prefix": "",
+        "body": [
+            "",
+            "1. ${1:text1}",
+            "2. ${2:text2}",
+            "3. ${3:text3}"
+        ],
+        "description": "Ordered List"
+    }
+}

@@ -1,7 +1,7 @@
 import {LineView} from "./viewLine"
 import {IVirtualElement, Coordinate} from "."
 import {TextModel, LineModel, Position, PositionUtil, 
-    TextEdit, TextEditType, LineStream, IStream} from "../model"
+    TextEdit, TextEditType, LineStream, IStream, TextEditApplier} from "../model"
 import {HistoryHandler} from "../controller"
 import {IDisposable, DomHelper, KeyCode, i18n as $, MarkdownTokenizer, 
     MarkdownTokenizeState, MarkdownTokenType} from "../util"
@@ -64,7 +64,7 @@ class NotInRangeError extends Error {
 ///
 /// CursorMove
 ///
-export class DocumentView extends DomHelper.AbsoluteElement implements IDisposable {
+export class DocumentView extends DomHelper.AbsoluteElement implements IDisposable, TextEditApplier {
 
     public static readonly LazyRenderTime = 420;
     public static readonly CursorBlinkingInternal = 500;
@@ -189,6 +189,14 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         this._model = null;
     }
 
+    applyTextEdit(textEdit: TextEdit): Position {
+        let result = this._model.applyCancellableTextEdit(textEdit);
+        this._history_handler.pushUndo(result.reverse);
+
+        this.render(this.calculateRenderLines(textEdit));
+        return result.pos;
+    }
+
     private bindingEvent() {
         window.addEventListener("mousemove", this._window_mousemove_handler, true);
         window.addEventListener("mouseup", this._window_mouseup_handler, true);
@@ -214,6 +222,14 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
                 label: $.getString("contextmenu.paste"),
                 accelerator: "Control+V",
                 click: () => { this.pasteToDocument(); }
+            },
+            {
+                type: "separator",
+            },
+            {
+                label: $.getString("contextmenu.selectAll"),
+                accelerator: "Control+A",
+                click: () => { this.selectAll(); }
             },
         ]
 
@@ -346,18 +362,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
                     this.undo();
                     break;
                 case KeyCode.$A:
-                    let majorSelection = this._selection_manger.selectionAt(0);
-
-                    majorSelection.beginPosition = {
-                        line: 1,
-                        offset: 0,
-                    };
-                    majorSelection.endPosition = {
-                        line: this._model.linesCount,
-                        offset: this._model.lineAt(this._model.linesCount).length,
-                    }
-
-                    majorSelection.repaint();
+                    this.selectAll();
                     break;
             }
 
@@ -640,6 +645,25 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         }
     }
 
+    selectAll(): boolean {
+        if (this._selection_manger.length > 0) {
+            let majorSelection = this._selection_manger.selectionAt(0);
+
+            majorSelection.beginPosition = {
+                line: 1,
+                offset: 0,
+            };
+            majorSelection.endPosition = {
+                line: this._model.linesCount,
+                offset: this._model.lineAt(this._model.linesCount).length,
+            }
+
+            majorSelection.repaint();
+            return true;
+        }
+        return false;
+    }
+
     redo() : boolean {
         let textEdit = this._history_handler.popRedo();
         let majorSelection = this._selection_manger.selectionAt(0);
@@ -819,18 +843,20 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
     private handleSelectionCompositionUpdate(evt: Event) {
         if (this._selection_manger.length > 0) {
             let majorSelection = this._selection_manger.selectionAt(0);
+            
+            let compositingText : string = (<any>evt).data;
             if (!majorSelection.collapsed)
                 this._compositing_position = PositionUtil.clonePosition(majorSelection.beginPosition);
-
+            
             let textEdit: TextEdit;
             if (PositionUtil.equalPostion(this._compositing_position, majorSelection.endPosition)) {
                 textEdit = new TextEdit(TextEditType.InsertText, this._compositing_position, 
-                    majorSelection.inputerContent);
+                    compositingText);
             } else {
                 textEdit = new TextEdit(TextEditType.ReplaceText, {
                     begin: PositionUtil.clonePosition(this._compositing_position),
                     end: PositionUtil.clonePosition(majorSelection.endPosition),
-                }, majorSelection.inputerContent);
+                }, compositingText);
             }
 
             let result = this._model.applyTextEdit(textEdit);
@@ -1091,6 +1117,10 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         window.removeEventListener("mouseup", this._window_mouseup_handler, true);
         window.removeEventListener("keydown", this._window_keydown_handler, true);
         window.removeEventListener("keyup", this._window_keyup_handler, true);
+    }
+
+    get selectionManager() {
+        return this._selection_manger;
     }
 
     get scrollTop() {
