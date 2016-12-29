@@ -1,7 +1,7 @@
 "use strict";
-const StringBuffer_1 = require("../util/StringBuffer");
+const stringBuffer_1 = require("../util/stringBuffer");
 const text_1 = require("../util/text");
-const LineModel_1 = require("./LineModel");
+const lineModel_1 = require("./lineModel");
 const events_1 = require("events");
 const _1 = require(".");
 const fn_1 = require("../util/fn");
@@ -22,11 +22,11 @@ class TextModel extends events_1.EventEmitter {
         super();
         this._lines = new Array();
         let lc = 1;
-        var buf = new StringBuffer_1.StringBuffer();
+        var buf = new stringBuffer_1.StringBuffer();
         var lines = text_1.parseTextToLines(_string);
         this._lines.length = lc;
         for (let i = 0; i < lines.length; i++) {
-            var lm = new LineModel_1.LineModel(lc, lines[i]);
+            var lm = new lineModel_1.LineModel(lc, lines[i]);
             this._lines[lc++] = lm;
         }
     }
@@ -170,12 +170,12 @@ class TextModel extends events_1.EventEmitter {
         else {
             let prefix = this._lines[pos.line].text.slice(0, pos.offset);
             let postfix = this._lines[pos.line].text.slice(pos.offset);
-            this._lines[pos.line] = new LineModel_1.LineModel(pos.line, prefix + linesHead);
+            this._lines[pos.line] = new lineModel_1.LineModel(pos.line, prefix + linesHead);
             if (pos.line === this.linesCount) {
                 let linesCount = this.linesCount + 1;
                 let lineModels = [];
                 linesTail.forEach((lineStr) => {
-                    lineModels.push(new LineModel_1.LineModel(linesCount++, lineStr));
+                    lineModels.push(new lineModel_1.LineModel(linesCount++, lineStr));
                 });
                 this._lines = this._lines.concat(lineModels);
                 let lastLineModel = this._lines[linesCount - 1];
@@ -187,7 +187,7 @@ class TextModel extends events_1.EventEmitter {
                 let lineModels = [];
                 let lineCounter = pos.line + 1;
                 linesTail.forEach((lineStr) => {
-                    lineModels.push(new LineModel_1.LineModel(lineCounter++, lineStr));
+                    lineModels.push(new lineModel_1.LineModel(lineCounter++, lineStr));
                 });
                 this._lines = suffixLines.concat(lineModels).concat(postfixLines);
                 let insertLineModel = this._lines[lineCounter - 1];
@@ -211,7 +211,7 @@ class TextModel extends events_1.EventEmitter {
         else if (_range.begin.line < _range.end.line) {
             let remain = this._lines[_range.end.line].text.slice(_range.end.offset);
             let oldLineModel = this._lines[_range.begin.line];
-            this._lines[_range.begin.line] = new LineModel_1.LineModel(_range.begin.line, oldLineModel.text.slice(0, _range.begin.offset) + remain);
+            this._lines[_range.begin.line] = new lineModel_1.LineModel(_range.begin.line, oldLineModel.text.slice(0, _range.begin.offset) + remain);
             oldLineModel = null;
             let suffix = this._lines.slice(0, _range.begin.line + 1);
             let postffix = this._lines.slice(_range.end.line + 1);
@@ -238,14 +238,14 @@ class TextModel extends events_1.EventEmitter {
         return this._lines[pos.line].charAt(pos.offset);
     }
     reportAll() {
-        var buf = new StringBuffer_1.StringBuffer();
+        var buf = new stringBuffer_1.StringBuffer();
         for (let i = 1; i < this._lines.length; i++) {
             buf.push(this._lines[i].report());
         }
         return buf.getStr();
     }
     report(_range) {
-        var buf = new StringBuffer_1.StringBuffer();
+        var buf = new stringBuffer_1.StringBuffer();
         if (_range.begin.line === _range.end.line) {
             buf.push(this._lines[_range.begin.line].text.slice(_range.begin.offset, _range.end.offset));
         }
