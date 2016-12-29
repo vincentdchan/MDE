@@ -13,6 +13,19 @@ const SaveFilter = [
     { name: "All Files", extensions: ["*"] }
 ];
 
+let _aboutMsg : string;
+
+function getAboutMessageString() : string {
+    if (_aboutMsg === undefined) {
+        _aboutMsg = [
+            StringFormat($.getString("about.version"), "0.0.1 Alpha"),
+            StringFormat($.getString("about.releaseDate"), "2017/1/1"),
+            StringFormat($.getString("about.nodeVersion"), "6.5"),
+        ].join("\n\r");
+    }
+    return _aboutMsg;
+}
+
 export class MDE implements IDisposable {
 
     private _buffers: TextModel[] = [];
@@ -133,7 +146,18 @@ export class MDE implements IDisposable {
             case MenuButtonType.Reload:
                 Host.reload();
                 break;
+            case MenuButtonType.About:
+                this.showAboutMessage();
+                break;
         }
+    }
+
+    private showAboutMessage() {
+        remote.dialog.showMessageBox(remote.getCurrentWindow(), {
+            type: "info",
+            message: getAboutMessageString(),
+            buttons: [$.getString("ok")],
+        });
     }
 
     private async handleNewFile() {
@@ -170,7 +194,19 @@ export class MDE implements IDisposable {
     }
 
     private async handleOpenFile() {
-        let filenames: string[] = await Host.showOpenDialog({
+        if (this._buffer_state && this._buffer_state.isModified) {
+            let result = this.confirmSaveFile();
+            switch(result) {
+                case 0:
+                    this.handleSyncSaveFile(SaveFilter);
+                    break;
+                case 1:
+                    break;
+                case 2:
+                    return;
+            }
+        }
+        let filenames: string[] = remote.dialog.showOpenDialog(remote.getCurrentWindow(), {
             title: "Open File",
             filters: [
                 { name: "Markdown", extensions: ["md"] },

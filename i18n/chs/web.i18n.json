@@ -1,4 +1,5 @@
 {
+    "ok": "OK",
     "yes": "是",
     "no": "否",
     "save": "保存",
@@ -18,5 +19,9 @@
     "contextmenu.copy": "复制",
     "contextmenu.cut": "剪切",
     "contextmenu.paste": "粘贴",
-    "contextmenu.selectAll": "全选"
+    "contextmenu.selectAll": "全选",
+
+    "about.version": "版本号:\t {0}",
+    "about.releaseDate": "发布时间:\t {0}",
+    "about.nodeVersion": "NodeJs版本:\t {0}"
 }

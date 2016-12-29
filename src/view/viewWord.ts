@@ -74,21 +74,13 @@ export class WordView {
     getCoordinate(offset: number) : Coordinate {
         if (offset > this.length)
             throw new Error("Index out of range. offset:" + offset);
-        if (offset === 0) {
-            let rect = this._dom.getBoundingClientRect();
-            return {
-                x: rect.left,
-                y: rect.top,
-            }
-        } else {
-            let domRange = document.createRange();
-            domRange.setStart(this._dom.firstChild, offset);
-            domRange.setEnd(this._dom.firstChild, offset);
-            let rect = domRange.getBoundingClientRect();
-            return {
-                x: rect.left,
-                y: rect.top,
-            }
+        let domRange = document.createRange();
+        domRange.setStart(this._dom.firstChild, offset);
+        domRange.setEnd(this._dom.firstChild, offset);
+        let rect = domRange.getBoundingClientRect();
+        return {
+            x: rect.left,
+            y: rect.top,
         }
     }
 

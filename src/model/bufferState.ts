@@ -69,7 +69,7 @@ export class BufferState extends EventEmitter implements IDisposable {
 
         if (!this._abs_path) {
             this.initTextModel("")
-            this._is_modified = true;
+            this._is_modified = false;
 
             setTimeout(() => {
                 let evt = new BufferStateChanged(true);

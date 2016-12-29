@@ -1,4 +1,5 @@
 {
+    "ok": "OK",
     "yes": "Yes",
     "no": "No",
     "save": "Save",
@@ -18,5 +19,9 @@
     "contextmenu.copy": "Copy",
     "contextmenu.cut": "Cut",
     "contextmenu.paste": "Paste",
-    "contextmenu.selectAll": "Select All"
+    "contextmenu.selectAll": "Select All",
+
+    "about.version": "Version:\t {0}",
+    "about.releaseDate": "Release Date:\t {0}",
+    "about.nodeVersion": "NodeJs Version:\t {0}"
 }
