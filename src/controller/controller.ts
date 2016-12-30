@@ -7,6 +7,10 @@ import {MainMenuView, MenuClickEvent, MenuButtonType} from "../view/menu"
 const {Menu, MenuItem} = remote
 import * as Electron from "electron"
 
+const config = {
+    "version": "0.0.1"
+}
+
 const SaveFilter = [
     { name: "Markdown", extensions: ["md"] },
     { name: "Text", extensions: ["txt"] },
@@ -18,7 +22,7 @@ let _aboutMsg : string;
 function getAboutMessageString() : string {
     if (_aboutMsg === undefined) {
         _aboutMsg = [
-            StringFormat($.getString("about.version"), "0.0.1 Alpha"),
+            StringFormat($.getString("about.version"), config["version"]),
             StringFormat($.getString("about.releaseDate"), "2017/1/1"),
             StringFormat($.getString("about.nodeVersion"), "6.5"),
         ].join("\n\r");
