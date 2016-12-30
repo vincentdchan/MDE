@@ -13,7 +13,7 @@ function createWindow() {
     
     win.loadURL("file://" + __dirname + "/../index.html");
     
-    // win.webContents.openDevTools();
+    win.webContents.openDevTools();
 
     global["appLocales"] = app.getLocale();
     Server.initializeLocalesWindowService(app.getLocale());
