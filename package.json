@@ -5,7 +5,8 @@
   "main": "build/window.js",
   "scripts": {
     "server": "http-server ./ -p8085",
-    "test": "node ./build/test/test.js"
+    "test": "node ./build/test/test.js",
+    "updateVersion": "node ./build/versionPatch.js"
   },
   "repository": {
     "type": "git",

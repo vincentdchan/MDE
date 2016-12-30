@@ -4,63 +4,89 @@ const versionRegex = /"version"\s*:\s*"(\d+.\d+.\d+)"/g;
 const versionReplaceRegex = /("version"\s*:\s*")\d+.\d+.\d+"/g;
 const numberRegex = /(\d+).(\d+).(\d+)/;
 
-export class VersionNotMatchError extends Error {
+export namespace VersionControl {
 
-    constructor(globalVersion, currentVersion) {
-        super(`VersionNotMatchError: {globalVersion: ${globalVersion}, currentVersion: ${currentVersion}}`);
+    export class VersionNotMatchError extends Error {
+
+        constructor(globalVersion, currentVersion) {
+            super(`VersionNotMatchError: {globalVersion: ${globalVersion}, currentVersion: ${currentVersion}}`);
+        }
+
     }
 
-}
+    export function parseVersionString(content: string): number[] {
+        let result : number[] = [];
+        let regexResult : RegExpExecArray = numberRegex.exec(content);
 
-function parseVersionString(content: string): number[] {
-    let result : number[] = [];
-    let regexResult : RegExpExecArray = numberRegex.exec(content);
+        if (regexResult === null) throw new Error(`Not valid version string: ${content}`);
 
-    if (regexResult === null) throw new Error(`Not valid version string: ${content}`);
+        result.push(parseInt(regexResult[1]));
+        result.push(parseInt(regexResult[2]));
+        result.push(parseInt(regexResult[3]));
+        return result;
+    }
 
-    result.push(parseInt(regexResult[1]));
-    result.push(parseInt(regexResult[2]));
-    result.push(parseInt(regexResult[3]));
-    return result;
-}
+    export function filterFiles(files: string[]) : {files: string[], currentVersion: string} {
+        let fileNeedToPatch: string[] = [];
+        let regexResult : RegExpExecArray;
+        let globalVersion: string;
 
-export function versionIncrease(files: string[], index: number) {
+        files.forEach((filename: string) => {
+            let content = fs.readFileSync(filename, "utf8");
 
-    let fileNeedToPatch: string[] = [];
-    let regexResult : RegExpExecArray;
-    let globalVersion: string;
+            regexResult = versionRegex.exec(content);
+            if (regexResult === null) return;
 
-    files.forEach((filename: string) => {
-        let content = fs.readFileSync(filename, "utf8");
+            do {
+                let version = regexResult[1];
 
-        regexResult = versionRegex.exec(content);
-        if (regexResult === null) return;
+                if (globalVersion === undefined) {
+                    globalVersion = version;
+                } else if (version != globalVersion) {
+                    throw new VersionNotMatchError(globalVersion, version);
+                }
+            } while ((regexResult = versionRegex.exec(content)) !== null)
+            fileNeedToPatch.push(filename);
+        })
 
-        do {
-            let version = regexResult[1];
+        return {
+            files: fileNeedToPatch,
+            currentVersion: globalVersion,
+        };
+    }
 
-            if (globalVersion === undefined) {
-                globalVersion = version;
-            } else if (version != globalVersion) {
-                throw new VersionNotMatchError(globalVersion, version);
-            }
-        } while ((regexResult = versionRegex.exec(content)) !== null)
-        fileNeedToPatch.push(filename);
-    })
+    export function updateVersionTo(files: string[], version: string) {
 
-    console.log(fileNeedToPatch);
-    let oldVer = parseVersionString(globalVersion);
-    oldVer[index]++;
-    let newVerStr = oldVer.join(".");
+        files.forEach((filename: string) => {
+            let content = fs.readFileSync(filename, "utf8");
 
-    fileNeedToPatch.forEach((filename: string) => {
-        let content = fs.readFileSync(filename, "utf8");
+            content = content.replace(versionReplaceRegex, "$1" + version + '"');
 
-        content = content.replace(versionReplaceRegex, "$1" + newVerStr + '"');
-
-        fs.writeFileSync(filename, content, {
-            encoding: "utf8"
+            fs.writeFileSync(filename, content, {
+                encoding: "utf8"
+            });
         });
-    });
+
+    }
+
+    export function versionIncrease(files: string[], index: number) {
+
+        let filterResult = filterFiles(files);
+
+        let oldVer = parseVersionString(filterResult.currentVersion);
+        oldVer[index]++;
+        let newVerStr = oldVer.join(".");
+
+        filterResult.files.forEach((filename: string) => {
+            let content = fs.readFileSync(filename, "utf8");
+
+            content = content.replace(versionReplaceRegex, "$1" + newVerStr + '"');
+
+            fs.writeFileSync(filename, content, {
+                encoding: "utf8"
+            });
+        });
+
+    }
 
 }
