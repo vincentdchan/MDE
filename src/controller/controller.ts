@@ -8,7 +8,7 @@ const {Menu, MenuItem} = remote
 import * as Electron from "electron"
 
 const config = {
-    "version": "0.0.1"
+    "version": "0.0.2"
 }
 
 const SaveFilter = [
