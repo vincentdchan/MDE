@@ -1,14 +1,17 @@
 import {app, BrowserWindow, dialog} from "electron"
+import * as path from "path"
 import * as Server from "./server"
 
 let win;
 
 function createWindow() {
+    console.log(path.join(__dirname, "../", "mde.ico"));
     win = new BrowserWindow({
         width: 800, 
         height : 600,
         minWidth: 300,
         minHeight: 400,
+        icon: path.join(__dirname, "../assets", "mde-logo-bg-sm.png"),
     });
     
     win.loadURL("file://" + __dirname + "/../index.html");
