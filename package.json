@@ -6,7 +6,9 @@
   "scripts": {
     "server": "http-server ./ -p8085",
     "test": "node ./build/test/test.js",
-    "updateVersion": "node ./build/versionPatch.js"
+    "updateVersion": "node ./build/versionPatch.js",
+    "pack": "build --dir",
+    "dist": "build"
   },
   "repository": {
     "type": "git",
@@ -33,6 +35,16 @@
     "typescript-collections": "^1.2.3"
   },
   "devDependencies": {
-    "electron": "^1.4.3"
+    "electron": "^1.4.3",
+    "electron-builder": "^10.15.1"
+  },
+  "build": {
+    "appId": "MDE Editor",
+    "win": {
+      "icon": "./build_resources/icon.ico"
+    },
+    "directories": {
+      "buildResources": "buildResources"
+    }
   }
 }
