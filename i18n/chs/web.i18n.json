@@ -25,5 +25,7 @@
     "about.releaseDate": "发布时间:\t {0}",
     "about.nodeVersion": "NodeJs版本:\t {0}",
 
+    "preference.tab.general": "通用",
+
     "setting.close": "关闭"
 }

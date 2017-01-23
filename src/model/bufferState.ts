@@ -93,6 +93,16 @@ export class BufferState extends EventEmitter implements IDisposable {
         return false;
     }
 
+    readFileContentToModelSync(encoding?: string) : boolean {
+        encoding = encoding ? encoding : "utf8";
+        if (this._text_model === null) {
+            let content = fs.readFileSync(this._abs_path, encoding);
+            this.initTextModel(content);
+            return true;
+        }
+        return false;
+    }
+
     async writeContentToFile(path: string, encoding?: string ): Promise<boolean> {
         encoding = encoding? encoding : "utf8";
         if (this._text_model) {

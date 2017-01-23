@@ -2,6 +2,7 @@ import {TextModel, LineModel, TextEdit, TextEditType,
      Position, BufferState} from "../model"
 import {EditorView, Coordinate, WindowView} from "../view"
 import {IDisposable, Host, KeyCode, i18n as $, StringFormat} from "../util"
+import {preferences} from "./preference"
 import {remote, ipcRenderer} from "electron"
 import {MainMenuView, MenuClickEvent, MenuButtonType} from "../view/menu"
 const {Menu, MenuItem} = remote
@@ -51,10 +52,17 @@ export class MDE implements IDisposable {
         });
         this._menu.setApplicationMenu();
 
-        this._buffer_state = new BufferState();
+        let argv = remote.process.argv;
+        if (argv.length >= 2 && argv[1].endsWith(".md")) {
+            this._buffer_state = new BufferState(argv[1]);
+            this._buffer_state.readFileContentToModelSync();
+        } else {
+            this._buffer_state = new BufferState();
+        }
 
         this._view = new WindowView();
         this._view.bind(this._buffer_state);
+        this._view.settingView.bind(preferences);
 
         window.onbeforeunload = (e: Event) => {
             if (this._buffer_state.isModified) {

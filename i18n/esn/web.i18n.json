@@ -25,5 +25,7 @@
     "about.releaseDate": "Release Date:\t {0}",
     "about.nodeVersion": "NodeJs Version:\t {0}",
 
+    "preference.tab.general": "General",
+
     "setting.close": "Close"
 }

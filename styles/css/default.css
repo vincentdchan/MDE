@@ -60,16 +60,44 @@ body {
 .mde-setting {
     width: 480px;
     height: 300px;
-    background-color: black;
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
+    box-shadow: 10px 10px 5px #888888;
+    border-radius: 8px;
+}
+
+.mde-setting-tabs {
+    top: 36px;
+    width: 160px;
+    height: 264px;
+    background-color: yellow;
+    border-bottom-left-radius: 8px; 
+}
+
+.mde-setting-tab {
+    padding: 3px;
+    cursor: pointer;
+}
+
+.mde-setting-tab:hover {
+    background: rgba(255, 255, 255, 0.8);
+}
+
+.mde-setting-tab.active {
+    background: rgba(255, 255, 255, 0.8);
 }
 
 .mde-setting-titlebar {
     height: 36px;
     width: 100%;
     background-color: blue;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+
+.mde-setting-items-container {
+    margin-left: 160px;
 }
 
 .mde-word-bold {

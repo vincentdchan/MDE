@@ -54,7 +54,8 @@
       "buildResources": "build_resources"
     },
     "nsis": {
-      "oneClick": true,
+      "oneClick": false,
+      "perMachine": true,
       "include": "./build_resources/installer.nsh",
       "runAfterFinish": false
     }
