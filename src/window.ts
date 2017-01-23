@@ -5,7 +5,7 @@ import * as Server from "./server"
 let win;
 
 function createWindow() {
-    console.log(path.join(__dirname, "../", "mde.ico"));
+
     win = new BrowserWindow({
         width: 800, 
         height : 600,

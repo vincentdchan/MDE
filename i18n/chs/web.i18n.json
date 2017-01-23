@@ -23,5 +23,7 @@
 
     "about.version": "版本号:\t {0}",
     "about.releaseDate": "发布时间:\t {0}",
-    "about.nodeVersion": "NodeJs版本:\t {0}"
+    "about.nodeVersion": "NodeJs版本:\t {0}",
+
+    "setting.close": "关闭"
 }

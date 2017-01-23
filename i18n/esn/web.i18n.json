@@ -23,5 +23,7 @@
 
     "about.version": "Version:\t {0}",
     "about.releaseDate": "Release Date:\t {0}",
-    "about.nodeVersion": "NodeJs Version:\t {0}"
+    "about.nodeVersion": "NodeJs Version:\t {0}",
+
+    "setting.close": "Close"
 }

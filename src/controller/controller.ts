@@ -122,6 +122,7 @@ export class MDE implements IDisposable {
                 this.handleSaveAsFile(SaveFilter);
                 break;
             case MenuButtonType.Preference:
+                this._view.settingView.toggle();
                 break;
             case MenuButtonType.OpenDevTools:
                 Host.openDevTools();

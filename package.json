@@ -1,10 +1,12 @@
 {
   "name": "mde",
+  "productName": "MDE",
+  "homePage": "https://github.com/ChannelOne/MDE",
   "version": "0.0.2",
   "description": "A Markdown Editor",
   "main": "build/window.js",
   "scripts": {
-    "server": "http-server ./ -p8085",
+    "start": "http-server ./ -p8085",
     "test": "node ./build/test/test.js",
     "updateVersion": "node ./build/versionPatch.js",
     "pack": "build --dir",
@@ -36,15 +38,25 @@
   },
   "devDependencies": {
     "electron": "^1.4.3",
-    "electron-builder": "^10.15.1"
+    "electron-builder": "^10.15.1",
+    "electron-winstaller": "^2.5.1"
   },
   "build": {
     "appId": "MDE Editor",
     "win": {
       "icon": "./build_resources/icon.ico"
     },
+    "fileAssociations": [{
+      "ext": "md",
+      "name": "Markdown"
+    }],
     "directories": {
-      "buildResources": "buildResources"
+      "buildResources": "build_resources"
+    },
+    "nsis": {
+      "oneClick": true,
+      "include": "./build_resources/installer.nsh",
+      "runAfterFinish": false
     }
   }
 }
