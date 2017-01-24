@@ -2,44 +2,44 @@ import {IDisposable, DomHelper, TickTockPair, TickTockUtil, i18n as $} from "../
 import {Coordinate, IHidable} from "."
 import {ButtonView} from "./viewButton"
 
-export class SettingView extends DomHelper.FixedElement implements IDisposable {
+export class ConfigView extends DomHelper.FixedElement implements IDisposable {
 
     private _showed: boolean = false;
-    private _model: Setting;
-    private _tabs: SettingTabsView;
+    private _model: Config;
+    private _tabs: ConfigTabsView;
     private _closeButton: ButtonView;
     private _titleBar: HTMLElement;
     private _items_container: HTMLDivElement;
 
     constructor() {
-        super("div", "mde-setting");
+        super("div", "mde-config");
 
         this._closeButton = new ButtonView(36, 36);
-        this._closeButton.element().classList.add("mde-setting-close");
+        this._closeButton.element().classList.add("mde-config-close");
         this._closeButton.setIcon("fa fa-close");
-        this._closeButton.setTooltip($.getString("setting.close"));
+        this._closeButton.setTooltip($.getString("config.close"));
         this._closeButton.addEventListener("click", (e: MouseEvent) => {
             this.toggle();
         });
 
-        this._titleBar = DomHelper.elem("div", "mde-setting-titlebar");
+        this._titleBar = DomHelper.elem("div", "mde-config-titlebar");
         this._dom.appendChild(this._titleBar);
         this._closeButton.appendTo(this._titleBar);
 
-        this._tabs = new SettingTabsView();
+        this._tabs = new ConfigTabsView();
         this._tabs.appendTo(this._dom);
         this._tabs.addEventListener("tabSelected", (e: TabSelectedEvent) => {
             this.handleTabSelected(e);
         });
 
-        this._items_container = DomHelper.Generic.elem<HTMLDivElement>("div", "mde-setting-items-container");
+        this._items_container = DomHelper.Generic.elem<HTMLDivElement>("div", "mde-config-items-container");
         this._dom.appendChild(this._items_container);
 
         this._dom.style.zIndex = "100";
         this.showOrHide();
     }
 
-    bind(setting: Setting) {
+    bind(setting: Config) {
         this._model = setting;
 
         this._tabs.bind(setting.tabs);
@@ -86,19 +86,19 @@ export class SettingView extends DomHelper.FixedElement implements IDisposable {
     private handleTabSelected(evt: TabSelectedEvent) {
         this.clearContainer();
 
-        evt.tab.items.forEach((item: SettingItem, index: number) => {
+        evt.tab.items.forEach((item: ConfigItem, index: number) => {
             let elem = this.generateSettingItemElem(item);
 
             this._items_container.appendChild(elem);
         });
     }
 
-    private generateSettingItemElem(item: SettingItem) : HTMLDivElement {
-        let elem = DomHelper.Generic.elem<HTMLDivElement>("div", "mde-setting-item");
+    private generateSettingItemElem(item: ConfigItem) : HTMLDivElement {
+        let elem = DomHelper.Generic.elem<HTMLDivElement>("div", "mde-config-item");
         elem.appendChild(document.createTextNode(item.label));
 
         switch(item.type) {
-            case SettingItemType.Text:
+            case ConfigItemType.Text:
             {
                 let textInput = DomHelper.Generic.elem<HTMLInputElement>("input");
 
@@ -116,7 +116,7 @@ export class SettingView extends DomHelper.FixedElement implements IDisposable {
                 elem.appendChild(textInput);
                 break;
             }
-            case SettingItemType.Checkbox:
+            case ConfigItemType.Checkbox:
             {
                 let textInput = DomHelper.Generic.elem<HTMLInputElement>("input");
 
@@ -135,7 +135,7 @@ export class SettingView extends DomHelper.FixedElement implements IDisposable {
 
                 break;
             }
-            case SettingItemType.Options:
+            case ConfigItemType.Options:
             {
                 let selectElem = DomHelper.Generic.elem<HTMLSelectElement>("select");
 
@@ -171,10 +171,10 @@ export class SettingView extends DomHelper.FixedElement implements IDisposable {
 
 export class TabSelectedEvent extends Event {
 
-    private _tab: SettingTab;
+    private _tab: ConfigTab;
     private _index: number;
 
-    constructor(tab: SettingTab, index:number) {
+    constructor(tab: ConfigTab, index:number) {
         super("tabSelected");
 
         this._tab = tab;
@@ -186,17 +186,17 @@ export class TabSelectedEvent extends Event {
 
 }
 
-export class SettingTabsView extends DomHelper.AbsoluteElement {
+export class ConfigTabsView extends DomHelper.AbsoluteElement {
 
-    private _model: SettingTab[];
+    private _model: ConfigTab[];
     private _container: HTMLDivElement;
     private _activeIndex: number = -1;
 
     constructor () {
-        super("div", "mde-setting-tabs");
+        super("div", "mde-config-tabs");
     }
 
-    bind(tabs: SettingTab[]) {
+    bind(tabs: ConfigTab[]) {
         this._model = tabs;
         this.render();
 
@@ -219,18 +219,18 @@ export class SettingTabsView extends DomHelper.AbsoluteElement {
 
     private render() {
         this.clearAll();
-        this._container = DomHelper.Generic.elem<HTMLDivElement>("div", "mde-setting-tabs-container");
+        this._container = DomHelper.Generic.elem<HTMLDivElement>("div", "mde-config-tabs-container");
         this._dom.appendChild(this._container);
 
-        this._model.forEach((tab: SettingTab, index: number) => {
+        this._model.forEach((tab: ConfigTab, index: number) => {
             let elem = this.generateTabElem(tab, index);
             this._container.appendChild(elem);
         });
     }
 
-    private generateTabElem(tab: SettingTab, index: number) : HTMLDivElement {
-        let elem = DomHelper.Generic.elem<HTMLDivElement>("div", "mde-setting-tab");
-        let span = DomHelper.Generic.elem<HTMLSpanElement>("span", "mde-setting-tab-name");
+    private generateTabElem(tab: ConfigTab, index: number) : HTMLDivElement {
+        let elem = DomHelper.Generic.elem<HTMLDivElement>("div", "mde-config-tab");
+        let span = DomHelper.Generic.elem<HTMLSpanElement>("span", "mde-config-tab-name");
 
         span.appendChild(document.createTextNode(tab.label));
         elem.appendChild(span);
@@ -245,7 +245,7 @@ export class SettingTabsView extends DomHelper.AbsoluteElement {
         return elem;
     }
 
-    private tabsClicked(tab: SettingTab, index: number) {
+    private tabsClicked(tab: ConfigTab, index: number) {
         let evt = new TabSelectedEvent(tab, index);
         this._dom.dispatchEvent(evt);
     }
@@ -270,28 +270,28 @@ export class SettingTabsView extends DomHelper.AbsoluteElement {
 
 }
 
-export interface Setting
+export interface Config
 {
-    tabs: SettingTab[];
+    tabs: ConfigTab[];
 }
 
-export interface SettingTab
+export interface ConfigTab
 {
     name: string;
     label: string;
-    items: SettingItem[];
+    items: ConfigItem[];
 }
 
-export enum SettingItemType
+export enum ConfigItemType
 {
     Text, Options, Combobox, Checkbox, Slide
 }
 
-export interface SettingItem
+export interface ConfigItem
 {
     name: string;
     label: string;
-    type: SettingItemType;
+    type: ConfigItemType;
     value?: any;
     options?: {name: string, label: string}[]; // enable for "Options" and "Combobox"
     onChanged?: (newValue, oldValue: any) => void;

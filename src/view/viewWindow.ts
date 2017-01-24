@@ -3,7 +3,7 @@ import {EditorView, TooglePreviewEvent} from "./viewEditor"
 import {SplitterView} from "./viewSplitter"
 import {PreviewView} from "./viewPreview"
 import {TrainMoveEvent} from "./viewScrollbar"
-import {SettingView} from "./viewSetting"
+import {ConfigView} from "./viewConfig"
 import {TextModel, BufferState, BufferStateChanged, BufferAbsPathChanged, Snippet} from "../model"
 import * as Electron from "electron"
 import {remote} from "electron"
@@ -24,7 +24,7 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
     private _editor : EditorView;
     private _splitter : SplitterView;
     private _preview : PreviewView;
-    private _setting : SettingView;
+    private _config: ConfigView;
 
     private _preview_opened: boolean;
     private _resize_handler: (e: Event) => void;
@@ -51,8 +51,8 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
 
         window.addEventListener("resize", this._resize_handler);
 
-        this._setting = new SettingView();
-        this._setting.appendTo(this._dom);
+        this._config = new ConfigView();
+        this._config.appendTo(this._dom);
 
         // ============================================
         // let defaultSnippet = path.join(__dirname, "../../snippets/", "default.json");
@@ -267,8 +267,8 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
         }
     }
 
-    get settingView() {
-        return this._setting;
+    get configView() {
+        return this._config;
     }
 
     get themeFilename() {

@@ -2,7 +2,7 @@ import {TextModel, LineModel, TextEdit, TextEditType,
      Position, BufferState} from "../model"
 import {EditorView, Coordinate, WindowView} from "../view"
 import {IDisposable, Host, KeyCode, i18n as $, StringFormat} from "../util"
-import {preferences} from "./preference"
+import {configurationThunk} from "./configuration"
 import {remote, ipcRenderer} from "electron"
 import {MainMenuView, MenuClickEvent, MenuButtonType} from "../view/menu"
 const {Menu, MenuItem} = remote
@@ -62,7 +62,7 @@ export class MDE implements IDisposable {
 
         this._view = new WindowView();
         this._view.bind(this._buffer_state);
-        this._view.settingView.bind(preferences);
+        this._view.configView.bind(configurationThunk(this));
 
         window.onbeforeunload = (e: Event) => {
             if (this._buffer_state.isModified) {
@@ -130,7 +130,7 @@ export class MDE implements IDisposable {
                 this.handleSaveAsFile(SaveFilter);
                 break;
             case MenuButtonType.Preference:
-                this._view.settingView.toggle();
+                this._view.configView.toggle();
                 break;
             case MenuButtonType.OpenDevTools:
                 Host.openDevTools();
