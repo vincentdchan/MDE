@@ -29,6 +29,7 @@
     "config.general.language": "Language",
     "config.general.language.chs": "Chinese(Simplified)",
     "config.general.language.esn": "English",
+    "config.general.showLineNumber": "Line number",
 
     "config.general.fontSize": "Font Size",
     "config.general.lineHeight": "Line Height",

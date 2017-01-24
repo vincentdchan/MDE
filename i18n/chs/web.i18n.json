@@ -29,6 +29,7 @@
     "config.general.language": "语言",
     "config.general.language.chs": "中文（简体）",
     "config.general.language.esn": "英文",
+    "config.general.showLineNumber": "显示行号",
 
     "config.style": "样式",
     "config.style.fontSize": "字体大小",

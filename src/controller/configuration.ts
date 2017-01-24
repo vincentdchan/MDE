@@ -22,6 +22,10 @@ export function configurationThunk(mde: MDE) : Config {
                     }],
                     value: "chs"
                 },
+                "showLineNumber": {
+                    label: $.getString("config.general.showLineNumber"),
+                    type: ConfigItemType.Checkbox,
+                }
             }
         }, 
         "style": {
