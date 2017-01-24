@@ -7,7 +7,7 @@
   "main": "build/window.js",
   "scripts": {
     "start": "http-server ./ -p8085",
-    "test": "node ./build/test/test.js",
+    "test": "mocha ./build/test --harmony",
     "updateVersion": "node ./build/versionPatch.js",
     "pack": "build --dir",
     "dist": "build"
@@ -27,6 +27,7 @@
   "homepage": "https://github.com/ChannelOne/MDE#readme",
   "dependencies": {
     "@types/marked": "0.0.28",
+    "@types/mocha": "^2.2.38",
     "gulp": "^3.9.1",
     "gulp-cached": "^1.1.0",
     "gulp-sourcemaps": "^2.1.1",
@@ -39,17 +40,20 @@
   "devDependencies": {
     "electron": "^1.4.3",
     "electron-builder": "^10.15.1",
-    "electron-winstaller": "^2.5.1"
+    "electron-winstaller": "^2.5.1",
+    "mocha": "^3.2.0"
   },
   "build": {
     "appId": "MDE Editor",
     "win": {
       "icon": "./build_resources/icon.ico"
     },
-    "fileAssociations": [{
-      "ext": "md",
-      "name": "Markdown"
-    }],
+    "fileAssociations": [
+      {
+        "ext": "md",
+        "name": "Markdown"
+      }
+    ],
     "directories": {
       "buildResources": "build_resources"
     },

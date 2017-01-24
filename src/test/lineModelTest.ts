@@ -1,5 +1,10 @@
 import {LineModel} from "../model"
-import assert = require("assert");
+import * as assert from "assert"
+
+describe("LineModel", () => {
+    TestLine(0, "Hello\n");
+    TestLine(1, "Are you ok?")
+});
 
 function TestLine(num: number, str: string) {
 
@@ -64,6 +69,3 @@ function TestLine(num: number, str: string) {
     console.log("All test done.");
 
 }
-
-TestLine(0, "Hello\n");
-TestLine(1, "Are you ok?")
