@@ -8,35 +8,44 @@ import * as fs from "fs"
 export function configurationThunk(mde: MDE) : Config {
     return {
         "general": {
-            label: $.getString("preference.tab.general"),
+            label: $.getString("config.general"),
             items: {
-                "test": {
-                    label: "Test 1",
-                    type: ConfigItemType.Text,
-                }, 
-                "test2": {
-                    label: "Test 2",
-                    type: ConfigItemType.Checkbox,
-                }
+                "language": {
+                    label: $.getString("config.general.language"),
+                    type: ConfigItemType.Options,
+                    options: [{ 
+                        name: "chs",
+                        label: $.getString("config.general.language.chs"),
+                    }, {
+                        name: "esn",
+                        label: $.getString("config.general.language.esn")
+                    }],
+                    value: "chs"
+                },
             }
         }, 
-        "other": {
-            label: "Other",
+        "style": {
+            label: $.getString("config.style"),
             items: {
-                "test2": {
-                    label: "Test 2",
-                    type: ConfigItemType.Text
-                }, 
-                "test3": {
-                    label: "Test 3",
-                    type: ConfigItemType.Options,
+                "fontSize": {
+                    label: $.getString("config.style.fontSize"),
+                    type: ConfigItemType.Radio,
                     options: [ {
-                        name: "dayMode",
-                        label: "Day Mode",
+                        name: "big",
+                        label: $.getString("config.style.fontSize.big"),
                     }, {
-                        name: "nightMode",
-                        label: "Night Mode",
-                    }]
+                        name: "normal",
+                        label: $.getString("config.style.fontSize.normal"),
+                    }, {
+                        name: "small",
+                        label: $.getString("config.style.fontSize.small"),
+                    }],
+                    value: "normal",
+                }, 
+                "lineHeight": {
+                    label: $.getString("config.style.lineHeight"),
+                    type: ConfigItemType.Text,
+                    value: "18",
                 }
             }
         }

@@ -25,7 +25,13 @@
     "about.releaseDate": "Release Date:\t {0}",
     "about.nodeVersion": "NodeJs Version:\t {0}",
 
-    "preference.tab.general": "General",
+    "config.general": "General",
+    "config.general.language": "Language",
+    "config.general.language.chs": "Chinese(Simplified)",
+    "config.general.language.esn": "English",
+
+    "config.general.fontSize": "Font Size",
+    "config.general.lineHeight": "Line Height",
 
     "config.close": "Close"
 }

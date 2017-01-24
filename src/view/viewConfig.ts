@@ -1,7 +1,8 @@
 import {IDisposable, DomHelper, TickTockPair, TickTockUtil, i18n as $} from "../util"
 import {Coordinate, IHidable} from "."
 import {ButtonView} from "./viewButton"
-import {Config, ConfigTab, ConfigItem, ConfigItemType} from "../model/configuration"
+import {Config, ConfigTab, ConfigItem, ConfigItemType, 
+    Validator, ValidateResult, isValidateResult, ValidateType} from "../model/configuration"
 
 export class ConfigView extends DomHelper.FixedElement implements IDisposable {
 
@@ -89,13 +90,13 @@ export class ConfigView extends DomHelper.FixedElement implements IDisposable {
 
         for (let itemName in evt.tab.items) {
             let item = evt.tab.items[itemName];
-            let elem = this.generateSettingItemElem(item);
+            let elem = this.generateSettingItemElem(itemName, item);
 
             this._items_container.appendChild(elem);
         }
     }
 
-    private generateSettingItemElem(item: ConfigItem) : HTMLDivElement {
+    private generateSettingItemElem(itemName: string, item: ConfigItem) : HTMLDivElement {
         let elem = DomHelper.Generic.elem<HTMLDivElement>("div", "mde-config-item");
         elem.appendChild(document.createTextNode(item.label));
 
@@ -105,9 +106,7 @@ export class ConfigView extends DomHelper.FixedElement implements IDisposable {
                 let textInput = DomHelper.Generic.elem<HTMLInputElement>("input");
 
                 textInput.addEventListener("input", (e) => {
-                    let old = item.value;
-                    item.value = textInput.value;
-                    if (item.onChanged) item.onChanged(item.value, old);
+                    this.validateAndApplyNewValue(itemName, item, textInput.value);
                 });
 
                 if (item.value) {
@@ -125,9 +124,7 @@ export class ConfigView extends DomHelper.FixedElement implements IDisposable {
                 textInput.type = "checkbox";
 
                 textInput.addEventListener("change", (e) => {
-                    let old = item.value;
-                    item.value = textInput.checked;
-                    if (item.onChanged) item.onChanged(item.value, old);
+                    this.validateAndApplyNewValue(itemName, item, textInput.value);
                 });
                 
                 if (item.value) textInput.checked = item.value;
@@ -137,14 +134,40 @@ export class ConfigView extends DomHelper.FixedElement implements IDisposable {
 
                 break;
             }
+            case ConfigItemType.Radio:
+            {
+
+
+                item.options.forEach((v, index) => {
+                    let textInput = DomHelper.Generic.elem<HTMLInputElement>("input");
+
+                    textInput.addEventListener("change", (e: Event) => {
+                        if (textInput.checked) {
+                            this.validateAndApplyNewValue(itemName, item, textInput.value)
+                        }
+                    });
+
+                    textInput.type = "radio";
+                    textInput.name = "mde_radio_" + itemName;
+                    textInput.value = v.name;
+
+                    if (v.name == item.value) {
+                        textInput.checked = true;
+                    }
+
+                    elem.appendChild(textInput);
+
+                    elem.appendChild(document.createTextNode(v.label));
+                })
+
+                break;
+            }
             case ConfigItemType.Options:
             {
                 let selectElem = DomHelper.Generic.elem<HTMLSelectElement>("select");
 
                 selectElem.addEventListener("change", (e: Event) => {
-                    let old = item.value;
-                    item.value = selectElem.value;
-                    if (item.onChanged) item.onChanged(item.value, old);
+                    this.validateAndApplyNewValue(itemName, item, selectElem.value)
                 })
 
                 item.options.forEach((s) => {
@@ -163,6 +186,36 @@ export class ConfigView extends DomHelper.FixedElement implements IDisposable {
             }
         }
         return elem;
+    }
+
+    private validateAndApplyNewValue(itemName: string, item: ConfigItem, newValue: any) {
+        let oldValue = item.value;
+
+        let pass = true;
+
+        if (item.validator) {
+            item.validator.forEach((v: Validator, index: number) => {
+                let result = v(newValue);
+
+                if (typeof result == "boolean") {
+                    pass = result;
+                    if (!pass) {
+                        // TODO: show red alert
+                    }
+                } else if (isValidateResult(result)) {
+                    if (result.type !== ValidateType.Normal) pass = false;
+
+                    // TODO: show alert
+                } else {
+                    throw new Error("Validate result type error, item name:" + item.label);
+                }
+            });
+        }
+
+        if (pass) {
+            item.value = newValue;
+            if (item.onChanged) item.onChanged(item.value, oldValue);
+        }
     }
 
     dispose() {

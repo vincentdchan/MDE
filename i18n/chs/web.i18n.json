@@ -25,7 +25,17 @@
     "about.releaseDate": "发布时间:\t {0}",
     "about.nodeVersion": "NodeJs版本:\t {0}",
 
-    "preference.tab.general": "通用",
+    "config.general": "通用",
+    "config.general.language": "语言",
+    "config.general.language.chs": "中文（简体）",
+    "config.general.language.esn": "英文",
+
+    "config.style": "样式",
+    "config.style.fontSize": "字体大小",
+    "config.style.fontSize.big": "大",
+    "config.style.fontSize.normal": "正常",
+    "config.style.fontSize.small": "小",
+    "config.style.lineHeight": "行高",
 
     "config.close": "关闭"
 }
