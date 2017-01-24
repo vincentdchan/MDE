@@ -1,5 +1,5 @@
 import {i18n as $} from "../util"
-import {Config, ConfigTab, ConfigItemType, ConfigItem} from "../view/viewConfig"
+import {Config, ConfigTab, ConfigItemType, ConfigItem} from "../model/configuration"
 import {MDE} from "."
 import {app} from "electron"
 import * as path from "path"
@@ -7,27 +7,27 @@ import * as fs from "fs"
 
 export function configurationThunk(mde: MDE) : Config {
     return {
-        tabs: [{
-                name: "general",
-                label: $.getString("preference.tab.general"),
-                items: [{
-                    name: "test",
+        "general": {
+            label: $.getString("preference.tab.general"),
+            items: {
+                "test": {
                     label: "Test 1",
                     type: ConfigItemType.Text,
-                }, {
-                    name: "test2",
+                }, 
+                "test2": {
                     label: "Test 2",
                     type: ConfigItemType.Checkbox,
-                }]
-            }, {
-                name: "other",
-                label: "Other",
-                items: [{
-                    name: "test2",
+                }
+            }
+        }, 
+        "other": {
+            label: "Other",
+            items: {
+                "test2": {
                     label: "Test 2",
                     type: ConfigItemType.Text
-                }, {
-                    name: "test3",
+                }, 
+                "test3": {
                     label: "Test 3",
                     type: ConfigItemType.Options,
                     options: [ {
@@ -37,9 +37,9 @@ export function configurationThunk(mde: MDE) : Config {
                         name: "nightMode",
                         label: "Night Mode",
                     }]
-                }]
+                }
             }
-        ]
+        }
     }
 }
 
@@ -58,28 +58,31 @@ export namespace Configuration {
         let content = fs.readFileSync(_path, "utf8");
         let obj = JSON.parse(content);
 
-        config.tabs.forEach((tab: ConfigTab, tabIndex: number) => {
-            if (tab.name in obj) {
-                let tabObj = obj[tab.name];
+        for (let tabName in config) {
+            let configTab = config[tabName];
 
-                tab.items.forEach((item: ConfigItem, itemIndex: number) => {
+            if (tabName in obj) {
+                let tabObj = obj[tabName];
 
-                    if (item.name in tabObj) {
-                        let itemObj = obj[item.name];
+                for (let itemName in configTab.items) {
+                    let configItem = configTab.items[itemName];
 
-                        item.value = itemObj;
+                    if (itemName in tabObj) {
+                        let itemObj = tabObj[itemName];
+
+                        configItem.value = itemObj;
                     } else {
-                        console.log("Can not find item \"", item.name, "\" in tab \"", tab.name, "\" in config file.");
+                        console.log("Can not find item \"", itemName, "\" in tab \"", tabName, "\" in config file.");
                     }
 
-                });
+                }
 
             } else {
-                console.log("Can not find tab \"", tab.name, "\" in config file.");
+                console.log("Can not find tab \"", tabName, "\" in config file.");
             }
-        });
+        }
 
-        return false;
+        return true;
     }
 
     export function saveConfigToDefaultPath(config: Config) : boolean {
@@ -87,20 +90,20 @@ export namespace Configuration {
     }
 
     export function saveConfigToPath(_path: string, config: Config) : boolean {
-        var obj: any;
+        var obj: any = {};
 
-        config.tabs.forEach((tab: ConfigTab, tabIndex: number) => {
-            let tabName = tab.name;
+        for (let tabName in config) {
+            let configTab = config[tabName];
             let subObj = {};
 
-            tab.items.forEach((item: ConfigItem, itemIndex: number) => {
-                let itemName = item.name;
+            for (let itemName in configTab.items) {
+                let configItem = configTab.items[itemName];
 
-                subObj[itemName] = item.value;
-            });
+                subObj[itemName] = configItem.value;
+            }
 
             obj[tabName] = subObj;
-        });
+        }
 
         let content = JSON.stringify(obj);
 

@@ -1,6 +1,7 @@
 import {IDisposable, DomHelper, TickTockPair, TickTockUtil, i18n as $} from "../util"
 import {Coordinate, IHidable} from "."
 import {ButtonView} from "./viewButton"
+import {Config, ConfigTab, ConfigItem, ConfigItemType} from "../model/configuration"
 
 export class ConfigView extends DomHelper.FixedElement implements IDisposable {
 
@@ -39,10 +40,10 @@ export class ConfigView extends DomHelper.FixedElement implements IDisposable {
         this.showOrHide();
     }
 
-    bind(setting: Config) {
-        this._model = setting;
+    bind(config: Config) {
+        this._model = config;
 
-        this._tabs.bind(setting.tabs);
+        this._tabs.bind(config);
     }
 
     unbind() {
@@ -86,11 +87,12 @@ export class ConfigView extends DomHelper.FixedElement implements IDisposable {
     private handleTabSelected(evt: TabSelectedEvent) {
         this.clearContainer();
 
-        evt.tab.items.forEach((item: ConfigItem, index: number) => {
+        for (let itemName in evt.tab.items) {
+            let item = evt.tab.items[itemName];
             let elem = this.generateSettingItemElem(item);
 
             this._items_container.appendChild(elem);
-        });
+        }
     }
 
     private generateSettingItemElem(item: ConfigItem) : HTMLDivElement {
@@ -172,37 +174,38 @@ export class ConfigView extends DomHelper.FixedElement implements IDisposable {
 export class TabSelectedEvent extends Event {
 
     private _tab: ConfigTab;
-    private _index: number;
+    private _name: string;
 
-    constructor(tab: ConfigTab, index:number) {
+    constructor(name: string, tab: ConfigTab) {
         super("tabSelected");
 
         this._tab = tab;
-        this._index = index;
+        this._name = name;
     }
 
     get tab() { return this._tab; }
-    get index() { return this._index; }
+    get name() { return this._name; }
 
 }
 
 export class ConfigTabsView extends DomHelper.AbsoluteElement {
 
-    private _model: ConfigTab[];
+    private _model: Config;
     private _container: HTMLDivElement;
-    private _activeIndex: number = -1;
+    private _activeKey: string = null;
 
     constructor () {
         super("div", "mde-config-tabs");
     }
 
-    bind(tabs: ConfigTab[]) {
-        this._model = tabs;
+    bind(config: Config) {
+        this._model = config;
         this.render();
 
-        if (this._model.length > 0) {
-            this.activeIndex = 0;
-            this.tabsClicked(tabs[0], 0);
+        let keys = Object.keys(this._model);
+        if (keys.length > 0) {
+            this.activeItemName = keys[0];
+            this.tabsClicked(keys[0], config[keys[0]]);
         }
     }
 
@@ -222,13 +225,14 @@ export class ConfigTabsView extends DomHelper.AbsoluteElement {
         this._container = DomHelper.Generic.elem<HTMLDivElement>("div", "mde-config-tabs-container");
         this._dom.appendChild(this._container);
 
-        this._model.forEach((tab: ConfigTab, index: number) => {
-            let elem = this.generateTabElem(tab, index);
+        for (let tabName in this._model) {
+            let tab = this._model[tabName];
+            let elem = this.generateTabElem(tabName, tab);
             this._container.appendChild(elem);
-        });
+        }
     }
 
-    private generateTabElem(tab: ConfigTab, index: number) : HTMLDivElement {
+    private generateTabElem(name:string, tab: ConfigTab) : HTMLDivElement {
         let elem = DomHelper.Generic.elem<HTMLDivElement>("div", "mde-config-tab");
         let span = DomHelper.Generic.elem<HTMLSpanElement>("span", "mde-config-tab-name");
 
@@ -236,63 +240,40 @@ export class ConfigTabsView extends DomHelper.AbsoluteElement {
         elem.appendChild(span);
 
         elem.addEventListener("click", (e: MouseEvent) => {
-            if (index !== this._activeIndex) {
-                this.activeIndex = index;
-                this.tabsClicked(tab, index);
+            if (name != this._activeKey) {
+                this.activeItemName = name;
+                this.tabsClicked(name, tab);
             }
         });
 
         return elem;
     }
 
-    private tabsClicked(tab: ConfigTab, index: number) {
-        let evt = new TabSelectedEvent(tab, index);
+    private tabsClicked(name: string, tab: ConfigTab) {
+        let evt = new TabSelectedEvent(name, tab);
         this._dom.dispatchEvent(evt);
     }
 
-    get activeIndex() {
-        return this._activeIndex;
+    get activeItemName() {
+        return this._activeKey;
     }
 
-    set activeIndex(index: number) {
-        for (let i = 0; i < this._container.children.length; i++) {
-            let child = this._container.children.item(i);
-            if (i === index) {
+    set activeItemName(itemName: string) {
+        let index = 0;
+
+        for (let iName in this._model) {
+            let child = this._container.children.item(index);
+            if (iName == itemName) {
                 if (!child.classList.contains("active"))
                     child.classList.add("active");
             } else {
                 if (child.classList.contains("active"))
                     child.classList.remove("active");
             }
+            index++;
         }
-        this._activeIndex = index;
+
+        this._activeKey = itemName;
     }
 
-}
-
-export interface Config
-{
-    tabs: ConfigTab[];
-}
-
-export interface ConfigTab
-{
-    name: string;
-    label: string;
-    items: ConfigItem[];
-}
-
-export enum ConfigItemType
-{
-    Text, Options, Combobox, Checkbox, Slide
-}
-
-export interface ConfigItem
-{
-    name: string;
-    label: string;
-    type: ConfigItemType;
-    value?: any;
-    options?: {name: string, label: string}[]; // enable for "Options" and "Combobox"
-    onChanged?: (newValue, oldValue: any) => void;
 }
