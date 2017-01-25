@@ -25,10 +25,12 @@ export class TrainMoveEvent extends Event {
 
 }
 
+/// scrollbar view
+/// define the height of scrollbar
+/// but do not define the width in the code
 export class ScrollBarView 
     extends DomHelper.AbsoluteElement implements IDisposable {
 
-    public static readonly DefaultWidth = 18;
     public static readonly DefaultScrollAlpha = 0.01;
 
     private _train: ScrollBarTrain;
@@ -40,8 +42,6 @@ export class ScrollBarView
 
         this._train = new ScrollBarTrain();
         this._train.appendTo(this._dom);
-
-        this.width = ScrollBarView.DefaultWidth;
 
         let clickOffset: number = 0;
         let mouseMove = (evt: MouseEvent) => {
@@ -103,8 +103,7 @@ export class ScrollBarView
     }
 
     set width(w : number) {
-        super.width = w;
-        this._train.width = w;
+        throw new Error("Do not try to set width of scrollbar, set it in css.");
     }
 
     get width() {

@@ -42,6 +42,7 @@ body {
 }
 
 .mde-document-container {
+    margin-right: 18px;
     z-index: 1;
 }
 
@@ -133,14 +134,19 @@ body {
     cursor: col-resize;
 }
 
-.mde-toolbar {
-    background: grey;
-    z-index: 5;
+.mde-scrollbar {
+    width: 18px;
 }
 
 .mde-scrollbar-train {
+    width: 18px;
     background: grey;
     opacity: 0.5;
+}
+
+.mde-toolbar {
+    background: grey;
+    z-index: 5;
 }
 
 .mde-toolbar::-webkit-scrollbar {
@@ -160,6 +166,7 @@ body {
 .mde-preview-document-container {
     word-wrap: break-word;
     padding: 22px;
+    margin-right: 18px;
 }
 
 .mde-preview {

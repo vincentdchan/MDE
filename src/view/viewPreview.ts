@@ -17,6 +17,7 @@ export class PreviewView extends DomHelper.FixedElement implements IDisposable {
         super("div", "mde-preview");
 
         this._scrollbar = new ScrollBarView();
+        this._scrollbar.right = 0;
         this._scrollbar.appendTo(this._dom);
 
         this._scrollbar.on("trainMove", (e: TrainMoveEvent) =>  {
@@ -83,9 +84,7 @@ export class PreviewView extends DomHelper.FixedElement implements IDisposable {
 
     set width(w: number) {
         super.width = w;
-
-        this._document.width = w - this._scrollbar.width;
-        this._scrollbar.marginLeft = w - this._scrollbar.width;
+        this._document.width = w;
     }
 
     get height() {

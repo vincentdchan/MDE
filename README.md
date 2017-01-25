@@ -28,7 +28,7 @@ In the future:
 
 - Linux 64 bit version (Ubuntu for developing)
 
-Because I do not have any devices on OS X platform and I can't afford, so I cann't build it.
+Because I do not have any devices on OS X platform, I won't build it.
 
 ## Waiting for new version 0.0.3 (developing)
 

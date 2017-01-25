@@ -315,7 +315,7 @@ export class EditorView extends DomHelper.FixedElement
         super.width = w;
 
         this._toolbar.width = w;
-        this._document.width = w - this._scrollbar.width;
+        this._document.width = w;
     }
 
     get width() {
