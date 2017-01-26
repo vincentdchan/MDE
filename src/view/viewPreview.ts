@@ -16,6 +16,10 @@ export class PreviewView extends DomHelper.FixedElement implements IDisposable {
     constructor() {
         super("div", "mde-preview");
 
+        this._dom.addEventListener("mousemove", (e: MouseEvent) => {
+            this._scrollbar.excite();
+        });
+
         this._scrollbar = new ScrollBarView();
         this._scrollbar.right = 0;
         this._scrollbar.appendTo(this._dom);

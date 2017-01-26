@@ -68,12 +68,13 @@
 }
 
 .mde-scrollbar {
-    background: #0D0D0D;
+    border-left: 1px;
+    border-left-color: dimgrey;
+    border-left-style: solid;
 }
 
 .mde-scrollbar-train {
     background: #8C8C8C;
-    opacity: 0.5;
 }
 
 .mde-preview-button {

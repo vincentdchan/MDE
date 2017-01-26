@@ -17,6 +17,10 @@ body {
     font-size: "18px";
 }
 
+.mde-box {
+    box-sizing: border-box;
+}
+
 .mde-inputer {
     width: 0.1px;
     height: 0.1px;
@@ -135,13 +139,17 @@ body {
 }
 
 .mde-scrollbar {
+    z-index: 4;
     width: 18px;
 }
 
 .mde-scrollbar-train {
     width: 18px;
-    background: grey;
-    opacity: 0.5;
+    transition: opacity 1s;
+}
+
+.mde-scrollbar-train-fadeOut {
+    opacity: 0;
 }
 
 .mde-toolbar {

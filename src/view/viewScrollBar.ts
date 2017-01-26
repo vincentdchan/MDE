@@ -4,6 +4,8 @@ class ScrollBarTrain extends DomHelper.AbsoluteElement implements IDisposable {
 
     constructor() {
         super("div", "mde-scrollbar-train");
+
+        this.right = 0;
     }
 
     dispose() {
@@ -37,8 +39,16 @@ export class ScrollBarView
     private _mouseMove : EventListener = null;
     private _mouseUp : EventListener = null;
 
-    constructor() {
-        super("div", "mde-scrollbar");
+    private _fadeOut : boolean;
+    private _fadeOutTime : number;
+    private _exciteCount : number;
+
+    constructor(fadeOut = true, fadeOutTime = 2000) {
+        super("div", "mde-scrollbar mde-box");
+
+        this._fadeOut = fadeOut;
+        this._fadeOutTime = fadeOutTime;
+        this._exciteCount = 0;
 
         this._train = new ScrollBarTrain();
         this._train.appendTo(this._dom);
@@ -80,6 +90,22 @@ export class ScrollBarView
 
     }
 
+    excite() {
+        if (this._fadeOut) {
+            this._exciteCount++;
+
+            this._train.element().classList.remove("mde-scrollbar-train-fadeOut");
+
+            setTimeout(() => {
+                this._exciteCount--;
+
+                if (this._exciteCount === 0) {
+                    this._train.element().classList.add("mde-scrollbar-train-fadeOut");
+                }
+            }, this._fadeOutTime);
+        }
+    }
+
     set trainHeight(h: number) {
         this._train.height = h;
     }
@@ -92,10 +118,12 @@ export class ScrollBarView
     }
 
     set trainTop(h: number) {
+        this.excite();
         this._train.top = h;
     }
 
     set trainPositionPercentage(per: number) {
+        this.excite();
         per = Math.floor(per * 10000) / 10000;
         if (per < 0 || per > 1)
             throw new Error("Data should be between 0 and 1: " + per);

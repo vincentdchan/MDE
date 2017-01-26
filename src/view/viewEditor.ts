@@ -50,6 +50,10 @@ export class EditorView extends DomHelper.FixedElement
     constructor() {
         super("div", "mde-editor");
 
+        this._dom.addEventListener("mousemove", (e: MouseEvent) => {
+            this._scrollbar.excite();
+        })
+
         this._toolbar = new ToolbarView(this.generateToolbarMenus(), generateRightButtons(this));
         this._toolbar.top = 0;
 
