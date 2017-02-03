@@ -5,6 +5,7 @@ import {IDisposable, Host, KeyCode, i18n as $, StringFormat} from "../util"
 import {configurationThunk} from "./configuration"
 import {remote, ipcRenderer} from "electron"
 import {MainMenuView, MenuClickEvent, MenuButtonType} from "../view/menu"
+import {SearchBox} from "./searchBox"
 const {Menu, MenuItem} = remote
 import * as Electron from "electron"
 
@@ -40,6 +41,7 @@ export class MDE implements IDisposable {
     private _position: Position;
     private _menu: MainMenuView;
     private _view: WindowView = null;
+    private _searchBox: SearchBox;
 
     private _composition_start_pos : Position;
     private _composition_update_pos : Position;
@@ -64,6 +66,11 @@ export class MDE implements IDisposable {
         this._view.bind(this._buffer_state);
         this._view.configView.bind(configurationThunk(this));
 
+        this._searchBox = SearchBox.GetOne();
+        this._searchBox.closeButton.addEventListener("click", (e: MouseEvent) => {
+            this._view.editorView.documentView.selectionManager.focus();
+        })
+
         window.onbeforeunload = (e: Event) => {
             if (this._buffer_state.isModified) {
 
@@ -87,6 +94,14 @@ export class MDE implements IDisposable {
 
             if (e.ctrlKey) {
                 switch(e.keyCode) {
+                    case KeyCode.$F:
+                        this._searchBox.display = true;
+                        if (e.shiftKey) {
+                            this._searchBox.replaceInput.focus();
+                        } else {
+                            this._searchBox.searchInput.focus();
+                        }
+                        break;
                     case KeyCode.$S:
                         try {
                             if (this._buffer_state.isModified)

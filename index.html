@@ -4,9 +4,30 @@
     <meta charset="UTF-8">
     <title>MDE - Markdown Editor</title>
     <link rel="stylesheet" href="./styles/css/default.css" />
+    <link rel="stylesheet" href="./styles/css/searchbox.css" />
     <link rel="stylesheet" href="./styles/css/font-awesome.min.css" />
   </head>
   <body>
+
+    <div id="searchbox">
+
+      <div class="searchbox-titlebar">
+        <div class="searchbox-titlebar-btn">
+          <i class="fa fa-close"></i>
+        </div>
+      </div>
+
+      <div class="searchbox-row">
+        <input type="text" placeholder="Search" />
+        <input type="text" placeholder="Replace" />
+      </div>
+
+      <div class="searchbox-row">
+        <button class="searchbox-btn">Replace</button>
+        <button class="searchbox-btn">Replace All</button>
+      </div>
+
+    </div>
   
   <script>
 

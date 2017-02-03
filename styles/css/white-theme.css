@@ -58,6 +58,10 @@
     background: grey;
 }
 
+#searchbox {
+    background: grey;
+}
+
 .mde-scrollbar {
     border-left: 1px;
     border-left-color: lightgrey;

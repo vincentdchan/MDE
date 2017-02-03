@@ -6,6 +6,10 @@
     font-family: "Microsoft YaHei", sans-serif;
 }
 
+.searchbox-titlebar-btn {
+    float: right;
+}
+
 .mde-config-close {
     float: right;
 }
