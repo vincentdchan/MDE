@@ -69,17 +69,18 @@ body {
     top: 50%;
     transform: translate(-50%, -50%);
     box-shadow: 10px 10px 5px #888888;
-    border-radius: 8px;
-    background-color: floralwhite;
+    border-radius: 2px;
+    background-color: white;
 }
 
 .mde-config-tabs {
-    top: 36px;
+    top: 24px;
     width: 160px;
-    height: 264px;
+    height: 276px;
     border-left-width: 2px;
     border-left-color:dimgrey;
-    border-bottom-left-radius: 8px; 
+    border-bottom-left-radius: 2px; 
+    background-color: #ececec;
 }
 
 .mde-config-tab {
@@ -96,15 +97,28 @@ body {
 }
 
 .mde-config-titlebar {
-    height: 36px;
+    height: 24px;
     width: 100%;
     background-color: grey;
-    border-top-left-radius: 8px;
-    border-top-right-radius: 8px;
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
 }
 
 .mde-config-items-container {
     margin-left: 160px;
+    padding-left: 8px;
+}
+
+.mde-config-item-label {
+    box-sizing: border-box;
+    float: left;
+    width: 25%;
+}
+
+.mde-config-item-content {
+    box-sizing: border-box;
+    float: left;
+    width: 75%;
 }
 
 .mde-word-bold {

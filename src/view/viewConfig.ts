@@ -16,7 +16,7 @@ export class ConfigView extends DomHelper.FixedElement implements IDisposable {
     constructor() {
         super("div", "mde-config");
 
-        this._closeButton = new ButtonView(36, 36);
+        this._closeButton = new ButtonView(24, 24);
         this._closeButton.element().classList.add("mde-config-close");
         this._closeButton.setIcon("fa fa-close");
         this._closeButton.setTooltip($.getString("config.close"));
@@ -97,13 +97,19 @@ export class ConfigView extends DomHelper.FixedElement implements IDisposable {
     }
 
     private generateSettingItemElem(itemName: string, item: ConfigItem) : HTMLDivElement {
-        let elem = DomHelper.Generic.elem<HTMLDivElement>("div", "mde-config-item");
-        elem.appendChild(document.createTextNode(item.label));
+        let itemContainerElem = DomHelper.Generic.elem<HTMLDivElement>("div", "mde-config-item");
+
+        let itemLabelElem = DomHelper.Generic.elem<HTMLDivElement>("div", "mde-config-item-label");
+        let itemContentElem = DomHelper.Generic.elem<HTMLDivElement>("div", "mde-config-item-content");
+        itemContainerElem.appendChild(itemLabelElem);
+        itemContainerElem.appendChild(itemContentElem);
+
+        itemLabelElem.appendChild(document.createTextNode(item.label));
 
         switch(item.type) {
             case ConfigItemType.Text:
             {
-                let textInput = DomHelper.Generic.elem<HTMLInputElement>("input");
+                let textInput = DomHelper.Generic.elem<HTMLInputElement>("input", "mde-config-item-control");
 
                 textInput.addEventListener("input", (e) => {
                     this.validateAndApplyNewValue(itemName, item, textInput.value);
@@ -114,12 +120,12 @@ export class ConfigView extends DomHelper.FixedElement implements IDisposable {
                 } else {
                     item.value = "";
                 }
-                elem.appendChild(textInput);
+                itemContentElem.appendChild(textInput);
                 break;
             }
             case ConfigItemType.Checkbox:
             {
-                let textInput = DomHelper.Generic.elem<HTMLInputElement>("input");
+                let textInput = DomHelper.Generic.elem<HTMLInputElement>("input", "mde-config-item-control");
 
                 textInput.type = "checkbox";
 
@@ -130,16 +136,15 @@ export class ConfigView extends DomHelper.FixedElement implements IDisposable {
                 if (item.value) textInput.checked = item.value;
                 else textInput.checked = false;
 
-                elem.appendChild(textInput);
-
+                itemContentElem.appendChild(textInput);
                 break;
             }
             case ConfigItemType.Radio:
             {
-
+                let radioContainer = DomHelper.elem("div", "mde-config-item-control");
 
                 item.options.forEach((v, index) => {
-                    let textInput = DomHelper.Generic.elem<HTMLInputElement>("input");
+                    let textInput = DomHelper.Generic.elem<HTMLInputElement>("input", "mde-config-item-control");
 
                     textInput.addEventListener("change", (e: Event) => {
                         if (textInput.checked) {
@@ -155,16 +160,16 @@ export class ConfigView extends DomHelper.FixedElement implements IDisposable {
                         textInput.checked = true;
                     }
 
-                    elem.appendChild(textInput);
-
-                    elem.appendChild(document.createTextNode(v.label));
+                    radioContainer.appendChild(textInput);
+                    radioContainer.appendChild(document.createTextNode(v.label));
                 })
 
+                itemContainerElem.appendChild(radioContainer);
                 break;
             }
             case ConfigItemType.Options:
             {
-                let selectElem = DomHelper.Generic.elem<HTMLSelectElement>("select");
+                let selectElem = DomHelper.Generic.elem<HTMLSelectElement>("select", "mde-config-item-control");
 
                 selectElem.addEventListener("change", (e: Event) => {
                     this.validateAndApplyNewValue(itemName, item, selectElem.value)
@@ -180,12 +185,16 @@ export class ConfigView extends DomHelper.FixedElement implements IDisposable {
 
                 if (item.value) selectElem.value = item.value;
 
-                elem.appendChild(selectElem);
+                itemContentElem.appendChild(selectElem);
 
                 break;
             }
         }
-        return elem;
+
+        let alertContainer = DomHelper.elem("div", "mde-config-alert");
+        itemContainerElem.appendChild(alertContainer);
+
+        return itemContainerElem;
     }
 
     private validateAndApplyNewValue(itemName: string, item: ConfigItem, newValue: any) {
