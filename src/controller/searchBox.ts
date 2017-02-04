@@ -10,6 +10,9 @@ export class SearchBox {
         return SearchBox._onlyOne;
     }
 
+    private _searchEventHandlers: SearchEventHandler[] = [];
+    private _replaceEventHandlers: ReplaceEventHandler[] = [];
+
     private _width: number;
     private _display: boolean;
 
@@ -17,6 +20,9 @@ export class SearchBox {
     private _closeBtn: HTMLElement;
     private _searchInput: HTMLInputElement;
     private _replaceInput: HTMLInputElement;
+
+    private _nextButton: HTMLButtonElement;
+    private _previousButton: HTMLButtonElement;
     private _replaceButton: HTMLButtonElement;
     private _replaceAllButton: HTMLButtonElement;
 
@@ -31,16 +37,28 @@ export class SearchBox {
         this._searchInput = <HTMLInputElement>this._elem.getElementsByTagName("input")[0];
         this._replaceInput = <HTMLInputElement>this._elem.getElementsByTagName("input")[1];
 
-        this._replaceButton = <HTMLButtonElement>this._elem.getElementsByTagName("button")[0];
-        this._replaceAllButton = <HTMLButtonElement>this._elem.getElementsByTagName("button")[1];
+        this._nextButton = <HTMLButtonElement>document.getElementById("searchbox-next-btn");
+        this._previousButton = <HTMLButtonElement>document.getElementById("searchbox-previous-btn");
+        this._replaceButton = <HTMLButtonElement>document.getElementById("searchbox-replace-btn");
+        this._replaceAllButton = <HTMLButtonElement>document.getElementById("searchbox-replaceall-btn");
 
         this._closeBtn.addEventListener("click", (e: MouseEvent) => this.handleClose(e));
         this._searchInput.addEventListener("input", (e: Event) => this.handleSearchInputChanged(e));
         this._replaceInput.addEventListener("input", (e: Event) => this.handleReplaceInputChanged(e));
+        this._nextButton.addEventListener("click", (e: MouseEvent) => this.handleNextButtonClicked(e));
+        this._previousButton.addEventListener("click", (e: MouseEvent) => this.handlePreviousButtonClicked(e));
         this._replaceButton.addEventListener("click", (e: MouseEvent) => this.handleReplaceButtonClicked(e));
         this._replaceAllButton.addEventListener("click", (e: MouseEvent) => this.handleReplaceAllButtonClicked(e));
 
-        this.display = true;
+        this.display = false;
+    }
+
+    onSearchEvent(handler: SearchEventHandler) {
+        this._searchEventHandlers.push(handler);
+    }
+
+    onReplaceEvent(handler: ReplaceEventHandler) {
+        this._replaceEventHandlers.push(handler);
     }
 
     private handleClose(e: MouseEvent) {
@@ -55,12 +73,24 @@ export class SearchBox {
         this._replaceInputContent = this._replaceInput.value;
     }
 
-    private handleReplaceButtonClicked(e: MouseEvent) {
+    private handleNextButtonClicked(e: MouseEvent) {
+        let evt = new SearchEvent(this.searchInputContent, true);
+        this._searchEventHandlers.forEach((h: SearchEventHandler) => h.call(undefined, evt));
+    }
 
+    private handlePreviousButtonClicked(e: MouseEvent) {
+        let evt = new SearchEvent(this.searchInputContent, false);
+        this._searchEventHandlers.forEach((h: SearchEventHandler) => h.call(undefined, evt));
+    }
+
+    private handleReplaceButtonClicked(e: MouseEvent) {
+        let evt = new ReplaceEvent(this.searchInputContent, this.replaceInputContent, false);
+        this._replaceEventHandlers.forEach((h: ReplaceEventHandler) => h.call(undefined, evt));
     }
 
     private handleReplaceAllButtonClicked(e: MouseEvent) {
-
+        let evt = new ReplaceEvent(this.searchInputContent, this.replaceInputContent, true);
+        this._replaceEventHandlers.forEach((h: ReplaceEventHandler) => h.call(undefined, evt));
     }
 
     set width(w: number) {
@@ -112,4 +142,58 @@ export class SearchBox {
         return this._closeBtn;
     }
 
+}
+
+export class SearchEvent {
+
+    private _content: string;
+    private _isNext: boolean;
+
+    constructor(content: string, isNext: boolean = true) {
+        this._content = content;
+        this._isNext = isNext;
+    }
+
+    get content(): string {
+        return this._content;
+    }
+
+    get isNext(): boolean {
+        return this._isNext;
+    }
+
+}
+
+export class ReplaceEvent {
+
+    private _srcContent: string;
+    private _targetContent: string;
+    private _isAll: boolean;
+
+    constructor(srcContent: string, targetContent: string, isAll: boolean) {
+        this._srcContent = srcContent;
+        this._targetContent = targetContent;
+        this._isAll = isAll;
+    }
+
+    get sourceContent(): string {
+        return this._srcContent
+    }
+
+    get targetContent(): string {
+        return this._targetContent;
+    }
+
+    get isAll(): boolean {
+        return this._isAll;
+    }
+
+}
+
+interface SearchEventHandler {
+    (e: SearchEvent): void;
+}
+
+interface ReplaceEventHandler {
+    (e: ReplaceEvent): void;
 }

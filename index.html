@@ -11,20 +11,29 @@
 
     <div id="searchbox">
 
-      <div class="searchbox-titlebar">
-        <div class="searchbox-titlebar-btn">
-          <i class="fa fa-close"></i>
+      <div class="searchbox-titlebar-btn">
+        <i class="fa fa-close"></i>
+      </div>
+
+      <div class="searchbox-container">
+
+        <div class="searchbox-row">
+          <div>
+            <input type="text" placeholder="Search" />
+            <button id="searchbox-next-btn">
+              <i class="fa fa-arrow-down"></i>
+            </button>
+            <button id="searchbox-previous-btn">
+              <i class="fa fa-arrow-up"></i>
+            </button>
+          </div>
+          <input id="replace-input" type="text" placeholder="Replace" />
         </div>
-      </div>
 
-      <div class="searchbox-row">
-        <input type="text" placeholder="Search" />
-        <input type="text" placeholder="Replace" />
-      </div>
-
-      <div class="searchbox-row">
-        <button class="searchbox-btn">Replace</button>
-        <button class="searchbox-btn">Replace All</button>
+        <div class="searchbox-row">
+          <button id="searchbox-replace-btn" class="searchbox-btn">Replace</button>
+          <button id="searchbox-replaceall-btn" class="searchbox-btn">Replace All</button>
+        </div>
       </div>
 
     </div>

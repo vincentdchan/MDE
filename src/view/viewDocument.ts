@@ -334,9 +334,6 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
                 case KeyCode.$Z:
                     this.redo();
                     break;
-                case KeyCode.$F:
-                    console.log("replace");
-                    break;
             }
 
             return;
@@ -346,9 +343,6 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
             evt.preventDefault();
 
             switch(evt.which) {
-                case KeyCode.$F:
-                    console.log("search and replace");
-                    break;
                 case KeyCode.$C:
                     this.copyToClipboard();
                     break;
