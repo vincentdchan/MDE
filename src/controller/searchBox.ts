@@ -1,4 +1,17 @@
+import {KeyCode} from "../util"
 
+///
+/// Searchbox doesn't reply on the common view component
+/// in this project.
+/// it just replies on the HTML dom api to handle.
+///
+/// Use `SearchBox.GetOne()` to get a gobal SearchBox instance,
+/// using `new` to create an instance is not working.
+///
+/// There are two events to listen
+/// - Search
+/// - Replace
+///
 export class SearchBox {
 
     private static _onlyOne: SearchBox = null;
@@ -45,6 +58,8 @@ export class SearchBox {
         this._closeBtn.addEventListener("click", (e: MouseEvent) => this.handleClose(e));
         this._searchInput.addEventListener("input", (e: Event) => this.handleSearchInputChanged(e));
         this._replaceInput.addEventListener("input", (e: Event) => this.handleReplaceInputChanged(e));
+        this._searchInput.addEventListener("keydown", (e: KeyboardEvent) => this.handleSearchInputKeyDown(e));
+        this._replaceInput.addEventListener("keydown", (e: KeyboardEvent) => this.handleReplaceInputKeyDown(e));
         this._nextButton.addEventListener("click", (e: MouseEvent) => this.handleNextButtonClicked(e));
         this._previousButton.addEventListener("click", (e: MouseEvent) => this.handlePreviousButtonClicked(e));
         this._replaceButton.addEventListener("click", (e: MouseEvent) => this.handleReplaceButtonClicked(e));
@@ -71,6 +86,20 @@ export class SearchBox {
 
     private handleReplaceInputChanged(e: Event) {
         this._replaceInputContent = this._replaceInput.value;
+    }
+
+    private handleSearchInputKeyDown(e: KeyboardEvent) {
+        if (e.keyCode === KeyCode.Enter) {
+            let evt = new SearchEvent(this.searchInputContent, true);
+            this._searchEventHandlers.forEach((h: SearchEventHandler) => h.call(undefined, evt));
+        }
+    }
+
+    private handleReplaceInputKeyDown(e: KeyboardEvent) {
+        if (e.keyCode === KeyCode.Enter) {
+            let evt = new ReplaceEvent(this.searchInputContent, this.replaceInputContent, false);
+            this._replaceEventHandlers.forEach((h: ReplaceEventHandler) => h.call(undefined, evt));
+        }
     }
 
     private handleNextButtonClicked(e: MouseEvent) {

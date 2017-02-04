@@ -51,18 +51,12 @@ interface RenderEntry {
     tokenizeState?: MarkdownTokenizeState;
 }
 
-class NotInRangeError extends Error {
-
-    constructor() {
-        super("Not in range.")
-    }
-
-}
-
+///
+/// The DocumentView class present the TextModel
+/// http://blog.diverse.space/2017/01/%e5%a6%82%e4%bd%95%e4%bb%8e%e5%a4%b4%e6%89%93%e9%80%a0%e4%b8%80%e4%b8%aamarkdown%e7%bc%96%e8%be%91%e5%99%a8%ef%bc%88%e4%b8%80%ef%bc%89/
 ///
 /// Event:
-///
-/// CursorMove
+/// - CursorMove
 ///
 export class DocumentView extends DomHelper.AbsoluteElement implements IDisposable, TextEditApplier {
 
@@ -1158,6 +1152,14 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
 
     get width() {
         return super.width;
+    }
+
+}
+
+class NotInRangeError extends Error {
+
+    constructor() {
+        super("Not in range.")
     }
 
 }
