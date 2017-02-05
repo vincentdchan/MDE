@@ -4,41 +4,30 @@
     "version": "0.1.0",
     "command": "gulp",
     "isShellCommand": true,
-    "args": ["--no-color"],
-    // "args": ["--out", "module.js"],
+    "args": [
+        "--no-color"
+    ],
     "tasks": [
-        {
-            "taskName": "watch",
-            "args": [
-                "--no-color"
-            ],
-            "isBuildCommand": true,
-            "isWatching": true,
-            "problemMatcher": {
-                "owner": "typescript",
-                "applyTo": "closedDocuments",
-                "fileLocation": [
-                    "absolute"
-                ],
-                "pattern": {
-                    "regexp": "Error: ([^(]+)\\((\\d+|\\d+,\\d+|\\d+,\\d+,\\d+,\\d+)\\): (.*)$",
-					"file": 1,
-					"location": 2,
-					"message": 3
-                },
-                "watching": {
-                    "beginsPattern": "Starting complication",
-                    "endsPattern": "Finied complication"
-                }
-            }
-        },
         {
             "taskName": "build",
             "args": [],
             "isBuildCommand": true,
-            "isWatching": false,
+            "isBackground": false,
             "problemMatcher": [
-                "$tsc"
+                "$lessCompile",
+                "$tsc",
+                "$jshint"
+            ]
+        },
+        {
+            "taskName": "watch",
+            "args": [],
+            "isBuildCommand": true,
+            "isBackground": true,
+            "problemMatcher": [
+                "$lessCompile",
+                "$tsc",
+                "$jshint"
             ]
         }
     ]
