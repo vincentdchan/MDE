@@ -27,9 +27,12 @@ export class TrainMoveEvent extends Event {
 
 }
 
-/// scrollbar view
-/// define the height of scrollbar
-/// but do not define the width in the code
+/** 
+ * ## Scrollbar view
+ * 
+ * set the height of scrollbar,
+ * but do **not** set the fixed width in the code
+ */
 export class ScrollBarView 
     extends DomHelper.AbsoluteElement implements IDisposable {
 
@@ -90,6 +93,10 @@ export class ScrollBarView
 
     }
 
+    /**
+     * The scrollbar will fade out automatically,
+     * call `excite` to display it again.
+     */
     excite() {
         if (this._fadeOut) {
             this._exciteCount++;

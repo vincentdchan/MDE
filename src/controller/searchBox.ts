@@ -1,17 +1,18 @@
 import {KeyCode} from "../util"
 
-///
-/// Searchbox doesn't reply on the common view component
-/// in this project.
-/// it just replies on the HTML dom api to handle.
-///
-/// Use `SearchBox.GetOne()` to get a gobal SearchBox instance,
-/// using `new` to create an instance is not working.
-///
-/// There are two events to listen
-/// - Search
-/// - Replace
-///
+/**
+  * Searchbox doesn't reply on the common view component
+  * in this project.
+  * it just replies on the HTML dom api to handle.
+  *
+  * Use `SearchBox.GetOne()` to get a gobal SearchBox instance,
+  * using `new` to create an instance is not working.
+  *
+  * There are two events to listen
+  * - Search
+  * - Replace
+  *
+  */
 export class SearchBox {
 
     private static _onlyOne: SearchBox = null;

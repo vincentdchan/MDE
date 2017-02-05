@@ -6,6 +6,9 @@ import {EventEmitter} from "events"
 import {Position, PositionUtil, Range, isPosition, isRange, TextEdit, TextEditType, TextEditApplier} from "."
 import {hd, tl, last} from "../util/fn"
 
+/**
+ * Check if a string is ended with a lineBreaker.
+ */
 function isEndOfLineBreaker(str: string) : boolean {
     return str[str.length - 1] == "\n";
 }
@@ -29,6 +32,10 @@ export class TextEditEvent {
 
 }
 
+/**
+ * TextModel use chain of lines to store the data.
+ * A `TextEditEvent` will be triggered after applying a `TextEdit`
+ */
 export class TextModel extends EventEmitter implements TextEditApplier, ITextDocument {
 
     protected _lines : LineModel[];
@@ -101,6 +108,12 @@ export class TextModel extends EventEmitter implements TextEditApplier, ITextDoc
         return this._lines[this._lines.length - 1];
     }
 
+    /**
+     * All the change applying to the textmodel can be redo
+     * @returns when the `reverse` textedit is applying again to the 
+     *          textmodel, the textmodel will be recovered to the previous state.
+     *          The `pos` represent the position after the edit
+     */
     applyCancellableTextEdit(textEdit: TextEdit) : {reverse: TextEdit, pos: Position} {
         let _pos: Position;
         let _reverse: TextEdit;
@@ -179,11 +192,11 @@ export class TextModel extends EventEmitter implements TextEditApplier, ITextDoc
         return pos;
     }
 
-    ///
-    /// insert text into TextModel
-    /// whatever the type of TextModel
-    /// return the position after the insert
-    ///
+    /**
+     * Insert text into TextModel,
+     * whatever the type of TextModel.
+     * @returns the position after the insert.
+     */
     private insertText(textEdit: TextEdit) : Position {
         let pos: Position;
         if (textEdit.position)

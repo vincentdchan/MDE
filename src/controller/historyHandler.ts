@@ -1,15 +1,18 @@
 import {Deque} from "../util"
 import {TextEdit, TextEditType, PositionUtil, Position} from "../model"
 
+/**
+ * Containning two `deque` of `TextEdit`
+ */
 export class HistoryHandler {
 
     private _undo_history: Deque<TextEdit>;
     private _redo_history: Deque<TextEdit>;
     private _limit_size: number;
 
-    ///
-    /// limitSize: default 10
-    ///
+    /**
+      * @param limitSize default 10
+      */
     constructor(limitSize?: number) {
         this._undo_history = new Deque<TextEdit>();
         this._redo_history = new Deque<TextEdit>();

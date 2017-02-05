@@ -41,7 +41,9 @@
     "electron": "^1.4.3",
     "electron-builder": "^10.15.1",
     "electron-winstaller": "^2.5.1",
-    "mocha": "^3.2.0"
+    "gulp-typedoc": "^2.0.2",
+    "mocha": "^3.2.0",
+    "typedoc": "^0.5.5"
   },
   "build": {
     "appId": "MDE Editor",

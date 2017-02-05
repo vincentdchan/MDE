@@ -23,16 +23,6 @@ interface RenderEntry {
     textToColor: Collection.Queue<string>;
 }
 
-/*
-function copyRenderEntry(entry: RenderEntry): RenderEntry {
-    return {
-        renderState: entry.renderState,
-        tokenizeState: entry.tokenizeState,
-        renderMethod: entry.renderMethod,
-    };
-}
-*/
-
 export class LineRenderer {
 
     private _tokenizer: MarkdownTokenizer;

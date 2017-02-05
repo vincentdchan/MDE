@@ -51,13 +51,13 @@ interface RenderEntry {
     tokenizeState?: MarkdownTokenizeState;
 }
 
-///
-/// The DocumentView class present the TextModel
-/// http://blog.diverse.space/2017/01/%e5%a6%82%e4%bd%95%e4%bb%8e%e5%a4%b4%e6%89%93%e9%80%a0%e4%b8%80%e4%b8%aamarkdown%e7%bc%96%e8%be%91%e5%99%a8%ef%bc%88%e4%b8%80%ef%bc%89/
-///
-/// Event:
-/// - CursorMove
-///
+/**
+ * The DocumentView class present the TextModel
+ * [tutorial](http://blog.diverse.space/2017/01/%e5%a6%82%e4%bd%95%e4%bb%8e%e5%a4%b4%e6%89%93%e9%80%a0%e4%b8%80%e4%b8%aamarkdown%e7%bc%96%e8%be%91%e5%99%a8%ef%bc%88%e4%b8%80%ef%bc%89/)
+ *
+ * Event:
+ * - CursorMove
+ */
 export class DocumentView extends DomHelper.AbsoluteElement implements IDisposable, TextEditApplier {
 
     public static readonly LazyRenderTime = 420;
@@ -145,6 +145,9 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         })
     }
 
+    /**
+     * Bind the textmodel to the `DocumentView`, and render it.
+     */
     bind(model: TextModel) {
         this._model = model;
         this._history_handler = new HistoryHandler();
@@ -183,6 +186,10 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         this._model = null;
     }
 
+    /**
+     * Apply the textEdit to the textModel first, 
+     * then update the view.
+     */
     applyTextEdit(textEdit: TextEdit): Position {
         let result = this._model.applyCancellableTextEdit(textEdit);
         this._history_handler.pushUndo(result.reverse);
@@ -667,9 +674,9 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         return false;
     }
 
-    ///
-    /// remove first then append
-    ///
+    /**
+     * remove first then append
+     */
     private render(option: RenderOption) {
 
         if (option.removeLines) {
@@ -1075,8 +1082,10 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         }, DocumentView.LazyRenderTime);
     }
 
-    // delete line from [begin] to [end - 1]
-    // set line[begin .. begin + count - 1] to undefined
+    /**
+     * Delete line from [begin] to [end - 1],
+     * set line[begin .. begin + count - 1] to undefined.
+     */
     deleteLines(begin: number, end?: number) {
         if (begin <= 0)
             throw new Error("Index out of range.");

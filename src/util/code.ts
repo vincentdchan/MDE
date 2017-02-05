@@ -69,6 +69,9 @@ export namespace VersionControl {
 
     }
 
+    /**
+     * Update the version infomation in the code
+     */
     export function versionIncrease(files: string[], index: number) {
 
         let filterResult = filterFiles(files);

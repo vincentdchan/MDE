@@ -125,7 +125,9 @@ export class MDE implements IDisposable {
         this._view.bind(this._buffer_state);
     }
 
-    // 2016-12-15 Chen Xiao once said he is awesome
+    /**
+     *  2016-12-15 Chen Xiao once said he is awesome
+     */
     private handleMenuClick(evt: MenuClickEvent) {
         switch(evt.buttonType) {
             case MenuButtonType.NewFile:
@@ -205,11 +207,10 @@ export class MDE implements IDisposable {
         }
     }
 
-    ///
-    /// 0 for save file
-    /// 1 for not save file
-    /// 2 for cancel
-    ///
+    /**
+      * @returns 0 for **save** file, 
+      *         1 for **not save** file, 2 for **cancel**
+      */
     private confirmSaveFile() : number {
 
         let id = remote.dialog.showMessageBox({

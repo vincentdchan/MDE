@@ -36,9 +36,13 @@ function init() {
     }
 }
 
+/**
+ * The editor will auto load the locals json file, just use
+ * `getString` method to get the string.
+ */
 export class i18n {
 
-    static getString(tag: string) {
+    static getString(tag: string): string {
         if (!items) init();
         return items[tag];
     }

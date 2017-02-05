@@ -29,6 +29,13 @@
                 "$tsc",
                 "$jshint"
             ]
+        },
+        {
+            "taskName": "typedoc",
+            "args": [],
+            "isBuildCommand": false,
+            "isBackground": false,
+            "problemMatcher": []
         }
     ]
 }

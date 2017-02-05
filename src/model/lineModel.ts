@@ -4,6 +4,9 @@ export enum LineChangedType {
     Insert, Delete
 }
 
+/**
+ * Store the content and the number of a line
+ */
 export class LineModel {
 
     protected _number : number;
@@ -14,10 +17,17 @@ export class LineModel {
         this._text = _t;
     }
 
+    /**
+     * @returns the charactor at the `offset` position.
+     */
     charAt(offset : number) : string {
         return this._text.charAt(offset);
     }
 
+    /**
+     * throw `Error` when the index is out of range,
+     * throw `Error` if you try to add charactors after linebreak.
+     */
     insert(index : number, content : string) {
         if (index < 0 || index > this._text.length)
             throw new Error("Illegal input data when inserting text to LineModel");
