@@ -5,6 +5,7 @@ import {TextModel, LineModel, Position, PositionUtil,
 import {HistoryHandler} from "../controller"
 import {IDisposable, DomHelper, KeyCode, i18n as $, MarkdownTokenizer, 
     MarkdownTokenizeState, MarkdownTokenType} from "../util"
+import {NotInRangeError} from "../util/errors"
 import {hd, tl, last} from "../util/fn"
 import {PopAllQueue} from "../util/queue"
 import {InputerView} from "./viewInputer"
@@ -168,6 +169,14 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         setTimeout(() => {
             this._nullArea.height = this._dom.clientHeight / 2;
             this._scroll_height = this._dom.scrollHeight;
+
+            this.selectionManager.clearAll();
+            this.selectionManager.beginSelect({
+                line: 1,
+                offset: 0
+            });
+            this.selectionManager.endSelecting();
+            this.selectionManager.focus();
         }, 5);
     }
 
@@ -897,8 +906,8 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
             });
 
         } catch (e) {
-            if (e instanceof NotInRangeError) {
-                return
+            if (e instanceof CoordinateNotInDocumentError) {
+                return;
             } else {
                 throw e;
             }
@@ -957,7 +966,6 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
     }
 
     private getPositionFromCoordinate(co: Coordinate): Position {
-
         let _range = document.caretRangeFromPoint(co.x, co.y);
 
         let line_number: number,
@@ -976,7 +984,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         }
 
         if (line_number === undefined)
-            throw new NotInRangeError();
+            throw new CoordinateNotInDocumentError(co);
 
         let lineView = this.lines[line_number];
         let lineElm = lineView.element();
@@ -998,7 +1006,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
 
     getCoordinate(pos: Position) : Coordinate {
         if (pos.line <= 0 || pos.line > this.linesCount)
-            throw new Error("Index out of range.");
+            throw new NotInRangeError<number>(pos.line, this.linesCount, 1);
 
         let domRect = this._dom.getBoundingClientRect();
         let co = this._lines[pos.line].getCoordinate(pos.offset, false);
@@ -1008,7 +1016,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
 
     renderLineImd(lineNum: number) {
         if (lineNum <= 0 || lineNum > this.linesCount)
-            throw new Error("<index out of range> line:" + lineNum + " LinesCount:" + this.linesCount);
+            throw new NotInRangeError<number>(lineNum, this.linesCount, 1);
         
         let content = this._model.lineAt(lineNum).text;
         if (content.length > 0) {
@@ -1088,7 +1096,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
      */
     deleteLines(begin: number, end?: number) {
         if (begin <= 0)
-            throw new Error("Index out of range.");
+            throw new NotInRangeError(begin, undefined, 1);
         end = end? end : begin + 1;
 
         let _lines_prefix = this._lines.slice(0, begin),
@@ -1165,10 +1173,21 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
 
 }
 
-class NotInRangeError extends Error {
+export class CoordinateNotInDocumentError extends Error {
 
-    constructor() {
-        super("Not in range.")
+    private _coordinate: Coordinate;
+
+    constructor(co: Coordinate) {
+        super("CoordinateNotInDocumentError");
+
+        this._coordinate = co;
+        this.message = "<CoordinateNotInDocumentError" + 
+            "x=" + this._coordinate.x +
+            " y=" + this._coordinate.y + " >";
+    }
+
+    get coordinate(): Coordinate {
+        return this._coordinate;
     }
 
 }
