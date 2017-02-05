@@ -3,14 +3,14 @@ import {TextModel, LineModel, TextEdit, TextEditType,
 import {EditorView, Coordinate, WindowView} from "../view"
 import {IDisposable, Host, KeyCode, i18n as $, StringFormat} from "../util"
 import {configurationThunk} from "./configuration"
-import {remote, ipcRenderer} from "electron"
+import {shell, remote, ipcRenderer} from "electron"
 import {MainMenuView, MenuClickEvent, MenuButtonType} from "../view/menu"
 import {SearchBox} from "./searchBox"
 const {Menu, MenuItem} = remote
 import * as Electron from "electron"
 
 const config = {
-    "version": "0.0.2"
+    "version": "0.0.3"
 }
 
 const SaveFilter = [
@@ -175,6 +175,9 @@ export class MDE implements IDisposable {
                 break;
             case MenuButtonType.Reload:
                 Host.reload();
+                break;
+            case MenuButtonType.Documentation:
+                shell.openExternal("http://mde.diverse.space")
                 break;
             case MenuButtonType.About:
                 this.showAboutMessage();

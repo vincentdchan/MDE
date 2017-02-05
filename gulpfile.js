@@ -28,8 +28,9 @@ gulp.task("typedoc", function() {
         .pipe(typedoc({
             module: "commonjs",
             target: "es6",
-            out: "doc",
-            name: "MDE"
+            out: "../mde-doc/doc",
+            gaID: "UA-40846513-8",
+            name: "MDE Documentation"
         }))
     ;
 });
