@@ -2,6 +2,8 @@
 
 MDE(Markdown Editor) is a Markdown editor based on [Electron](http://electron.atom.io/), written in *Typescript*.
 
+![mde.gif](https://ooo.0o0.ooo/2017/02/08/589af9da2cae8.gif)
+
 ## Features
 
 - Basic editor to edit markdown file
