@@ -96,8 +96,9 @@ export class ScrollBarView
     /**
      * The scrollbar will fade out automatically,
      * call `excite` to display it again.
+     * @param presist the scrollbar will not fade out
      */
-    excite() {
+    excite(presist: boolean = false) {
         if (this._fadeOut) {
             this._exciteCount++;
 
@@ -106,7 +107,7 @@ export class ScrollBarView
             setTimeout(() => {
                 this._exciteCount--;
 
-                if (this._exciteCount === 0) {
+                if (this._exciteCount === 0 && !presist) {
                     this._train.element().classList.add("mde-scrollbar-train-fadeOut");
                 }
             }, this._fadeOutTime);
@@ -129,11 +130,16 @@ export class ScrollBarView
         this._train.top = h;
     }
 
+    /**
+     * set the percentage of height, 
+     * the value will be limit between 0 and 1.
+     */
     set trainPositionPercentage(per: number) {
         this.excite();
-        per = Math.floor(per * 10000) / 10000;
-        if (per < 0 || per > 1)
-            throw new Error("Data should be between 0 and 1: " + per);
+        // per = Math.floor(per * 10000) / 10000;
+        if (per < 0) per = 0;
+        else if (per > 1) per = 1;
+
         this._train.top = (this.height - this._train.height) * per;
     }
 

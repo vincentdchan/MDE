@@ -11,7 +11,6 @@ import {TextModel, TextEdit, TextEditType,
     TextEditApplier, Position, Snippet, PositionUtil} from "../model"
 import {ButtonOption} from "."
 
-
 export class TooglePreviewEvent extends Event {
 
     constructor() {
@@ -50,9 +49,7 @@ export class EditorView extends DomHelper.FixedElement
     constructor() {
         super("div", "mde-editor");
 
-        this._dom.addEventListener("mousemove", (e: MouseEvent) => {
-            this._scrollbar.excite();
-        })
+        this._dom.addEventListener("mousemove", (e: MouseEvent) => this.handleMouseMove(e));
 
         this._toolbar = new ToolbarView(this.generateToolbarMenus(), generateRightButtons(this));
         this._toolbar.top = 0;
@@ -264,6 +261,22 @@ export class EditorView extends DomHelper.FixedElement
     private handleDocumentScrollHeightChanged(evt: ScrollHeightChangedEvent) {
         this._scrollbar.trainHeightPercentage = this.getScrollTrainHeightPercentage();
         this._scrollbar.trainPositionPercentage = this.getScrollPercentage();
+    }
+
+    private handleMouseMove(e: MouseEvent) {
+        let rect = this._scrollbar.element().getBoundingClientRect();
+        let cursorPos = {
+            x: e.screenX,
+            y: e.screenY,
+        };
+
+        let presist = false;
+        if (e.clientX >= rect.left && e.clientX <= rect.right &&
+            e.clientY >= rect.top && e.clientY <= rect.bottom) {
+
+            presist = true;
+        }
+        this._scrollbar.excite(presist);
     }
 
     private generateToolbarMenus() : ButtonOption[] {
