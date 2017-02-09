@@ -38,11 +38,15 @@ export class TextEditEvent {
  */
 export class TextModel extends EventEmitter implements TextEditApplier, ITextDocument {
 
+    private _reportall_cached_helper: ReportAllCachedHelper;
     protected _lines : LineModel[];
 
     constructor(_string: string) {
         super();
 
+        this._reportall_cached_helper = new ReportAllCachedHelper(() => {
+            return this.realReportAll();
+        });
         this._lines = new Array<LineModel>();
         
         let lc = 1;
@@ -198,6 +202,8 @@ export class TextModel extends EventEmitter implements TextEditApplier, ITextDoc
      * @returns the position after the insert.
      */
     private insertText(textEdit: TextEdit) : Position {
+        this._reportall_cached_helper.abandon();
+
         let pos: Position;
         if (textEdit.position)
             pos = textEdit.position;
@@ -271,6 +277,8 @@ export class TextModel extends EventEmitter implements TextEditApplier, ITextDoc
     }
 
     private deleteText(textEdit: TextEdit): Position {
+        this._reportall_cached_helper.abandon();
+
         let _range = textEdit.range;
 
         if (_range.begin.line === _range.end.line) {
@@ -297,6 +305,8 @@ export class TextModel extends EventEmitter implements TextEditApplier, ITextDoc
     }
 
     private replaceText(textEdit: TextEdit) {
+        this._reportall_cached_helper.abandon();
+
         let _range = textEdit.range,
             _text = textEdit.text;
         if (_range.end.line > _range.begin.line || 
@@ -318,7 +328,10 @@ export class TextModel extends EventEmitter implements TextEditApplier, ITextDoc
         return this._lines[pos.line].charAt(pos.offset);
     }
 
-    reportAll() {
+    /**
+     * The non-cached version of `reportAll`
+     */
+    private realReportAll(): string {
         var buf = new StringBuffer();
 
         for (let i = 1; i < this._lines.length; i++) {
@@ -326,6 +339,14 @@ export class TextModel extends EventEmitter implements TextEditApplier, ITextDoc
         }
 
         return buf.getStr();
+    }
+
+    /**
+     * The result is **cached**.
+     * @returns All the content stored in the TextModel
+     */
+    reportAll(): string {
+        return this._reportall_cached_helper.content;
     }
 
     report(_range: Range) : string {
@@ -356,6 +377,32 @@ export class TextModel extends EventEmitter implements TextEditApplier, ITextDoc
         return this._lines.length - 1;
     }
     
+}
+
+class ReportAllCachedHelper {
+
+    private _contentThunk: () => string;
+    private _cached_string: string = null;
+
+    constructor(contentThunk: () => string) {
+        this._contentThunk = contentThunk;
+    }
+
+    private requrestContent() {
+        this._cached_string = this._contentThunk();
+    }
+
+    get content(): string {
+        if (this._cached_string === null) {
+            this.requrestContent();
+        }
+        return this._cached_string;
+    }
+
+    abandon() {
+        this._cached_string = null;
+    }
+
 }
 
 export function * TextModelLineIterator(tm : TextModel) : IterableIterator<LineModel> {
