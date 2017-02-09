@@ -18,15 +18,6 @@ export class PreviewDocumentView extends DomHelper.AbsoluteElement implements ID
             this.handleDocMouseUp(evt);
         }, false);
 
-        this._dom.addEventListener("click", (evt: MouseEvent) => {
-            let targetElm = <any>evt.target;
-            if (targetElm.tagName && targetElm.tagName == "A") {
-                evt.preventDefault();
-
-                let anchor = <HTMLAnchorElement>targetElm;
-                shell.openExternal(anchor.href);
-            }
-        })
     }
 
     bind(model: TextModel) {
@@ -35,6 +26,17 @@ export class PreviewDocumentView extends DomHelper.AbsoluteElement implements ID
         this._container = DomHelper.Generic.elem<HTMLDivElement>("div", "mde-preview-document-container");
         this._dom.appendChild(this._container);
         this.renderImd();
+
+        let elems = this._dom.getElementsByTagName("A");
+        let arr = [...elems];
+        arr.forEach((a: Element) => {
+            a.addEventListener("click", (evt: Event) => {
+                evt.preventDefault();
+
+                let anchor = <HTMLAnchorElement>a;
+                shell.openExternal(anchor.href);
+            })
+        })
     }
 
     ///
