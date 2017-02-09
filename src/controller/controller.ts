@@ -1,11 +1,11 @@
 import {TextModel, LineModel, TextEdit, TextEditType, 
-     Position, BufferState} from "../model"
+     Position, PositionUtil, BufferState} from "../model"
 import {EditorView, Coordinate, WindowView} from "../view"
 import {IDisposable, Host, KeyCode, i18n as $, StringFormat} from "../util"
 import {configurationThunk} from "./configuration"
 import {shell, remote, ipcRenderer} from "electron"
 import {MainMenuView, MenuClickEvent, MenuButtonType} from "../view/menu"
-import {SearchBox} from "./searchBox"
+import {SearchBox, SearchEvent, ReplaceEvent} from "./searchBox"
 const {Menu, MenuItem} = remote
 import * as Electron from "electron"
 
@@ -70,6 +70,8 @@ export class MDE implements IDisposable {
         this._searchBox.closeButton.addEventListener("click", (e: MouseEvent) => {
             this._view.editorView.documentView.selectionManager.focus();
         })
+        this._searchBox.onSearchEvent(this.handleSearch.bind(this));
+        this._searchBox.onReplaceEvent(this.handleReplace.bind(this));
 
         window.onbeforeunload = (e: Event) => {
             if (this._buffer_state.isModified) {
@@ -208,6 +210,41 @@ export class MDE implements IDisposable {
                     break;
             }
         }
+    }
+
+    private handleSearch(e: SearchEvent) {
+        let textModel = this.textModel;
+        let selectionManager = this._view.editorView.documentView.selectionManager;
+
+        if (selectionManager.length > 0) {
+            let currentPos: Position = PositionUtil.clonePosition(
+                this._view.editorView.documentView.selectionManager.selectionAt(0).endPosition);
+
+            if (e.isNext) {
+                let currentOffset: number = textModel.offsetAt(currentPos),
+                    allContent: string = textModel.reportAll(),
+                    tail = allContent.slice(currentOffset),
+                    targetIndex = tail.indexOf(e.content);
+
+                if (targetIndex >= 0) {
+                    let targetBeginPos = textModel.positionAt(currentOffset + targetIndex),
+                        targetEndPos = textModel.positionAt(currentOffset + targetIndex + e.content.length);
+
+                    selectionManager.clearAll();
+                    selectionManager.beginSelect(targetBeginPos);
+                    selectionManager.moveCursorTo(targetEndPos);
+                    selectionManager.endSelecting();
+                } else {
+                    console.log(e.content, "not found");
+                }
+            } else {
+                throw new Error("Not implemented");
+            }
+        }
+    }
+
+    private handleReplace(e: ReplaceEvent) {
+
     }
 
     /**
@@ -350,6 +387,10 @@ export class MDE implements IDisposable {
         }
         this._view.dispose();
         this._view = null;
+    }
+
+    get textModel(): TextModel {
+        return this._buffer_state.model;
     }
 
     get editorView() {

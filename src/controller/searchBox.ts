@@ -179,6 +179,10 @@ export class SearchEvent {
     private _content: string;
     private _isNext: boolean;
 
+    /**
+     * @param content the content of search string
+     * @param isNext find the next or find the previous
+     */
     constructor(content: string, isNext: boolean = true) {
         this._content = content;
         this._isNext = isNext;
