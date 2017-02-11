@@ -281,7 +281,7 @@ export class MDE implements IDisposable {
                 selectionManager.endSelecting();
                 selectionManager.focus();
             } else {
-                console.log(e.content, " not found");
+                console.log(e.content, "not found");
             }
         }
     }
@@ -307,22 +307,27 @@ export class MDE implements IDisposable {
             let begin_index = allContent.indexOf(e.sourceContent),
                 end_index = begin_index + e.sourceContent.length;
 
-            let begin_pos = textModel.positionAt(begin_index),
-                end_pos = textModel.positionAt(end_index);
+            if (begin_index > 0) {
+                let begin_pos = textModel.positionAt(begin_index),
+                    end_pos = textModel.positionAt(end_index);
 
-            let textEdit = new TextEdit(TextEditType.ReplaceText, {
-                begin: begin_pos,
-                end: end_pos,
-            }, e.targetContent);
+                let textEdit = new TextEdit(TextEditType.ReplaceText, {
+                    begin: begin_pos,
+                    end: end_pos,
+                }, e.targetContent);
 
-            this._view.editorView.documentView.applyTextEdit(textEdit);
+                this._view.editorView.documentView.applyTextEdit(textEdit);
 
-            setTimeout(() => {
-                selectionManager.beginSelect(begin_pos);
-                selectionManager.moveCursorTo(textModel.positionAt(begin_index + e.targetContent.length));
-                selectionManager.endSelecting();
-                selectionManager.focus();
-            }, 10);
+                setTimeout(() => {
+                    selectionManager.beginSelect(begin_pos);
+                    selectionManager.moveCursorTo(textModel.positionAt(begin_index + e.targetContent.length));
+                    selectionManager.endSelecting();
+                    selectionManager.focus();
+                }, 10);
+            } else {
+                console.log(e.sourceContent, "not found.");
+            }
+
         }
 
     }

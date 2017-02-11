@@ -93,6 +93,9 @@ export class SearchBox {
         if (e.keyCode === KeyCode.Enter) {
             let evt = new SearchEvent(this.searchInputContent, true);
             this._searchEventHandlers.forEach((h: SearchEventHandler) => h.call(undefined, evt));
+        } else if (e.keyCode === KeyCode.Tab) {
+            e.preventDefault();
+            this._replaceInput.focus();
         }
     }
 
