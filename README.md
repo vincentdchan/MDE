@@ -10,6 +10,8 @@ MDE(Markdown Editor) is a Markdown editor based on [Electron](http://electron.at
 - Markdown and HTML syntax highlighting
 - Rendered markdown preview
 - White/Black color theme
+- Search/Replace support
+- File associations on `win32` platform
 
 ## Download
 
@@ -21,24 +23,18 @@ The UWP version is recomended, search `MDE Editor` in the Windows Store.
 
 ## Support Platform
 
-Current:
-
 - Win32 64 bit Version
 - UWP(Windows Store) *only for win10*
-
-In the future:
-
 - Linux 64 bit version (Ubuntu for developing)
 
 Because I do not have any devices on OS X platform, I won't build it.
 
-## Waiting for new version 0.0.3 (developing)
+## Waiting for new version 0.0.4 (developing)
 
-In the new version `0.0.3`, there are a lot of new features.
+In the new version `0.0.4`, there are a lot of new features.
 
-- File associations on `win32` platform
 - Add `configuration` panel and allow user to define some properties, save user config in user data folder
-- Find & Search box
-- Add support of `linux`
+- Better preview experience
+- more markdown syntax support
 
 It's on progress and comming soon.
