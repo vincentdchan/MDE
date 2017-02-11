@@ -174,7 +174,7 @@ describe("TextModel", () => {
         console.log("cancellable insert");
 
         let tm1 = new TextModel(testText1);
-        let result = tm1.applyCancellableTextEdit(
+        let result = tm1.applyRevocableTextEdit(
             new TextEdit(TextEditType.InsertText, {line: 1, offset: 0}, "(insert)"));
         assert.equal(tm1.lineAt(1).text, "(insert)# Title\n");
         assert.strictEqual(result.reverse.type, TextEditType.DeleteText, "reverse type error");
@@ -188,7 +188,7 @@ describe("TextModel", () => {
 
         tm1 = new TextModel(testText1);
         let inputText  = "(insert)\n(secondline)";
-        result = tm1.applyCancellableTextEdit(new TextEdit(TextEditType.InsertText, {
+        result = tm1.applyRevocableTextEdit(new TextEdit(TextEditType.InsertText, {
             line: 1, offset: 0,
         }, inputText));
         assert.equal(tm1.lineAt(1).text, "(insert)\n");
@@ -205,7 +205,7 @@ describe("TextModel", () => {
 
         let tm1 = new TextModel(testText1);
 
-        let result = tm1.applyCancellableTextEdit(new TextEdit(TextEditType.DeleteText, {
+        let result = tm1.applyRevocableTextEdit(new TextEdit(TextEditType.DeleteText, {
             begin: {line: 1, offset: 2},
             end: {line: 1, offset: 3},
         }));
@@ -218,7 +218,7 @@ describe("TextModel", () => {
         console.log("cancellable delete multi-lines API...");
 
         tm1 = new TextModel(testText1);
-        result = tm1.applyCancellableTextEdit(new TextEdit(TextEditType.DeleteText, {
+        result = tm1.applyRevocableTextEdit(new TextEdit(TextEditType.DeleteText, {
             begin: {line: 1, offset: 2},
             end: {line: 3, offset: 1},
         }));
@@ -234,7 +234,7 @@ describe("TextModel", () => {
 
     describe("#CancellableReplace", () => {
         let tm1 = new TextModel(testText1);
-        let result = tm1.applyCancellableTextEdit(new TextEdit(TextEditType.ReplaceText, {
+        let result = tm1.applyRevocableTextEdit(new TextEdit(TextEditType.ReplaceText, {
             begin: {line: 3, offset: 0},
             end:  {line: 4, offset: 1}
         }, "(replace)"));

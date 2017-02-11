@@ -200,7 +200,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
      * then update the view.
      */
     applyTextEdit(textEdit: TextEdit): Position {
-        let result = this._model.applyCancellableTextEdit(textEdit);
+        let result = this._model.applyRevocableTextEdit(textEdit);
         this._history_handler.pushUndo(result.reverse);
 
         this.render(this.calculateRenderLines(textEdit));
@@ -290,7 +290,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
                 }, textContent);
             }
 
-            let result = this._model.applyCancellableTextEdit(textEdit);
+            let result = this._model.applyRevocableTextEdit(textEdit);
             renderOption = this.calculateRenderLines(textEdit);
             this.render(renderOption);
             this._history_handler.pushUndo(result.reverse);
@@ -323,7 +323,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
             let textContent = this._model.report(range);
 
             let textEdit = new TextEdit(TextEditType.DeleteText, range);
-            let result = this._model.applyCancellableTextEdit(textEdit);
+            let result = this._model.applyRevocableTextEdit(textEdit);
 
             let renderOption = this.calculateRenderLines(textEdit);
             this.render(renderOption);
@@ -403,7 +403,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
                                 end: endPosition, 
                             });
 
-                            let result = this._model.applyCancellableTextEdit(textEdit);
+                            let result = this._model.applyRevocableTextEdit(textEdit);
                             this.render(this.calculateRenderLines(textEdit));
                             this._history_handler.pushUndo(result.reverse);
 
@@ -414,7 +414,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
                                 end: majorSelection.endPosition
                             });
 
-                            let result = this._model.applyCancellableTextEdit(textEdit);
+                            let result = this._model.applyRevocableTextEdit(textEdit);
                             this.render(this.calculateRenderLines(textEdit));
                             this._history_handler.pushUndo(result.reverse);
 
@@ -549,7 +549,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
                                     },
                                     end: majorSelection.endPosition,
                                 });
-                                let result = this._model.applyCancellableTextEdit(textEdit);
+                                let result = this._model.applyRevocableTextEdit(textEdit);
 
                                 this.render(this.calculateRenderLines(textEdit));
                                 this._history_handler.pushUndo(result.reverse);
@@ -567,7 +567,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
                                         end: pos
                                     });
 
-                                    let result = this._model.applyCancellableTextEdit(textEdit);
+                                    let result = this._model.applyRevocableTextEdit(textEdit);
                                     let renderOption = this.calculateRenderLines(textEdit);
                                     this.render(renderOption);
                                     this._history_handler.pushUndo(result.reverse);
@@ -582,7 +582,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
                                 end: majorSelection.endPosition
                             });
 
-                            let result = this._model.applyCancellableTextEdit(textEdit);
+                            let result = this._model.applyRevocableTextEdit(textEdit);
                             this.render(this.calculateRenderLines(textEdit));
                             this._history_handler.pushUndo(result.reverse);
 
@@ -601,7 +601,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
                                     majorSelection.beginPosition, 
                                     majorSelection.inputerContent);
                                 
-                                let result = this._model.applyCancellableTextEdit(textEdit);
+                                let result = this._model.applyRevocableTextEdit(textEdit);
                                 let beginPos = this._selection_manger.selectionAt(0).beginPosition;
 
                                 this._history_handler.pushUndo(result.reverse);
@@ -618,7 +618,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
                                 }, majorSelection.inputerContent);
 
                                 majorSelection.clearInputerContent();
-                                let result = this._model.applyCancellableTextEdit(textEdit);
+                                let result = this._model.applyRevocableTextEdit(textEdit);
 
                                 this._history_handler.pushUndo(result.reverse);
                                 this.render(this.calculateRenderLines(textEdit));
@@ -637,7 +637,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         let textEdit = this._history_handler.popUndo();
         let majorSelection = this._selection_manger.selectionAt(0);
         if (textEdit) {
-            let result = this._model.applyCancellableTextEdit(textEdit);
+            let result = this._model.applyRevocableTextEdit(textEdit);
             this.render(this.calculateRenderLines(textEdit));
             this._history_handler.pushRedo(result.reverse);
             setTimeout(() => {
@@ -672,7 +672,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         let textEdit = this._history_handler.popRedo();
         let majorSelection = this._selection_manger.selectionAt(0);
         if (textEdit) {
-            let result = this._model.applyCancellableTextEdit(textEdit);
+            let result = this._model.applyRevocableTextEdit(textEdit);
             this.render(this.calculateRenderLines(textEdit));
             this._history_handler.pushUndo(result.reverse);
             setTimeout(() => {

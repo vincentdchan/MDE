@@ -18,6 +18,11 @@ export interface ITextDocument {
     report(range: Range): string;
 }
 
+export interface RevocableOperationResult {
+    reverse: TextEdit,
+    pos: Position,
+}
+
 export class TextEditEvent {
 
     private _textEdit : TextEdit;
@@ -100,25 +105,13 @@ export class TextModel extends EventEmitter implements TextEditApplier, ITextDoc
         return this._lines[num];
     }
 
-    get firstLine(): LineModel {
-        if (this._lines.length === 0)
-            throw new Error("No lines found.");
-        return this._lines[0];
-    }
-
-    get lastLine(): LineModel {
-        if (this._lines.length === 0)
-            throw new Error("No lines found.");
-        return this._lines[this._lines.length - 1];
-    }
-
     /**
      * All the change applying to the textmodel can be redo
      * @returns when the `reverse` textedit is applying again to the 
      *          textmodel, the textmodel will be recovered to the previous state.
      *          The `pos` represent the position after the edit
      */
-    applyCancellableTextEdit(textEdit: TextEdit) : {reverse: TextEdit, pos: Position} {
+    applyRevocableTextEdit(textEdit: TextEdit) : RevocableOperationResult {
         let _pos: Position;
         let _reverse: TextEdit;
         switch(textEdit.type) {
@@ -276,6 +269,24 @@ export class TextModel extends EventEmitter implements TextEditApplier, ITextDoc
         }
     }
 
+    /**
+     * Replace all the content in the TextModel with `data`, 
+     * the operation is cancellable.
+     * @param data the target string
+     */
+    RevocableReplaceAll(data: string) {
+        throw new Error("Not implemented");
+    }
+
+    /**
+     * Replace all the content in the TextModel with `data`, 
+     * the operation is **NOT** cancellable.
+     * @param data the target string
+     */
+    replaceAll(data: string) {
+        throw new Error("Not implemented");
+    }
+
     private deleteText(textEdit: TextEdit): Position {
         this._reportall_cached_helper.abandon();
 
@@ -371,6 +382,35 @@ export class TextModel extends EventEmitter implements TextEditApplier, ITextDoc
         for (let i = 1; i <= this.linesCount; i++) {
             _fun(this._lines[i]);
         }
+    }
+
+    /**
+     * the position of first char
+     */
+    get beginPosition(): Position {
+        return {
+            line: 1,
+            offset: 0
+        };
+    }
+
+    /**
+     * the position of last char
+     */
+    get endPosition(): Position {
+        return this.lastLine.lastCharPosition;
+    }
+
+    get firstLine(): LineModel {
+        if (this._lines.length === 0)
+            throw new Error("No lines found.");
+        return this._lines[0];
+    }
+
+    get lastLine(): LineModel {
+        if (this._lines.length === 0)
+            throw new Error("No lines found.");
+        return this._lines[this._lines.length - 1];
     }
     
     get linesCount() {

@@ -244,6 +244,15 @@ export class MDE implements IDisposable {
     }
 
     private handleReplace(e: ReplaceEvent) {
+        let textModel = this.textModel;
+
+        if (e.isAll) {
+            let allContent = textModel.reportAll();
+
+            let result = allContent.replace(new RegExp(e.sourceContent, "g"), e.targetContent);
+        } else {
+
+        }
 
     }
 

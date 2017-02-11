@@ -39,10 +39,10 @@ export class PreviewDocumentView extends DomHelper.AbsoluteElement implements ID
         })
     }
 
-    ///
-    /// the container maybe very huge,
-    /// clear it.
-    ///
+    /**
+     * the container maybe very huge,
+     * clear it.
+     */ 
     unbind() {
         this._model = null;
         this._dom.removeChild(this._container);
