@@ -97,10 +97,16 @@ export class MDE implements IDisposable {
             if (e.ctrlKey) {
                 switch(e.keyCode) {
                     case KeyCode.$F:
+                        let selectionManager = this._view.editorView.documentView.selectionManager,
+                            dataString: string;
+                        if (selectionManager.length > 0 && !selectionManager.selectionAt(0).collapsed) {
+                            let range = selectionManager.report(0); 
+                            dataString = this.textModel.report(range);
+                        }
                         if (e.shiftKey) {
-                            this.enableReplacePanel();
+                            this.enableReplacePanel(dataString);
                         } else {
-                            this.enableSearchPanel();
+                            this.enableSearchPanel(dataString);
                         }
                         break;
                     case KeyCode.$S:
@@ -238,16 +244,21 @@ export class MDE implements IDisposable {
         let selectionManager = this._view.editorView.documentView.selectionManager;
 
         if (selectionManager.length > 0) {
-            let currentPos: Position = PositionUtil.clonePosition(
-                this._view.editorView.documentView.selectionManager.selectionAt(0).endPosition),
-                currentOffset: number = textModel.offsetAt(currentPos),
+            let currentPos: Position,
+                currentOffset: number,
                 allContent: string = textModel.reportAll(),
                 targetIndex: number;
 
             if (e.isNext) {
+                currentPos = PositionUtil.clonePosition(
+                    this._view.editorView.documentView.selectionManager.selectionAt(0).endPosition);
+                currentOffset = textModel.offsetAt(currentPos);
                 let tail = allContent.slice(currentOffset);
                 targetIndex = tail.indexOf(e.content);
             } else {
+                currentPos = PositionUtil.clonePosition(
+                    this._view.editorView.documentView.selectionManager.selectionAt(0).beginPosition);
+                currentOffset = textModel.offsetAt(currentPos);
                 let head = allContent.slice(0, currentOffset);
                 targetIndex = head.lastIndexOf(e.content);
             }
@@ -277,7 +288,10 @@ export class MDE implements IDisposable {
 
     private handleReplace(e: ReplaceEvent) {
         let textModel = this.textModel,
-            allContent = textModel.reportAll();
+            allContent = textModel.reportAll(),
+            selectionManager = this._view.editorView.documentView.selectionManager;
+
+        selectionManager.clearAll();
 
         if (e.isAll) {
 
@@ -289,7 +303,6 @@ export class MDE implements IDisposable {
 
             this._view.editorView.documentView.applyTextEdit(textEdit);
         } else {
-            let selectionManager = this._view.editorView.documentView.selectionManager;
 
             let begin_index = allContent.indexOf(e.sourceContent),
                 end_index = begin_index + e.sourceContent.length;
@@ -305,7 +318,6 @@ export class MDE implements IDisposable {
             this._view.editorView.documentView.applyTextEdit(textEdit);
 
             setTimeout(() => {
-                selectionManager.clearAll();
                 selectionManager.beginSelect(begin_pos);
                 selectionManager.moveCursorTo(textModel.positionAt(begin_index + e.targetContent.length));
                 selectionManager.endSelecting();
