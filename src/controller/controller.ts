@@ -25,7 +25,7 @@ function getAboutMessageString() : string {
     if (_aboutMsg === undefined) {
         _aboutMsg = [
             StringFormat($.getString("about.version"), config["version"]),
-            StringFormat($.getString("about.releaseDate"), "2017/1/1"),
+            StringFormat($.getString("about.releaseDate"), "2017/2/11"),
             StringFormat($.getString("about.nodeVersion"), "6.5"),
         ].join("\n\r");
     }
