@@ -13,6 +13,8 @@
     "edit.cut": "剪切",
     "edit.copy": "复制",
     "edit.paste": "粘贴",
+    "edit.search": "搜索",
+    "edit.replace": "替换",
     "edit.selectAll": "全选",
 
     "view": "视图",

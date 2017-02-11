@@ -7,7 +7,7 @@ import {i18n as $} from "../util"
 
 export enum MenuButtonType {
     NewFile, OpenFile, Save, SaveAs, Preference,
-    Exit, Undo, Redo, Cut, Copy, Paste, SelectAll,
+    Exit, Undo, Redo, Cut, Copy, Paste, SelectAll, Search, Replace,
     OpenDevTools, Reload, Documentation, About, WhiteTheme, BlackTheme,
 }
 
@@ -110,6 +110,22 @@ export class MainMenuView extends EventEmitter {
                         accelerator: "Ctrl+V",
                         click: () => { this.emitMenuClickEvent(MenuButtonType.Paste) }
                     },
+                    {
+                        type: "separator"
+                    }, 
+                    {
+                        label: $.getString("edit.search"),   
+                        accelerator: "Ctrl+F",
+                        click: () => { this.emitMenuClickEvent(MenuButtonType.Search) }
+                    },
+                    {
+                        label: $.getString("edit.replace"),
+                        accelerator: "Ctrl+Shift+F",
+                        click: () => { this.emitMenuClickEvent(MenuButtonType.Replace) }
+                    },
+                    {
+                        type: "separator"
+                    }, 
                     {
                         label: $.getString("edit.selectAll"),
                         accelerator: "Ctrl+A",

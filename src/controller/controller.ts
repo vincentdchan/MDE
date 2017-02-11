@@ -97,11 +97,10 @@ export class MDE implements IDisposable {
             if (e.ctrlKey) {
                 switch(e.keyCode) {
                     case KeyCode.$F:
-                        this._searchBox.display = true;
                         if (e.shiftKey) {
-                            this._searchBox.replaceInput.focus();
+                            this.enableReplacePanel();
                         } else {
-                            this._searchBox.searchInput.focus();
+                            this.enableSearchPanel();
                         }
                         break;
                     case KeyCode.$S:
@@ -125,6 +124,22 @@ export class MDE implements IDisposable {
 
         this._view.unbind();
         this._view.bind(this._buffer_state);
+    }
+
+    private enableSearchPanel(searchData?: string) {
+        this._searchBox.display = true;
+        if (searchData) {
+            this._searchBox.searchInputContent = searchData;
+        }
+        this._searchBox.searchInput.focus();
+    }
+
+    private enableReplacePanel(searchData?: string) {
+        this._searchBox.display = true;
+        if (searchData) {
+            this._searchBox.searchInputContent = searchData;
+        }
+        this._searchBox.replaceInput.focus();
     }
 
     /**
@@ -175,6 +190,12 @@ export class MDE implements IDisposable {
             case MenuButtonType.Cut:
                 this._view.editorView.cutToClipboard();
                 break;
+            case MenuButtonType.Search:
+                this.enableSearchPanel();
+                break;
+            case MenuButtonType.Replace:
+                this.enableReplacePanel();
+                break;
             case MenuButtonType.Reload:
                 Host.reload();
                 break;
@@ -218,40 +239,78 @@ export class MDE implements IDisposable {
 
         if (selectionManager.length > 0) {
             let currentPos: Position = PositionUtil.clonePosition(
-                this._view.editorView.documentView.selectionManager.selectionAt(0).endPosition);
+                this._view.editorView.documentView.selectionManager.selectionAt(0).endPosition),
+                currentOffset: number = textModel.offsetAt(currentPos),
+                allContent: string = textModel.reportAll(),
+                targetIndex: number;
 
             if (e.isNext) {
-                let currentOffset: number = textModel.offsetAt(currentPos),
-                    allContent: string = textModel.reportAll(),
-                    tail = allContent.slice(currentOffset),
-                    targetIndex = tail.indexOf(e.content);
-
-                if (targetIndex >= 0) {
-                    let targetBeginPos = textModel.positionAt(currentOffset + targetIndex),
-                        targetEndPos = textModel.positionAt(currentOffset + targetIndex + e.content.length);
-
-                    selectionManager.clearAll();
-                    selectionManager.beginSelect(targetBeginPos);
-                    selectionManager.moveCursorTo(targetEndPos);
-                    selectionManager.endSelecting();
-                } else {
-                    console.log(e.content, "not found");
-                }
+                let tail = allContent.slice(currentOffset);
+                targetIndex = tail.indexOf(e.content);
             } else {
-                throw new Error("Not implemented");
+                let head = allContent.slice(0, currentOffset);
+                targetIndex = head.lastIndexOf(e.content);
+            }
+
+            if (targetIndex >= 0) {
+                let targetBeginPos: Position,
+                    targetEndPos: Position;
+
+                if (e.isNext) {
+                    targetBeginPos = textModel.positionAt(currentOffset + targetIndex),
+                    targetEndPos = textModel.positionAt(currentOffset + targetIndex + e.content.length);
+                } else {
+                    targetBeginPos = textModel.positionAt(targetIndex),
+                    targetEndPos = textModel.positionAt(targetIndex + e.content.length);
+                }
+
+                selectionManager.clearAll();
+                selectionManager.beginSelect(targetBeginPos);
+                selectionManager.moveCursorTo(targetEndPos);
+                selectionManager.endSelecting();
+                selectionManager.focus();
+            } else {
+                console.log(e.content, " not found");
             }
         }
     }
 
     private handleReplace(e: ReplaceEvent) {
-        let textModel = this.textModel;
+        let textModel = this.textModel,
+            allContent = textModel.reportAll();
 
         if (e.isAll) {
-            let allContent = textModel.reportAll();
 
             let result = allContent.replace(new RegExp(e.sourceContent, "g"), e.targetContent);
-        } else {
+            let textEdit = new TextEdit(TextEditType.ReplaceText, {
+                begin: textModel.beginPosition,
+                end: textModel.endPosition
+            }, result);
 
+            this._view.editorView.documentView.applyTextEdit(textEdit);
+        } else {
+            let selectionManager = this._view.editorView.documentView.selectionManager;
+
+            let begin_index = allContent.indexOf(e.sourceContent),
+                end_index = begin_index + e.sourceContent.length;
+
+            let begin_pos = textModel.positionAt(begin_index),
+                end_pos = textModel.positionAt(end_index);
+
+            let textEdit = new TextEdit(TextEditType.ReplaceText, {
+                begin: begin_pos,
+                end: end_pos,
+            }, e.targetContent);
+
+            this._view.editorView.documentView.applyTextEdit(textEdit);
+
+            setTimeout(() => {
+                selectionManager.clearAll();
+                selectionManager.beginSelect(begin_pos);
+                selectionManager.moveCursorTo(textModel.positionAt(begin_index + e.targetContent.length));
+                selectionManager.endSelecting();
+                selectionManager.focus();
+            }, 10);
         }
 
     }

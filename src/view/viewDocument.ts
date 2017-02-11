@@ -1124,11 +1124,15 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
         window.removeEventListener("keyup", this._window_keyup_handler, true);
     }
 
-    get selectionManager() {
+    get historyHandler(): HistoryHandler {
+        return this._history_handler;
+    }
+
+    get selectionManager(): SelectionManager {
         return this._selection_manger;
     }
 
-    get scrollTop() {
+    get scrollTop(): number {
         return this._dom.scrollTop;
     }
 

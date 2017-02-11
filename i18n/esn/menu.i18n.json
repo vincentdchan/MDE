@@ -13,6 +13,8 @@
     "edit.cut": "Cut",
     "edit.copy": "Copy",
     "edit.paste": "Paste",
+    "edit.search": "Search",
+    "edit.replace": "Replace",
     "edit.selectAll": "Select All",
 
     "view": "View",

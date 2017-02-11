@@ -156,8 +156,16 @@ export class SearchBox {
         return this._searchInputContent;
     }
 
+    set searchInputContent(data: string) {
+        this._searchInput.value = data;
+    }
+
     get replaceInputContent() : string {
         return this._replaceInputContent;
+    }
+
+    set replaceInputContent(data: string) {
+        this._replaceInput.value = data;
     }
 
     get searchInput(): HTMLInputElement {
