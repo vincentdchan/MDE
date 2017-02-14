@@ -33,6 +33,9 @@ function generateRightButtons(editorView: EditorView) : ButtonOption[] {
     ]
 }
 
+/**
+ * - add `isDisplay` property at v0.0.4
+ */
 export class EditorView extends DomHelper.FixedElement 
     implements IDisposable {
 
@@ -42,6 +45,7 @@ export class EditorView extends DomHelper.FixedElement
 
     private _model: TextModel = null;
 
+    private _isDisplay: boolean;
     private _document: DocumentView;
     private _scrollbar: ScrollBarView;
     private _toolbar: ToolbarView;
@@ -69,6 +73,8 @@ export class EditorView extends DomHelper.FixedElement
         this._scrollbar.appendTo(this._dom);
 
         this._scrollbar.on("trainMove", this.handleScrollBarTrainMove.bind(this));
+
+        this.isDisplay = true;
 
         setTimeout(() => {
             this._scrollbar.trainHeightPercentage = this.getScrollTrainHeightPercentage();
@@ -353,6 +359,21 @@ export class EditorView extends DomHelper.FixedElement
 
     set fontFamily(fm: string) {
         this._dom.style.fontFamily = fm;
+    }
+
+    get isDisplay() {
+        return this._isDisplay;
+    }
+
+    set isDisplay(v: boolean) {
+        if (v !== this._isDisplay) {
+            this._isDisplay = v;
+            if (v) {
+                this._dom.style.display = "block";
+            } else {
+                this._dom.style.display = "none";
+            }
+        }
     }
 
     dispose() {

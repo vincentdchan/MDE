@@ -49,16 +49,17 @@ export class PreviewView extends DomHelper.FixedElement implements IDisposable {
 
         }
 
-        function fixed(num: number, fixed: number) {
-            let times = Math.pow(10, 2);
-            return Math.floor(num * times) / times;
+        function makeInRange(target: number, max: number, min: number) {
+            if (target > max) return max;
+            if (target < min) return min;
+            return target;
         }
 
         this._document.on("scroll", (evt: Event) => {
             setTimeout(() => {
                 let elm = this._document.element();
                 let rect = elm.getBoundingClientRect();
-                this._scrollbar.trainPositionPercentage = fixed(elm.scrollTop / (elm.scrollHeight - rect.height), 2);
+                this._scrollbar.trainPositionPercentage = makeInRange(elm.scrollTop / (elm.scrollHeight - rect.height), 1, 0);
             });
         });
     }

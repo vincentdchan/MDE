@@ -11,14 +11,25 @@ import * as os from "os"
 import * as fs from "fs";
 import * as path from "path";
 
+/**
+ * ## add narrow mode support at v0.0.4
+ * 
+ *  the window will turn into **narrow mode** when the window
+ *  width is smaller than `ResponsiveWidth`
+ * 
+ */
 export class WindowView extends DomHelper.AppendableDomWrapper implements IDisposable {
 
     public static readonly leftPadWidth = 220;
+    public static readonly ResponsiveWidth = 485;
 
     private _buffer_state: BufferState = null;
 
     private _width : number;
     private _height: number;
+
+    private _splitScale: number;
+    private _narrowMode: boolean = false;
 
     // private _leftPanel : LeftPanelView;
     private _editor : EditorView;
@@ -312,15 +323,33 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
         if (this._preview_opened) {
             let srcWidth = this._width,
                 srcEditorWidth = this._editor.width;
+            if (!this._narrowMode) {
+                this._splitScale = srcEditorWidth / srcWidth;
+                this._splitScale = this._splitScale < 0.1 || this._splitScale > 1 || isNaN(this._splitScale)? 
+                    0.5 : this._splitScale;
+            }
 
-            this._width = w;
+            if (w <= WindowView.ResponsiveWidth) {
+                this._narrowMode = true;
+                this._splitter.isDisplay = false;
+                this._editor.isDisplay = false;
 
-            let leftMargin = Math.floor(w * (srcEditorWidth / srcWidth));
-            this._editor.width = leftMargin;
-            this._splitter.marginLeft = leftMargin;
+                this._preview.width = w;
+                this._preview.marginLeft = 0;
+            } else {
+                this._narrowMode = false;
+                this._splitter.isDisplay = true;
+                this._editor.isDisplay = true;
 
-            this._preview.marginLeft = leftMargin;
-            this._preview.width = w - leftMargin;
+                this._width = w;
+
+                let leftMargin = Math.floor(w * this._splitScale);
+                this._editor.width = leftMargin;
+                this._splitter.marginLeft = leftMargin;
+
+                this._preview.marginLeft = leftMargin;
+                this._preview.width = w - leftMargin;
+            }
         } else {
             this._width = w;
             this._editor.width = w;
@@ -347,12 +376,16 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
         }
     }
 
-    get editorView() : EditorView {
+    get editorView(): EditorView {
         return this._editor;
     }
 
-    get splitterView() : SplitterView {
+    get splitterView(): SplitterView {
         return this._splitter;
+    }
+
+    get narrowMode() {
+        return this._narrowMode;
     }
 
     dispose() {

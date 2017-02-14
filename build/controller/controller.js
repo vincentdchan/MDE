@@ -16,7 +16,7 @@ const menu_1 = require("../view/menu");
 const searchBox_1 = require("./searchBox");
 const { Menu, MenuItem } = electron_1.remote;
 const config = {
-    "version": "0.0.3"
+    "version": "0.0.4"
 };
 const SaveFilter = [
     { name: "Markdown", extensions: ["md"] },
