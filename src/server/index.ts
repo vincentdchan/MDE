@@ -2,6 +2,7 @@ import * as Electron from "electron"
 import {dialog} from "electron"
 import * as fs from "fs"
 export {initializeMarkdownTokenizerService} from "./tokenizer"
+export {initializeExportService} from "./exportService"
 export {default as  renderServer} from "./render"
 
 export function initializeLocalesWindowService(locales: string) {

@@ -78,6 +78,14 @@ export class Host {
                     }
                 });
 
+            ipcRenderer.on("get-export-html-reply",
+                (event: Electron.IpcRendererEvent, id: number, data: string) => {
+                    if (Host.mapper[id]) {
+                        Host.mapper[id].resolve(data);
+                        Host.mapper[id] = null;
+                    }
+                });
+
             Host.inited = true;
         }
     }
@@ -172,6 +180,23 @@ export class Host {
 
     static reload() {
         ipcRenderer.send("window-reload");
+    }
+
+    static exportHTML(data: string) {
+        ipcRenderer.send("export-html", data);
+    }
+
+    static getExportHTML(): Promise<string> {
+        Host.init();
+
+        let id = Host.idCounter++;
+        return new Promise((resolve, reject) => {
+            ipcRenderer.send("get-export-html", id);
+            Host.mapper[id] = {
+                resolve: resolve,
+                reject: reject,
+            }
+        });
     }
 
 }

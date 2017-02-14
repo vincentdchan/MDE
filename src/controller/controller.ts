@@ -169,6 +169,9 @@ export class MDE implements IDisposable {
             case MenuButtonType.SaveAs:
                 this.handleSaveAsFile(SaveFilter);
                 break;
+            case MenuButtonType.ExportHTML:
+                this.handleExportHTML();
+                break;
             case MenuButtonType.Preference:
                 this._view.configView.toggle();
                 break;
@@ -212,6 +215,11 @@ export class MDE implements IDisposable {
                 this.showAboutMessage();
                 break;
         }
+    }
+
+    private handleExportHTML() {
+        let data = this._view.previewView.HTMLContent;
+        Host.exportHTML(data);
     }
 
     private showAboutMessage() {

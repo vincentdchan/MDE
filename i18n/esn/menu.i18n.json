@@ -5,6 +5,8 @@
     "file.save": "Save",
     "file.saveAs": "Save as",
     "file.preference": "Preference",
+    "file.export": "导出",
+    "file.export.HTML": "HTML",
     "file.exit": "Exit",
 
     "edit": "Edit",

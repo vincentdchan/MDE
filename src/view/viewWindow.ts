@@ -12,7 +12,10 @@ import * as fs from "fs";
 import * as path from "path";
 
 /**
- * ## add narrow mode support at v0.0.4
+ * ## Update at v0.0.4
+ * 
+ *  - add narrow support
+ *  - add `previewView` property
  * 
  *  the window will turn into **narrow mode** when the window
  *  width is smaller than `ResponsiveWidth`
@@ -94,9 +97,9 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
 
         this._splitter.marginLeft = this._editor.width;
         this._splitter.element().style.opacity = "0.5";
-        this._splitter.on("mousedown", (e: MouseEvent) => { this.handleSplitterMouseDown(e) });
+        this._splitter.on("mousedown", (e: MouseEvent) => this.handleSplitterMouseDown(e));
 
-        window.addEventListener("mouseup", (e: MouseEvent) => { this.handleWindowMouseUp(e) }, true);
+        window.addEventListener("mouseup", (e: MouseEvent) => this.handleWindowMouseUp(e), true);
 
         setTimeout(() => {
             let tmp = this._dom.clientWidth / 2;
@@ -378,6 +381,10 @@ export class WindowView extends DomHelper.AppendableDomWrapper implements IDispo
 
     get editorView(): EditorView {
         return this._editor;
+    }
+
+    get previewView(): PreviewView {
+        return this._preview;
     }
 
     get splitterView(): SplitterView {

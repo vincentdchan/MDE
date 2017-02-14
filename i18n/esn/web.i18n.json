@@ -34,5 +34,8 @@
     "config.general.fontSize": "Font Size",
     "config.general.lineHeight": "Line Height",
 
-    "config.close": "Close"
+    "config.close": "Close",
+
+    "exportHTML.title": "HTML Export",
+    "exportHTML.save": "Save"
 }

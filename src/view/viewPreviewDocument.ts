@@ -4,9 +4,16 @@ import * as marked  from "marked"
 import * as Electron from "electron"
 import {remote, clipboard, shell} from "electron"
 
+/**
+ * ## Update at v0.0.4
+ * 
+ *  - add `HTMLContent` property
+ * 
+ */
 export class PreviewDocumentView extends DomHelper.AbsoluteElement implements IDisposable {
 
     private _model: TextModel;
+    private _HTMLContent: string;
     private _container: HTMLDivElement;
 
     constructor()  {
@@ -50,7 +57,8 @@ export class PreviewDocumentView extends DomHelper.AbsoluteElement implements ID
 
     renderImd() {
         let content = this._model.reportAll();
-        this._container.innerHTML = marked(content);
+        this._HTMLContent = marked(content);
+        this._container.innerHTML = this._HTMLContent;
     }
 
     private handleDocMouseUp(evt: MouseEvent) {
@@ -75,6 +83,10 @@ export class PreviewDocumentView extends DomHelper.AbsoluteElement implements ID
         let menu = remote.Menu.buildFromTemplate(options);
 
         menu.popup(remote.getCurrentWindow());
+    }
+
+    get HTMLContent() {
+        return this._HTMLContent;
     }
 
     copyToClipboard() {

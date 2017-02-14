@@ -38,5 +38,8 @@
     "config.style.fontSize.small": "小",
     "config.style.lineHeight": "行高",
 
-    "config.close": "关闭"
+    "config.close": "关闭",
+
+    "exportHTML.title": "导出为HTML",
+    "exportHTML.save": "保存"
 }

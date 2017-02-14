@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>MDE - Output HTML</title>
+    <link rel="stylesheet" href="./styles/css/font-awesome.min.css" />
+    <link rel="stylesheet" href="./node_modules/codemirror/lib/codemirror.css" />
+    <style>
+    .CodeMirror { border: 1px solid #eee; height: auto; }
+
+    #saveButton {
+      position: fixed;
+      top: 0px;
+      right: 0px;
+      z-index: 100;
+      cursor: pointer;
+      padding: 10px;
+      font-size: 22px;
+    }
+    </style>
+  </head>
+  <body>
+
+      <div id="saveButton" title="Save">
+        <span><i class="fa fa-download"></i></span>
+      </div>
+
+      <div>
+        <textarea id="htmlEditor"></textarea>
+      </div>
+    
+    <script>
+        require("./build/HTMLExportIndex.js")
+    </script>
+  </body>
+</html>

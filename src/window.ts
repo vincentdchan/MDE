@@ -24,8 +24,9 @@ function createWindow() {
     Server.initializeBrowserWindowService(win);
     Server.initializeDialogService();
     Server.initializeFileService();
+    Server.initializeExportService();
     
-    win.on('closed', ()=> {
+    win.on('closed', () => {
         win = null;
     });
 }

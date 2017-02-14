@@ -35,6 +35,7 @@ In the new version `0.0.4`, there are a lot of new features.
 
 - Add `configuration` panel and allow user to define some properties, save user config in user data folder
 - Better preview experience
-- more markdown syntax support
+- More markdown syntax support
+- HTML export
 
 It's on progress and comming soon.

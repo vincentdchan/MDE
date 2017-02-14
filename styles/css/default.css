@@ -237,5 +237,5 @@ body {
 }
 
 .mde-preview-document-container img {
-    width: 100%;
+    max-width: 100%;
 }

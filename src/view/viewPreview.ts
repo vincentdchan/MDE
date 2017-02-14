@@ -3,6 +3,11 @@ import {ScrollBarView, TrainMoveEvent} from "./viewScrollBar"
 import {PreviewDocumentView} from "./viewPreviewDocument"
 import {TextModel, TextEditEvent} from "../model"
 
+/**
+ * ## Update at v0.0.4
+ * - add `HTMLContent` property
+ * 
+ */
 export class PreviewView extends DomHelper.FixedElement implements IDisposable {
 
     private _model : TextModel;
@@ -105,6 +110,10 @@ export class PreviewView extends DomHelper.FixedElement implements IDisposable {
 
     get documentView() {
         return this._document;
+    }
+
+    get HTMLContent() {
+        return this._document.HTMLContent;
     }
 
     dispose() {

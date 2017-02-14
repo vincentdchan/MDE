@@ -6,7 +6,7 @@ import * as Electron from "electron"
 import {i18n as $} from "../util"
 
 export enum MenuButtonType {
-    NewFile, OpenFile, Save, SaveAs, Preference,
+    NewFile, OpenFile, Save, SaveAs, Preference, ExportHTML,
     Exit, Undo, Redo, Cut, Copy, Paste, SelectAll, Search, Replace,
     OpenDevTools, Reload, Documentation, About, WhiteTheme, BlackTheme,
 }
@@ -69,6 +69,18 @@ export class MainMenuView extends EventEmitter {
                     {
                         label: $.getString("file.preference"),
                         click: () => { this.emitMenuClickEvent(MenuButtonType.Preference) }
+                    },
+                    {
+                        type: "separator"
+                    },
+                    {
+                        label: $.getString("file.export"),
+                        submenu: [
+                            {
+                                label: $.getString("file.export.HTML"),
+                                click: () => { this.emitMenuClickEvent(MenuButtonType.ExportHTML) }
+                            }
+                        ]
                     },
                     {
                         type: "separator"
