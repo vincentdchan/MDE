@@ -1,4 +1,4 @@
-# MDE
+![mde-bar.png](https://ooo.0o0.ooo/2017/02/14/58a31a1041cf4.png)
 
 MDE(Markdown Editor) is a Markdown editor based on [Electron](http://electron.atom.io/), written in *Typescript*.
 

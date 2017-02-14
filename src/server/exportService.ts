@@ -12,7 +12,7 @@ export function initializeExportService() {
 
         let win: any = new BrowserWindow({
             width: 450, 
-            height : 600,
+            height : 450,
             minWidth: 300,
             minHeight: 400,
             icon: path.join(__dirname, "../assets", "mde-logo-bg-sm.png"),
