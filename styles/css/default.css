@@ -235,3 +235,7 @@ body {
 .mde-preview-document-container pre {
     overflow-x: auto;
 }
+
+.mde-preview-document-container img {
+    width: 100%;
+}
