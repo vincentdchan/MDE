@@ -1,7 +1,8 @@
-import {DomHelper, IDisposable} from "../../util"
+import {DomWrapper, IDisposable} from "../../util"
 import {ButtonView} from "./../viewButton"
 import {ButtonOption} from "../"
 export {SettingView, SettingItemOption, SettingOptionType} from "./viewSetting"
+import {Dom} from "typescript-domhelper"
 
 const DefaultLeftPanelButtonOptions : ButtonOption[] = [
     {
@@ -17,10 +18,10 @@ const DefaultLeftPanelButtonOptions : ButtonOption[] = [
 ];
 
 interface PanelEventListener {
-    (elem: DomHelper.IDOMWrapper, evt: Event) : void;
+    (elem: DomWrapper.IDOMWrapper, evt: Event) : void;
 }
 
-class NavigationView extends DomHelper.AbsoluteElement implements IDisposable {
+class NavigationView extends DomWrapper.AbsoluteElement implements IDisposable {
 
     public static readonly DefaultWidth = 48;
     private _container : HTMLDivElement = null;
@@ -31,7 +32,7 @@ class NavigationView extends DomHelper.AbsoluteElement implements IDisposable {
         width = width >=0 ? width : NavigationView.DefaultWidth;
         height = height >=0 ? height : NavigationView.DefaultWidth;
 
-        this._container = <HTMLDivElement>DomHelper.elem("div", "mde-left-panel-nav-container");
+        this._container = Dom.Div("mde-left-panel-nav-container");
         this._dom.appendChild(this._container);
 
         this.width = width;
@@ -54,7 +55,7 @@ class NavigationView extends DomHelper.AbsoluteElement implements IDisposable {
 
 }
 
-class ContentContainer extends DomHelper.AbsoluteElement implements IDisposable {
+class ContentContainer extends DomWrapper.AbsoluteElement implements IDisposable {
 
     constructor() {
         super("div", "mde-left-panel-content-container");
@@ -68,10 +69,10 @@ class ContentContainer extends DomHelper.AbsoluteElement implements IDisposable 
         }
     }
 
-    appendChild(elem: Node | DomHelper.IDOMWrapper) {
+    appendChild(elem: Node | DomWrapper.IDOMWrapper) {
         if (elem instanceof Node) {
             this._dom.appendChild(elem);
-        } else if (DomHelper.isIDOMWrapper(elem)) {
+        } else if (DomWrapper.isIDOMWrapper(elem)) {
             elem.appendTo(this._dom);
         } else {
             throw new Error("Appending the wrong type.");
@@ -97,7 +98,7 @@ class CollapseEvent {
 /// - collapsed
 /// - expanded
 ///
-export class LeftPanelView extends DomHelper.FixedElement implements IDisposable {
+export class LeftPanelView extends DomWrapper.FixedElement implements IDisposable {
 
     public static readonly MinWidth = 100;
     private _nav_view : NavigationView = null;

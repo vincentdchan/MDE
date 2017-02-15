@@ -1,6 +1,6 @@
-import {DomHelper, IDisposable} from "../util"
+import {DomWrapper, IDisposable} from "../util"
 
-class ScrollBarTrain extends DomHelper.AbsoluteElement implements IDisposable {
+class ScrollBarTrain extends DomWrapper.AbsoluteElement implements IDisposable {
 
     constructor() {
         super("div", "mde-scrollbar-train");
@@ -34,7 +34,7 @@ export class TrainMoveEvent extends Event {
  * but do **not** set the fixed width in the code
  */
 export class ScrollBarView 
-    extends DomHelper.AbsoluteElement implements IDisposable {
+    extends DomWrapper.AbsoluteElement implements IDisposable {
 
     public static readonly DefaultScrollAlpha = 0.01;
 

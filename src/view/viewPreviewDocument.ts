@@ -1,16 +1,17 @@
-import {IDisposable, DomHelper, KeyCode, i18n as $} from "../util"
+import {IDisposable, DomWrapper, KeyCode, i18n as $} from "../util"
 import {TextModel, TextEditEvent, TextEdit} from "../model"
 import * as marked  from "marked"
 import * as Electron from "electron"
 import {remote, clipboard, shell} from "electron"
+import {Dom} from "typescript-domhelper"
 
 /**
- * ## Update at v0.0.4
+ * ## Update at v0.1.0
  * 
  *  - add `HTMLContent` property
  * 
  */
-export class PreviewDocumentView extends DomHelper.AbsoluteElement implements IDisposable {
+export class PreviewDocumentView extends DomWrapper.AbsoluteElement implements IDisposable {
 
     private _model: TextModel;
     private _HTMLContent: string;
@@ -30,7 +31,7 @@ export class PreviewDocumentView extends DomHelper.AbsoluteElement implements ID
     bind(model: TextModel) {
         this._model = model;
 
-        this._container = DomHelper.Generic.elem<HTMLDivElement>("div", "mde-preview-document-container");
+        this._container = Dom.Div("mde-preview-document-container");
         this._dom.appendChild(this._container);
         this.renderImd();
 

@@ -1,4 +1,4 @@
-import {DomHelper, IDisposable, Vector2, KeyCode, i18n as $} from "../util"
+import {DomWrapper, IDisposable, Vector2, KeyCode, i18n as $} from "../util"
 import {EditorView, TooglePreviewEvent} from "./viewEditor"
 import {SplitterView} from "./viewSplitter"
 import {PreviewView} from "./viewPreview"
@@ -12,7 +12,7 @@ import * as fs from "fs";
 import * as path from "path";
 
 /**
- * ## Update at v0.0.4
+ * ## Update at v0.1.0
  * 
  *  - add narrow support
  *  - add `previewView` property
@@ -21,7 +21,7 @@ import * as path from "path";
  *  width is smaller than `ResponsiveWidth`
  * 
  */
-export class WindowView extends DomHelper.AppendableDomWrapper implements IDisposable {
+export class WindowView extends DomWrapper.AppendableDomWrapper implements IDisposable {
 
     public static readonly leftPadWidth = 220;
     public static readonly ResponsiveWidth = 485;

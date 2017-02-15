@@ -1,4 +1,4 @@
-import {IDisposable, DomHelper, TickTockPair, TickTockUtil, i18n as $} from "../util"
+import {IDisposable, DomWrapper, TickTockPair, TickTockUtil, i18n as $} from "../util"
 import {Coordinate, IHidable} from "."
 import {ButtonView} from "./viewButton"
 import {Config, ConfigTab, ConfigItem, ConfigItemType, 
@@ -12,13 +12,13 @@ import {text, elem, Dom} from "typescript-domhelper"
  * 
  * The size of the class button is fixed.
  */
-export class ConfigView extends DomHelper.FixedElement implements IDisposable {
+export class ConfigView extends DomWrapper.FixedElement implements IDisposable {
 
     private _showed: boolean = false;
     private _model: Config;
     private _tabs: ConfigTabsView;
     private _closeButton: ButtonView;
-    private _titleBar: HTMLElement;
+    private _titleBar: HTMLDivElement;
     private _items_container: HTMLDivElement;
 
     constructor() {
@@ -32,7 +32,7 @@ export class ConfigView extends DomHelper.FixedElement implements IDisposable {
             this.toggle();
         });
 
-        this._titleBar = DomHelper.elem("div", "mde-config-titlebar");
+        this._titleBar = Dom.Div("mde-config-titlebar");
         this._dom.appendChild(this._titleBar);
         this._closeButton.appendTo(this._titleBar);
 
@@ -42,7 +42,7 @@ export class ConfigView extends DomHelper.FixedElement implements IDisposable {
             this.handleTabSelected(e);
         });
 
-        this._items_container = DomHelper.Generic.elem<HTMLDivElement>("div", "mde-config-items-container");
+        this._items_container = Dom.Div("mde-config-items-container");
         this._dom.appendChild(this._items_container);
 
         this._dom.style.zIndex = "100";
@@ -182,7 +182,7 @@ export class ConfigView extends DomHelper.FixedElement implements IDisposable {
             case ConfigItemType.Options:
             {
                 let selectElem = Dom.Select("mde-config-item-control", null, item.options.map((s) => {
-                    let optionElem = DomHelper.Generic.elem<HTMLOptionElement>("option");
+                    let optionElem = Dom.Option();
                     optionElem.appendChild(document.createTextNode(s.label));
                     optionElem.setAttribute("value", s.name);
 
@@ -259,7 +259,7 @@ export class TabSelectedEvent extends Event {
 
 }
 
-export class ConfigTabsView extends DomHelper.AbsoluteElement {
+export class ConfigTabsView extends DomWrapper.AbsoluteElement {
 
     private _model: Config;
     private _container: HTMLDivElement;
@@ -293,7 +293,7 @@ export class ConfigTabsView extends DomHelper.AbsoluteElement {
 
     private render() {
         this.clearAll();
-        this._container = DomHelper.Generic.elem<HTMLDivElement>("div", "mde-config-tabs-container");
+        this._container = Dom.Div("mde-config-tabs-container");
         this._dom.appendChild(this._container);
 
         for (let tabName in this._model) {
@@ -304,8 +304,8 @@ export class ConfigTabsView extends DomHelper.AbsoluteElement {
     }
 
     private generateTabElem(name:string, tab: ConfigTab) : HTMLDivElement {
-        let elem = DomHelper.Generic.elem<HTMLDivElement>("div", "mde-config-tab");
-        let span = DomHelper.Generic.elem<HTMLSpanElement>("span", "mde-config-tab-name");
+        let elem = Dom.Div("mde-config-tab");
+        let span = Dom.Span("mde-config-tab-name");
 
         span.appendChild(document.createTextNode(tab.label));
         elem.appendChild(span);

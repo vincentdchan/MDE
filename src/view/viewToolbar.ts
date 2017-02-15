@@ -1,8 +1,9 @@
-import {DomHelper, IDisposable} from "../util"
+import {DomWrapper, IDisposable} from "../util"
 import {ButtonView} from "./viewButton"
 import {ButtonOption} from "."
+import {Dom} from "typescript-domhelper"
 
-export class ToolbarView extends DomHelper.FixedElement implements IDisposable {
+export class ToolbarView extends DomWrapper.FixedElement implements IDisposable {
 
     public static readonly DefaultHeight = 36;
     private buttonContainer : HTMLDivElement;
@@ -18,7 +19,7 @@ export class ToolbarView extends DomHelper.FixedElement implements IDisposable {
         this._dom.style.overflowY = "hidden";
         this._dom.style.whiteSpace = "nowrap";
 
-        this.buttonContainer = <HTMLDivElement>DomHelper.elem("div", "toolbar-button-container");
+        this.buttonContainer = Dom.Div("toolbar-button-container");
         this._dom.appendChild(this.buttonContainer);
 
         this.buttonViews = [];

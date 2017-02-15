@@ -1,10 +1,10 @@
-import {DomHelper, IDisposable, TickTockUtil, KeyCode} from "../util"
+import {DomWrapper, IDisposable, TickTockUtil, KeyCode} from "../util"
 import {Position, PositionUtil, Range} from "../model"
 import {Coordinate} from "."
 import {InputerView} from "./viewInputer"
 import {CursorView, CursorState} from "./viewCursor"
 
-export class SelectionAtom extends DomHelper.AbsoluteElement {
+export class SelectionAtom extends DomWrapper.AbsoluteElement {
 
     constructor(isMajor: boolean) {
         super("div", "mde-document-selection-atom");
@@ -317,7 +317,7 @@ export class SelectionHandler implements IDisposable {
 
 }
 
-export class SelectionManager extends DomHelper.AppendableDomWrapper implements IDisposable {
+export class SelectionManager extends DomWrapper.AppendableDomWrapper implements IDisposable {
 
     // private _father_dom: HTMLElement = null;
     private _handlers: SelectionHandler[] = [];

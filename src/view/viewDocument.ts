@@ -3,8 +3,9 @@ import {IVirtualElement, Coordinate} from "."
 import {TextModel, LineModel, Position, PositionUtil, 
     TextEdit, TextEditType, LineStream, IStream, TextEditApplier} from "../model"
 import {HistoryHandler} from "../controller"
-import {IDisposable, DomHelper, KeyCode, i18n as $, MarkdownTokenizer, 
+import {IDisposable, DomWrapper, KeyCode, i18n as $, MarkdownTokenizer, 
     MarkdownTokenizeState, MarkdownTokenType} from "../util"
+import {Dom} from "typescript-domhelper"
 import {NotInRangeError} from "../util/errors"
 import {hd, tl, last} from "../util/fn"
 import {PopAllQueue} from "../util/queue"
@@ -30,7 +31,7 @@ interface RenderOption {
     removeTailLines?: number;
 }
 
-class NullElement extends DomHelper.ResizableElement {
+class NullElement extends DomWrapper.ResizableElement {
 
 }
 
@@ -59,7 +60,7 @@ interface RenderEntry {
  * Event:
  * - CursorMove
  */
-export class DocumentView extends DomHelper.AbsoluteElement implements IDisposable, TextEditApplier {
+export class DocumentView extends DomWrapper.AbsoluteElement implements IDisposable, TextEditApplier {
 
     public static readonly LazyRenderTime = 420;
     public static readonly CursorBlinkingInternal = 500;
@@ -123,7 +124,7 @@ export class DocumentView extends DomHelper.AbsoluteElement implements IDisposab
 
         this.on("contextmenu", (evt: MouseEvent) => { this.handleContextMenu(evt); });
 
-        this._container = <HTMLDivElement>DomHelper.elem("div", "mde-document-container");
+        this._container = Dom.Div("mde-document-container");
         this._dom.appendChild(this._container);
 
         this._nullArea = new NullElement("div", "mde-document-null");

@@ -1,11 +1,11 @@
-import {IDisposable, DomHelper, TickTockPair, TickTockUtil} from "../util"
+import {IDisposable, DomWrapper, TickTockPair, TickTockUtil} from "../util"
 import {Coordinate, IHidable} from "."
 
 export enum CursorState {
     Blink, AlwaysOn, AlwaysOff
 }
 
-export class CursorView extends DomHelper.AppendableDomWrapper implements IDisposable, IHidable {
+export class CursorView extends DomWrapper.AppendableDomWrapper implements IDisposable, IHidable {
 
     // private _internal : NodeJS.Timer;
     private _ticktock: TickTockUtil;

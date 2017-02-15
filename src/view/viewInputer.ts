@@ -1,8 +1,7 @@
-import {DomHelper, IDisposable} from "../util"
+import {DomWrapper, IDisposable} from "../util"
 import {Coordinate, IHidable} from "."
 
-export class InputerView extends 
-DomHelper.Generic.AbsoluteElement<HTMLTextAreaElement> implements IDisposable, IHidable {
+export class InputerView extends DomWrapper.AbsoluteElement implements IDisposable, IHidable {
 
     private _focused: boolean = false;
     private _isCompositing: boolean = false;
@@ -33,7 +32,7 @@ DomHelper.Generic.AbsoluteElement<HTMLTextAreaElement> implements IDisposable, I
     }
 
     clearContent() {
-        this._dom.value = "";
+        this.dom.value = "";
     }
 
     setAbsoluteCoordinate(coordinate: Coordinate) {
@@ -56,23 +55,27 @@ DomHelper.Generic.AbsoluteElement<HTMLTextAreaElement> implements IDisposable, I
     }
 
     hide() {
-        this._dom.style.display = "none";
+        this.dom.style.display = "none";
     }
 
     show() {
-        this._dom.style.display = "block";
+        this.dom.style.display = "block";
     }
 
     isHidden() {
-        return this._dom.style.display == "none";
+        return this.dom.style.display == "none";
+    }
+
+    private get dom() {
+        return <HTMLTextAreaElement>this._dom;
     }
 
     get value() {
-        return this._dom.value;
+        return this.dom.value;
     }
 
     set value(content: string) {
-        this._dom.value = content;
+        this.dom.value = content;
     }
 
 }

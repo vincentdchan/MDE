@@ -1,6 +1,6 @@
 export {StringBuffer} from "./stringBuffer"
 export {mergeSet} from "./set"
-export {DomHelper} from "./dom"
+export {DomWrapper} from "./domWrapper"
 export {Deque} from "./queue"
 export {Host} from "./host"
 export {TickTockPair, TickTockUtil} from "./ticktock"

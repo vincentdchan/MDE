@@ -1,8 +1,9 @@
 import {WordView} from "./viewWord"
 import {IVirtualElement, Coordinate} from "."
 import {LineRenderer, MarkdownToken} from "../controller"
-import {IDisposable, DomHelper} from "../util"
+import {IDisposable, DomWrapper} from "../util"
 import {Deque} from "../util/queue"
+import {Dom} from "typescript-domhelper"
 
 function getItem<T>(arr : T[], index: number) : T {
     if (arr === undefined || index >= arr.length || index < 0) return null;
@@ -54,7 +55,7 @@ export class RenderNumberEvent extends Event {
 
 }
 
-class LeftMargin extends DomHelper.ResizableElement implements IDisposable {
+class LeftMargin extends DomWrapper.ResizableElement implements IDisposable {
 
     constructor(width: number) {
         super("div", "mde-line-leftMargin");
@@ -79,7 +80,7 @@ class LeftMargin extends DomHelper.ResizableElement implements IDisposable {
 
 }
 
-export class LineView extends DomHelper.AppendableDomWrapper implements IDisposable {
+export class LineView extends DomWrapper.AppendableDomWrapper implements IDisposable {
 
     public static readonly DefaultLeftMarginWidth = 45;
 
@@ -131,8 +132,7 @@ export class LineView extends DomHelper.AppendableDomWrapper implements IDisposa
 
     renderLineNumber(num: number) {
         if (num !== this._rendered_lineNumber) {
-            let span = DomHelper.Generic.elem<HTMLSpanElement>("span", 
-                "mde-line-number unselectable");
+            let span = Dom.Span("mde-line-number unselectable");
 
             this._leftMargin.clearAll();
 
@@ -148,7 +148,7 @@ export class LineView extends DomHelper.AppendableDomWrapper implements IDisposa
     }
 
     private generateContentDom() : HTMLElement {
-        let elem = DomHelper.Generic.elem<HTMLSpanElement>("span", "mde-line-content");
+        let elem = Dom.Span("mde-line-content");
         elem.style.marginLeft = this._leftMargin.width + "px";
         elem.style.width = "auto";
         elem.style.display = "block";

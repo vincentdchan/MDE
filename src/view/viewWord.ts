@@ -1,5 +1,6 @@
 import {IVirtualElement, Coordinate} from "."
-import {MarkdownTokenType, DomHelper} from "../util"
+import {MarkdownTokenType, DomWrapper} from "../util"
+import {elem} from "typescript-domhelper"
 
 function addClass(elm: HTMLElement, className: string) {
     elm.classList.add(className);
@@ -21,7 +22,7 @@ export class WordView {
 
         this._tokenType = tokenType;
 
-        this._dom = DomHelper.elem("span");
+        this._dom = elem("span");
 
         // this._dom.innerHTML = this._text.replace(/ /g, "&nbsp;");
         let _node = document.createTextNode(this._text);

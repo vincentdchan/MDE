@@ -1,7 +1,8 @@
-import {DomHelper, IDisposable} from "../util"
+import {DomWrapper, IDisposable} from "../util"
+import {Dom, elem} from "typescript-domhelper"
 import {ButtonOption} from "."
 
-export class ButtonView extends DomHelper.AppendableDomWrapper implements IDisposable {
+export class ButtonView extends DomWrapper.AppendableDomWrapper implements IDisposable {
 
     private _width : number = -1;
     private _height : number;
@@ -17,7 +18,7 @@ export class ButtonView extends DomHelper.AppendableDomWrapper implements IDispo
         this._dom.style.cursor = "pointer";
         this._dom.style.overflow = "hidden";
 
-        this._container = <HTMLDivElement>DomHelper.elem("div", "mde-button-container");
+        this._container = Dom.Div("mde-button-container");
         this._dom.appendChild(this._container);
 
         this._container.style.display = "flex";
@@ -31,7 +32,7 @@ export class ButtonView extends DomHelper.AppendableDomWrapper implements IDispo
     }
 
     setText(content: string) {
-        let span = <HTMLSpanElement>DomHelper.elem("span", "mde-button-content");
+        let span = Dom.Span("mde-button-content");
         span.innerHTML = content;
         this.setContent(span);
     }
@@ -46,7 +47,7 @@ export class ButtonView extends DomHelper.AppendableDomWrapper implements IDispo
     setContentFromOption(option: ButtonOption) {
 
         if (option.spanClass) {
-            let span = <HTMLSpanElement>DomHelper.elem("span", option.spanClass);
+            let span = Dom.Span(option.spanClass);
             this.setContent(span);
 
             if (option.text) {
@@ -70,7 +71,7 @@ export class ButtonView extends DomHelper.AppendableDomWrapper implements IDispo
         if (this._container.children.length > 0) {
             this._container.firstElementChild.remove();
         }
-        let i = DomHelper.elem("i", content);
+        let i = elem("i", content);
         this._container.appendChild(i);
     }
 

@@ -1,4 +1,4 @@
-import {DomHelper, IDisposable} from "../../util"
+import {DomWrapper, IDisposable} from "../../util"
 
 export enum SettingOptionType {
     Header, Toggle, TextInput, TextArea
@@ -17,7 +17,7 @@ export function isSettingItemOption(obj: any) : obj is SettingItemOption {
     return (obj.name && obj.type) && (typeof obj.name === "string" && typeof obj.type === "object");
 }
 
-class SettingItemView extends DomHelper.AbsoluteElement implements IDisposable {
+class SettingItemView extends DomWrapper.AbsoluteElement implements IDisposable {
 
     constructor() {
         super("div", "mde-setting-item");
@@ -50,7 +50,7 @@ class InputSettingItemView extends SettingItemView {
 
 type SettingItemViewOption = SettingItemOption | "splitter";
 
-export class SettingView extends DomHelper.AbsoluteElement implements IDisposable {
+export class SettingView extends DomWrapper.AbsoluteElement implements IDisposable {
 
     private _items : SettingItemView[];
 

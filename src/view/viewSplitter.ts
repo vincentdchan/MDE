@@ -1,13 +1,13 @@
-import {DomHelper, IDisposable} from "../util"
+import {DomWrapper, IDisposable} from "../util"
 
 export interface MouseEventListener {
-    (idom: DomHelper.IDOMWrapper,evt: MouseEvent) : void;
+    (idom: DomWrapper.IDOMWrapper,evt: MouseEvent) : void;
 }
 
 /**
- * - add `isDisplay` property at v0.0.4
+ * - add `isDisplay` property at v0.1.0
  */
-export class SplitterView extends DomHelper.FixedElement implements IDisposable {
+export class SplitterView extends DomWrapper.FixedElement implements IDisposable {
 
     public static readonly DefaultWidth = 4;
 

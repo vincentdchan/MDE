@@ -1,14 +1,14 @@
-import {IDisposable, DomHelper, KeyCode} from "../util"
+import {IDisposable, DomWrapper, KeyCode} from "../util"
 import {ScrollBarView, TrainMoveEvent} from "./viewScrollBar"
 import {PreviewDocumentView} from "./viewPreviewDocument"
 import {TextModel, TextEditEvent} from "../model"
 
 /**
- * ## Update at v0.0.4
+ * ## Update at v0.1.0
  * - add `HTMLContent` property
  * 
  */
-export class PreviewView extends DomHelper.FixedElement implements IDisposable {
+export class PreviewView extends DomWrapper.FixedElement implements IDisposable {
 
     private _model : TextModel;
     

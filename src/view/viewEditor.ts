@@ -1,4 +1,4 @@
-import {IDisposable, DomHelper, i18n as $} from "../util"
+import {IDisposable, DomWrapper, i18n as $} from "../util"
 import {last} from "../util/fn"
 import {Coordinate} from "."
 import {DocumentView} from "./viewDocument"
@@ -34,9 +34,9 @@ function generateRightButtons(editorView: EditorView) : ButtonOption[] {
 }
 
 /**
- * - add `isDisplay` property at v0.0.4
+ * - add `isDisplay` property at v0.1.0
  */
-export class EditorView extends DomHelper.FixedElement 
+export class EditorView extends DomWrapper.FixedElement 
     implements IDisposable {
 
     public static readonly DefaultLineMarginWidth = 40;
