@@ -39,3 +39,8 @@ In the new version `0.0.4`, there are a lot of new features.
 - HTML export
 
 It's on progress and comming soon.
+
+## Connect
+
+[My blog](http://blog.diverse.space/category/program/editor/) have a log of articles about
+developing `MDE Editor`. If you are interested, please join me.

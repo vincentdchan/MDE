@@ -154,7 +154,7 @@ export class ConfigView extends DomWrapper.FixedElement implements IDisposable {
                 let radioContainer = Dom.Div("mde-config-item-control");
 
                 item.options.forEach((v) => {
-                    let textInput = Dom.Input("input", "mde-config-item-control");
+                    let textInput = Dom.Input("mde-config-item-control");
 
                     textInput.addEventListener("change", (e: Event) => {
                         if (textInput.checked) {

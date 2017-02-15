@@ -5,6 +5,8 @@ import {remote} from "electron"
 import * as fs from "fs"
 import {html as html_beautify} from "js-beautify"
 
+$.InitializeI18n();
+
 document.title = $.getString("exportHTML.title");
 
 let htmlHead = `

@@ -39,3 +39,8 @@ MDE(Markdown Editor) 是一个基于[Electron](http://electron.atom.io/)的编�
 - HTML导出
 
 这些特性都在开发当中，他们很快就会到来。
+
+## Connect
+
+[我的博客](http://blog.diverse.space/category/program/editor/)上面有一系列关于MDE的文章，
+有兴趣的我们可以一同学习。

@@ -4,7 +4,7 @@ export {LineStream, IStream} from "./lineStream"
 export {TextEdit, TextEditType, TextEditApplier} from "./textEdit"
 export {BufferState, BufferStateChanged, BufferAbsPathChanged} from "./bufferState"
 export {Snippet} from "./snippet"
-export {Config, ConfigTab, ConfigItem, ConfigItemType} from "./configuration"
+export {Config, ConfigTab, ConfigItem, ConfigItemType, ConfigurationUtil} from "./configuration"
 
 export interface Position {
     line : number;

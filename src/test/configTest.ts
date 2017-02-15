@@ -1,7 +1,6 @@
 import * as assert from "assert"
 import * as mocha from "mocha"
-import {Config, ConfigTab, ConfigItem, ConfigItemType} from "../model/configuration"
-import {Configuration} from "../controller/configuration"
+import {Config, ConfigTab, ConfigItem, ConfigItemType, ConfigurationUtil} from "../model/configuration"
 import * as path from "path"
 import * as fs from "fs"
 
@@ -11,25 +10,25 @@ describe("Config", () => {
 
     let testConfig : Config = {
         "testTab1": {
-            label: "Test Tab 1",
+            labelThunk: () => "Test Tab 1",
             items: {
                 "testTab1Item1": {
-                    label: "Test Tab1 Item1",
+                    labelThunk: () => "Test Tab1 Item1",
                     type: ConfigItemType.Text,
                     value: "Item1 Value",
                 }, 
                 "testTab1Item2": {
-                    label: "Test Tab1 Item2",
+                    labelThunk: () => "Test Tab1 Item2",
                     type: ConfigItemType.Text,
                     value: "Item2 Value"
                 }
             }
         }, 
         "testTab2": {
-            label: "Test Tab 2",
+            labelThunk: () => "Test Tab 2",
             items: {
                 "testTab2Item1": {
-                    label: "Test Tab2 Item1",
+                    labelThunk: () => "Test Tab2 Item1",
                     type: ConfigItemType.Slide,
                     value: 40,
                 }
@@ -39,8 +38,19 @@ describe("Config", () => {
 
     let testConfigFilePath = path.join(__dirname, "./test_config.json");
 
+    describe("#lazyLoadLabel", () => {
+        ConfigurationUtil.completeLabel(testConfig);
+
+        assert.equal(testConfig["testTab1"].label, "Test Tab 1");
+        assert.equal(testConfig["testTab1"].items["testTab1Item1"].label, "Test Tab1 Item1");
+        assert.equal(testConfig["testTab1"].items["testTab1Item2"].label, "Test Tab1 Item2");
+
+        assert.equal(testConfig["testTab2"].label, "Test Tab 2");
+        assert.equal(testConfig["testTab2"].items["testTab2Item1"].label, "Test Tab2 Item1")
+    });
+
     describe("#Save", () => {
-        assert(Configuration.saveConfigToPath(testConfigFilePath, testConfig));
+        assert(ConfigurationUtil.saveConfigToPath(testConfigFilePath, testConfig));
         assert(fs.existsSync(testConfigFilePath));
     })
 
@@ -51,7 +61,7 @@ describe("Config", () => {
 
         testConfig["testTab2"].items["testTab2Item1"].value = 0 
 
-        assert(Configuration.loadConfigFromPath(testConfigFilePath, testConfig));
+        assert(ConfigurationUtil.loadConfigFromPath(testConfigFilePath, testConfig));
         assert.strictEqual(testConfig["testTab1"].items["testTab1Item1"].value, "Item1 Value");
         assert.strictEqual(testConfig["testTab1"].items["testTab1Item2"].value, "Item2 Value");
 

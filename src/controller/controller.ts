@@ -1,5 +1,5 @@
 import {TextModel, LineModel, TextEdit, TextEditType, 
-     Position, PositionUtil, BufferState} from "../model"
+     Position, PositionUtil, BufferState, Config, ConfigItemType, ConfigurationUtil} from "../model"
 import {EditorView, Coordinate, WindowView} from "../view"
 import {IDisposable, Host, KeyCode, i18n as $, StringFormat} from "../util"
 import {configurationThunk} from "./configuration"
@@ -37,6 +37,8 @@ export class MDE implements IDisposable {
     private _buffers: TextModel[] = [];
     private _current_buffer: number;
 
+    private _config: Config;
+
     private _buffer_state: BufferState;
     private _position: Position;
     private _menu: MainMenuView;
@@ -47,6 +49,11 @@ export class MDE implements IDisposable {
     private _composition_update_pos : Position;
 
     constructor() {
+        this._config = configurationThunk(this);
+        ConfigurationUtil.loadConfigFromDefaultPath(this._config);
+
+        $.InitializeI18n(this._config['general'].items['language'].value);
+        ConfigurationUtil.completeLabel(this._config);
 
         this._menu = new MainMenuView();
         this._menu.on("menuClick", (evt: MenuClickEvent) => {
@@ -64,7 +71,7 @@ export class MDE implements IDisposable {
 
         this._view = new WindowView();
         this._view.bind(this._buffer_state);
-        this._view.configView.bind(configurationThunk(this));
+        this._view.configView.bind(this._config);
 
         this._searchBox = SearchBox.GetOne();
         this._searchBox.closeButton.addEventListener("click", (e: MouseEvent) => {
@@ -503,3 +510,4 @@ export class MDE implements IDisposable {
     }
 
 }
+
