@@ -68,7 +68,7 @@ body {
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
-    box-shadow: 10px 10px 5px #888888;
+    box-shadow: 0px 0px 5px #888888;
     border-radius: 2px;
     background-color: white;
 }
@@ -78,28 +78,29 @@ body {
     width: 160px;
     height: 276px;
     border-left-width: 2px;
-    border-left-color:dimgrey;
+    border-left-color:black;
     border-bottom-left-radius: 2px; 
-    background-color: #ececec;
+    background-color: #888888;
 }
 
 .mde-config-tab {
     padding: 7px;
+    color: white;
     cursor: pointer;
 }
 
 .mde-config-tab:hover {
-    background: rgba(255, 255, 255, 0.8);
+    background: #B4B3B3;
 }
 
 .mde-config-tab.active {
-    background: rgba(255, 255, 255, 0.8);
+    background: #B4B3B3;
 }
 
 .mde-config-titlebar {
     height: 24px;
     width: 100%;
-    background-color: grey;
+    background-color: #585858;
     border-top-left-radius: 2px;
     border-top-right-radius: 2px;
 }
@@ -107,18 +108,33 @@ body {
 .mde-config-items-container {
     margin-left: 160px;
     padding-left: 8px;
+    font-size: 14px;
+}
+
+.mde-config-item {
+    padding-top: 10px;
+    padding-bottom: 10px;
 }
 
 .mde-config-item-label {
     box-sizing: border-box;
     float: left;
-    width: 25%;
+    width: 30%;
+    font-weight: bold;
 }
 
 .mde-config-item-content {
     box-sizing: border-box;
     float: left;
-    width: 75%;
+    width: 70%;
+}
+
+.mde-config-item-control label {
+    margin-right: 5px;
+}
+
+.mde-config-item-content input {
+    margin-left: 0px;
 }
 
 .mde-word-bold {

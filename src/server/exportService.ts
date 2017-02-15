@@ -15,7 +15,7 @@ export function initializeExportService() {
             height : 450,
             minWidth: 300,
             minHeight: 400,
-            icon: path.join(__dirname, "../assets", "mde-logo-bg-sm.png"),
+            icon: path.join(__dirname, "../../assets", "mde-logo-bg-sm.png"),
         });
 
         let htmlPath = "file://" + path.join(__dirname, "../../exportHTML.html");

@@ -3,7 +3,15 @@ import {Coordinate, IHidable} from "."
 import {ButtonView} from "./viewButton"
 import {Config, ConfigTab, ConfigItem, ConfigItemType, 
     Validator, ValidateResult, isValidateResult, ValidateType} from "../model/configuration"
+import {text, elem, Dom} from "typescript-domhelper"
 
+/**
+ * ConfigView is a MVVM class, 
+ * you can bind `Config` to `ConfigView`,
+ * any change in the view will change the value in model.
+ * 
+ * The size of the class button is fixed.
+ */
 export class ConfigView extends DomHelper.FixedElement implements IDisposable {
 
     private _showed: boolean = false;
@@ -97,19 +105,21 @@ export class ConfigView extends DomHelper.FixedElement implements IDisposable {
     }
 
     private generateSettingItemElem(itemName: string, item: ConfigItem) : HTMLDivElement {
-        let itemContainerElem = DomHelper.Generic.elem<HTMLDivElement>("div", "mde-config-item");
 
-        let itemLabelElem = DomHelper.Generic.elem<HTMLDivElement>("div", "mde-config-item-label");
-        let itemContentElem = DomHelper.Generic.elem<HTMLDivElement>("div", "mde-config-item-content");
-        itemContainerElem.appendChild(itemLabelElem);
-        itemContainerElem.appendChild(itemContentElem);
+        let itemLabelElem: HTMLDivElement;
+        let itemContentElem: HTMLDivElement;
 
-        itemLabelElem.appendChild(document.createTextNode(item.label));
+        let itemContainerElem = Dom.Div("mde-config-item", null, [
+            itemLabelElem = Dom.Div("mde-config-item-label", null, [
+                text(item.label)
+            ]),
+            itemContentElem = Dom.Div("mde-config-item-content"),
+        ]);
 
         switch(item.type) {
             case ConfigItemType.Text:
             {
-                let textInput = DomHelper.Generic.elem<HTMLInputElement>("input", "mde-config-item-control");
+                let textInput = Dom.Input("mde-config-item-control");
 
                 textInput.addEventListener("input", (e) => {
                     this.validateAndApplyNewValue(itemName, item, textInput.value);
@@ -125,7 +135,7 @@ export class ConfigView extends DomHelper.FixedElement implements IDisposable {
             }
             case ConfigItemType.Checkbox:
             {
-                let textInput = DomHelper.Generic.elem<HTMLInputElement>("input", "mde-config-item-control");
+                let textInput = Dom.Input("mde-config-item-control");
 
                 textInput.type = "checkbox";
 
@@ -141,10 +151,10 @@ export class ConfigView extends DomHelper.FixedElement implements IDisposable {
             }
             case ConfigItemType.Radio:
             {
-                let radioContainer = DomHelper.elem("div", "mde-config-item-control");
+                let radioContainer = Dom.Div("mde-config-item-control");
 
-                item.options.forEach((v, index) => {
-                    let textInput = DomHelper.Generic.elem<HTMLInputElement>("input", "mde-config-item-control");
+                item.options.forEach((v) => {
+                    let textInput = Dom.Input("input", "mde-config-item-control");
 
                     textInput.addEventListener("change", (e: Event) => {
                         if (textInput.checked) {
@@ -161,37 +171,36 @@ export class ConfigView extends DomHelper.FixedElement implements IDisposable {
                     }
 
                     radioContainer.appendChild(textInput);
-                    radioContainer.appendChild(document.createTextNode(v.label));
+                    radioContainer.appendChild(Dom.Label(null , null, [
+                        text(v.label)
+                    ]));
                 })
 
-                itemContainerElem.appendChild(radioContainer);
+                itemContentElem.appendChild(radioContainer);
                 break;
             }
             case ConfigItemType.Options:
             {
-                let selectElem = DomHelper.Generic.elem<HTMLSelectElement>("select", "mde-config-item-control");
+                let selectElem = Dom.Select("mde-config-item-control", null, item.options.map((s) => {
+                    let optionElem = DomHelper.Generic.elem<HTMLOptionElement>("option");
+                    optionElem.appendChild(document.createTextNode(s.label));
+                    optionElem.setAttribute("value", s.name);
+
+                    return optionElem;
+                }));
 
                 selectElem.addEventListener("change", (e: Event) => {
                     this.validateAndApplyNewValue(itemName, item, selectElem.value)
                 })
 
-                item.options.forEach((s) => {
-                    let optionElem = DomHelper.Generic.elem<HTMLOptionElement>("option");
-                    optionElem.appendChild(document.createTextNode(s.label));
-                    optionElem.setAttribute("value", s.name);
-
-                    selectElem.appendChild(optionElem);
-                });
-
                 if (item.value) selectElem.value = item.value;
 
                 itemContentElem.appendChild(selectElem);
-
                 break;
             }
         }
 
-        let alertContainer = DomHelper.elem("div", "mde-config-alert");
+        let alertContainer = Dom.Div("mde-config-alert");
         itemContainerElem.appendChild(alertContainer);
 
         return itemContainerElem;

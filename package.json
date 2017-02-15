@@ -2,7 +2,7 @@
   "name": "mde",
   "productName": "MDE",
   "homePage": "https://github.com/ChannelOne/MDE",
-  "version": "0.0.4",
+  "version": "0.1.0",
   "description": "A Markdown Editor",
   "main": "build/window.js",
   "scripts": {

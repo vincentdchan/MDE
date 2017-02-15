@@ -68,6 +68,7 @@ export namespace Configuration {
     }
 
     export function loadConfigFromPath(_path: string, config: Config): boolean {
+        console.log("load user data from:", _path);
         let content = fs.readFileSync(_path, "utf8");
         let obj = JSON.parse(content);
 
