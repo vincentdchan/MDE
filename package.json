@@ -19,7 +19,11 @@
   "keywords": [
     "editor"
   ],
-  "author": "DZ Chan",
+  "author": {
+    "name": "DZ Chan",
+    "email": "cdzos97@hotmail.com",
+    "url": "blog.diverse.space"
+  },
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/ChannelOne/MDE/issues"
@@ -39,7 +43,7 @@
   },
   "devDependencies": {
     "electron": "^1.4.3",
-    "electron-builder": "^10.15.1",
+    "electron-builder": "^10.17.3",
     "electron-winstaller": "^2.5.1",
     "gulp-typedoc": "^2.0.2",
     "mocha": "^3.2.0",
@@ -50,6 +54,10 @@
     "appId": "MDE Editor",
     "win": {
       "icon": "./build_resources/icon.ico"
+    },
+    "linux": {
+      "target": "deb",
+      "icon": "./build_resources/icon-32x32.png"
     },
     "fileAssociations": [
       {
