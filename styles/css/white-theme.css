@@ -99,3 +99,10 @@
 .mde-document-selection-atom.major {
     background: #26ABF2;
 }
+
+.mde-config-mask {
+    background-color: black;
+    width: 100%;
+    height: 100%;
+    opacity: 0.5;
+}

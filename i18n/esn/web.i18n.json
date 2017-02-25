@@ -34,6 +34,9 @@
     "config.general.fontSize": "Font Size",
     "config.general.lineHeight": "Line Height",
 
+    "config.alert.valueIsNotNumber": "Value is not as number",
+    "config.alert.valueNotInRange": "value must be between {0} and {1}",
+
     "config.close": "Close",
 
     "exportHTML.title": "HTML Export",

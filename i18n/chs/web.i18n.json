@@ -38,6 +38,9 @@
     "config.style.fontSize.small": "小",
     "config.style.lineHeight": "行高",
 
+    "config.alert.valueIsNotNumber": "这不是一个数值",
+    "config.alert.valueNotInRange": "数值必须在 {0} 和 {1} 之间",
+
     "config.close": "关闭",
 
     "exportHTML.title": "导出为HTML",

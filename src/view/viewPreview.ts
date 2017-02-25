@@ -1,5 +1,5 @@
 import {IDisposable, DomWrapper, KeyCode} from "../util"
-import {ScrollBarView, TrainMoveEvent} from "./viewScrollBar"
+import {ScrollBarView, TrainMoveEvent} from "./viewScrollbar"
 import {PreviewDocumentView} from "./viewPreviewDocument"
 import {TextModel, TextEditEvent} from "../model"
 

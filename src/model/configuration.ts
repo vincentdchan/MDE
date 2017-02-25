@@ -1,6 +1,7 @@
 import {remote} from "electron"
 import * as path from "path"
 import * as fs from "fs"
+import {i18n, StringFormat} from "../util"
 
 export interface Config
 {
@@ -55,6 +56,37 @@ export function isValidateResult(obj: any) : obj is ValidateResult {
  */
 export interface Validator {
     (value: any): boolean | ValidateResult; 
+}
+
+export namespace ValidatorGenerator {
+
+    /**
+     * Generate a `Validator`, to check the value in the range
+     * between `start` and `end`, including these.
+     */
+    export function NumberInRange(start: number, end: number): Validator {
+        return function (value: any): boolean | ValidateResult {
+            if (typeof value == "number") {
+
+                if (value >= start && value <= end) {
+                    return true;
+                }
+
+                return {
+                    type: ValidateType.Error,
+                    message: StringFormat(i18n.getString("value must be between {0} and {1}"), 
+                    start.toString(), end.toString()),
+                };
+
+            } else {
+                return {
+                    type: ValidateType.Error,
+                    message: i18n.getString("config.alert.valueIsNotNumber")
+                };
+            }
+        }
+    }
+
 }
 
 export interface ConfigItem
@@ -124,7 +156,6 @@ export namespace ConfigurationUtil {
     }
 
     export function loadConfigFromPath(_path: string, config: Config): boolean {
-        console.log("load user data from:", _path);
         if (!fs.existsSync(_path)) {
             console.log("file not exisit:", _path);
             return false;

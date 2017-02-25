@@ -20,6 +20,7 @@ export class ConfigView extends DomWrapper.FixedElement implements IDisposable {
     private _closeButton: ButtonView;
     private _titleBar: HTMLDivElement;
     private _items_container: HTMLDivElement;
+    private _mask: HTMLDivElement;
 
     constructor() {
         super("div", "mde-config");
@@ -38,12 +39,20 @@ export class ConfigView extends DomWrapper.FixedElement implements IDisposable {
 
         this._tabs = new ConfigTabsView();
         this._tabs.appendTo(this._dom);
-        this._tabs.addEventListener("tabSelected", (e: TabSelectedEvent) => {
+        this.onTabSelected((e) => {
             this.handleTabSelected(e);
-        });
+        })
 
         this._items_container = Dom.Div("mde-config-items-container");
         this._dom.appendChild(this._items_container);
+
+        this._mask = Dom.Div("mde-config-mask");
+        this._mask.style.position = "fixed";
+        this._mask.style.zIndex = "99";
+        document.body.appendChild(this._mask);
+        this._mask.addEventListener("click", (e: MouseEvent) => {
+            this.hide();
+        })
 
         this._dom.style.zIndex = "100";
         this.showOrHide();
@@ -78,9 +87,13 @@ export class ConfigView extends DomWrapper.FixedElement implements IDisposable {
     private showOrHide() {
         if (this._showed) {
             this._dom.style.display = "block";
+            this._mask.style.display = "block";
+            this._dom.focus();
         } else {
             this._dom.style.display = "none";
+            this._mask.style.display = "none";
         }
+        this._dom.dispatchEvent(new ConfigViewToggleEvent(this._showed));
     }
 
     private clearContainer() {
@@ -104,6 +117,13 @@ export class ConfigView extends DomWrapper.FixedElement implements IDisposable {
         }
     }
 
+    /**
+     * The structure of Item:
+     * - container 
+     *  - item label
+     *  - item content
+     *  - item alert
+     */
     private generateSettingItemElem(itemName: string, item: ConfigItem) : HTMLDivElement {
 
         let itemLabelElem: HTMLDivElement;
@@ -122,7 +142,8 @@ export class ConfigView extends DomWrapper.FixedElement implements IDisposable {
                 let textInput = Dom.Input("mde-config-item-control");
 
                 textInput.addEventListener("input", (e) => {
-                    this.validateAndApplyNewValue(itemName, item, textInput.value);
+                    this.validateAndApplyNewValue(itemName, item, 
+                    textInput.value, itemContainerElem);
                 });
 
                 if (item.value) {
@@ -140,7 +161,8 @@ export class ConfigView extends DomWrapper.FixedElement implements IDisposable {
                 textInput.type = "checkbox";
 
                 textInput.addEventListener("change", (e) => {
-                    this.validateAndApplyNewValue(itemName, item, textInput.value);
+                    this.validateAndApplyNewValue(itemName, item, 
+                    textInput.value, itemContainerElem);
                 });
                 
                 if (item.value) textInput.checked = item.value;
@@ -158,7 +180,8 @@ export class ConfigView extends DomWrapper.FixedElement implements IDisposable {
 
                     textInput.addEventListener("change", (e: Event) => {
                         if (textInput.checked) {
-                            this.validateAndApplyNewValue(itemName, item, textInput.value)
+                            this.validateAndApplyNewValue(itemName, item, textInput.value, 
+                            itemContainerElem)
                         }
                     });
 
@@ -190,7 +213,8 @@ export class ConfigView extends DomWrapper.FixedElement implements IDisposable {
                 }));
 
                 selectElem.addEventListener("change", (e: Event) => {
-                    this.validateAndApplyNewValue(itemName, item, selectElem.value)
+                    this.validateAndApplyNewValue(itemName, item, 
+                    selectElem.value, itemContainerElem)
                 })
 
                 if (item.value) selectElem.value = item.value;
@@ -200,13 +224,23 @@ export class ConfigView extends DomWrapper.FixedElement implements IDisposable {
             }
         }
 
-        let alertContainer = Dom.Div("mde-config-alert");
+        let alertContainer = Dom.Div("mde-config-alert-container");
         itemContainerElem.appendChild(alertContainer);
 
         return itemContainerElem;
     }
 
-    private validateAndApplyNewValue(itemName: string, item: ConfigItem, newValue: any) {
+    /**
+     * This method check the `newValue` with the validators defined
+     * int the config model.
+     * 
+     * Show alert in the DOM if validator does not return true.
+     * 
+     * @param elem the container DOM element of the config item.
+     * @return `true` if no alerts.
+     */
+    private validateAndApplyNewValue(itemName: string, item: ConfigItem, 
+    newValue: any, elem: HTMLElement) : boolean {
         let oldValue = item.value;
 
         let pass = true;
@@ -233,11 +267,70 @@ export class ConfigView extends DomWrapper.FixedElement implements IDisposable {
         if (pass) {
             item.value = newValue;
             if (item.onChanged) item.onChanged(item.value, oldValue);
+
+            let evt = new TabItemChanged();
+            this._dom.dispatchEvent(evt);
+            return true;
+        }
+        return false;
+    }
+
+    private appendAlert(elem: HTMLElement, _type: ValidateType, msg: string) {
+        let alertContainer = <HTMLElement>elem.getElementsByClassName("mde-config-alert-container")[0];
+
+        let target = Dom.Div("mde-config-alert", null, [
+            Dom.Paragraph("", null, [text(msg)])
+        ]);
+        switch(_type) {
+            case ValidateType.Normal:
+                alertContainer.classList.add("normal");
+                break;
+            case ValidateType.Warning:
+                alertContainer.classList.add("warning");
+                break;
+            case ValidateType.Error:
+                alertContainer.classList.add("error");
+                break;
+        }
+
+        alertContainer.appendChild(target);
+    }
+
+    private clearAlerts(elem: HTMLElement) {
+        let alertContainer = <HTMLElement>elem.getElementsByClassName("mde-config-alert-container")[0];
+
+        while (alertContainer.lastChild) {
+            alertContainer.removeChild(alertContainer.lastChild);
         }
     }
 
-    dispose() {
+    onToggle(callback: (evt: ConfigViewToggleEvent) => void) {
+        this._dom.addEventListener("ConfigViewToggleEvent", callback);
+    }
 
+    onTabItemChanged(callback: (evt: TabItemChanged) => void) {
+        this._dom.addEventListener("TabItemChanged", callback);
+    }
+
+    onTabSelected(callback: (evt: TabSelectedEvent) => void) {
+        this._tabs.addEventListener("tabSelected", callback);
+    }
+
+    dispose() {
+        document.body.removeChild(this._mask);
+    }
+
+}
+
+/**
+ * This event does not contains the information about
+ * the item. It just tell the host that some item has changed,
+ * and save all the config to the file.
+ */
+export class TabItemChanged extends Event {
+
+    constructor() {
+        super("TabItemChanged");
     }
 
 }
@@ -345,6 +438,21 @@ export class ConfigTabsView extends DomWrapper.AbsoluteElement {
         }
 
         this._activeKey = itemName;
+    }
+
+}
+
+export class ConfigViewToggleEvent extends Event {
+
+    private _showed: boolean;
+
+    constructor(showed: boolean) {
+        super("ConfigViewToggleEvent");
+        this._showed = showed;
+    }
+
+    get showed() {
+        return this._showed;
     }
 
 }

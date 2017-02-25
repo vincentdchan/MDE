@@ -3,6 +3,18 @@ body {
     margin: 0;
 }
 
+.big-font {
+    font-size: 18px;
+}
+
+.normal-font {
+    font-size: 16px;
+}
+
+.small-font {
+    font-size: 14px;
+}
+
 .unselectable {
     -webkit-touch-callout: none;
     -webkit-user-select: none;

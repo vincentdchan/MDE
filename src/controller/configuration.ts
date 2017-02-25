@@ -1,5 +1,6 @@
 import {i18n as $} from "../util"
-import {Config, ConfigTab, ConfigItemType, ConfigItem} from "../model/configuration"
+import {Config, ConfigTab, ConfigItemType, ConfigItem, 
+    ValidatorGenerator} from "../model/configuration"
 import {MDE} from "."
 
 /**
@@ -45,11 +46,43 @@ export function configurationThunk(mde: MDE) : Config {
                         labelThunk: () => $.getString("config.style.fontSize.small"),
                     }],
                     value: "normal",
+                    onChanged: (value) => {
+                        let docElem = document.querySelector(".mde-document");
+                        let previewElem = <HTMLElement>document.querySelector(".mde-preview-document");
+
+                        function addClass(elems: Element[], className: string) {
+                            elems.forEach((elem) => elem.classList.add(className));
+                        }
+
+                        function clearClass(elems: Element[]) {
+                            elems.forEach((elem) => {
+                                elem.classList.remove("big-font");
+                                elem.classList.remove("normal-font");
+                                elem.classList.remove("small-font");
+                            });
+                        }
+
+                        let elems = [docElem, previewElem];
+
+                        clearClass(elems);
+                        switch(value) {
+                            case "big":
+                                addClass(elems, "big-font");
+                                break;
+                            case "normal":
+                                addClass(elems, "normal-font");
+                                break;
+                            case "small":
+                                addClass(elems, "small-font");
+                                break;
+                        }
+                    }
                 }, 
                 "lineHeight": {
                     labelThunk: () => $.getString("config.style.lineHeight"),
                     type: ConfigItemType.Text,
                     value: "18",
+                    validator: [ValidatorGenerator.NumberInRange(14, 25)]
                 }
             }
         }

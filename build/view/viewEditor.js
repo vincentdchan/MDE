@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const util_1 = require("../util");
 const viewDocument_1 = require("./viewDocument");
-const viewScrollBar_1 = require("./viewScrollBar");
+const viewScrollbar_1 = require("./viewScrollbar");
 const viewToolbar_1 = require("./viewToolbar");
 const model_1 = require("../model");
 class TooglePreviewEvent extends Event {
@@ -35,7 +35,7 @@ class EditorView extends util_1.DomWrapper.FixedElement {
         this._document.top = this._toolbar.height;
         this._document.on("scroll", this.handleDocumentScroll.bind(this));
         this._document.on("scrollHeightChanged", this.handleDocumentScrollHeightChanged.bind(this));
-        this._scrollbar = new viewScrollBar_1.ScrollBarView();
+        this._scrollbar = new viewScrollbar_1.ScrollBarView();
         this._scrollbar.top = this._toolbar.height;
         this._scrollbar.right = 0;
         this._toolbar.appendTo(this._dom);

@@ -3,7 +3,7 @@ import {EditorView, TooglePreviewEvent} from "./viewEditor"
 import {SplitterView} from "./viewSplitter"
 import {PreviewView} from "./viewPreview"
 import {TrainMoveEvent} from "./viewScrollbar"
-import {ConfigView} from "./viewConfig"
+import {ConfigView, ConfigViewToggleEvent} from "./viewConfig"
 import {TextModel, BufferState, BufferStateChanged, BufferAbsPathChanged, Snippet} from "../model"
 import * as Electron from "electron"
 import {remote} from "electron"
@@ -34,7 +34,6 @@ export class WindowView extends DomWrapper.AppendableDomWrapper implements IDisp
     private _splitScale: number;
     private _narrowMode: boolean = false;
 
-    // private _leftPanel : LeftPanelView;
     private _editor : EditorView;
     private _splitter : SplitterView;
     private _preview : PreviewView;
@@ -67,6 +66,12 @@ export class WindowView extends DomWrapper.AppendableDomWrapper implements IDisp
 
         this._config = new ConfigView();
         this._config.appendTo(this._dom);
+        this._config.onToggle((evt) => {
+            if (evt.showed == false) {
+                let manager = this._editor.documentView.selectionManager
+                manager.focus();
+            }
+        });
 
         // ============================================
         // let defaultSnippet = path.join(__dirname, "../../snippets/", "default.json");
@@ -399,10 +404,12 @@ export class WindowView extends DomWrapper.AppendableDomWrapper implements IDisp
         this._editor.dispose();
         this._splitter.dispose();
         this._preview.dispose();
+        this._config.dispose();
 
         this._editor = null;
         this._splitter = null;
         this._preview = null;
+        this._config = null;
 
         window.removeEventListener("resize", this._resize_handler);
 

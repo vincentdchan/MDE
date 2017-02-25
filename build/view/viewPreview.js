@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const util_1 = require("../util");
-const viewScrollBar_1 = require("./viewScrollBar");
+const viewScrollbar_1 = require("./viewScrollbar");
 const viewPreviewDocument_1 = require("./viewPreviewDocument");
 class PreviewView extends util_1.DomWrapper.FixedElement {
     constructor() {
@@ -10,7 +10,7 @@ class PreviewView extends util_1.DomWrapper.FixedElement {
         this._dom.addEventListener("mousemove", (e) => {
             this._scrollbar.excite();
         });
-        this._scrollbar = new viewScrollBar_1.ScrollBarView();
+        this._scrollbar = new viewScrollbar_1.ScrollBarView();
         this._scrollbar.right = 0;
         this._scrollbar.appendTo(this._dom);
         this._scrollbar.on("trainMove", (e) => {
