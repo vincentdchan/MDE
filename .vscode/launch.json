@@ -5,8 +5,13 @@
             "name": "Launch Exporter",
             "type": "chrome",
             "request": "launch",
-            "runtimeExecutable": "${workspaceRoot}/scripts/launch.bat",
-			"sourceMaps": true
+			"sourceMaps": true,
+            "linux": {
+				"runtimeExecutable": "${workspaceRoot}/scripts/launch.sh"
+			},
+            "windows": {
+                "runtimeExecutable": "${workspaceRoot}/scripts/launch.bat"
+            }
         },
         {
             "name": "Launch",
