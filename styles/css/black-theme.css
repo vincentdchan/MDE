@@ -11,6 +11,11 @@
     color: #F8F8F2;
 }
 
+.mde-preview-document {
+    background: #0D0D0D;
+    color: #F8F8F2;
+}
+
 .mde-word-h1 {
     color: #A6E22E;
 }
@@ -99,11 +104,6 @@
 
 .mde-document-selection-atom.major {
     background: #A63A62;
-}
-
-.mde-preview-document {
-    background: black;
-    color: white;
 }
 
 .mde-preview-document a {
