@@ -35,10 +35,11 @@
     "list-diff2": "^0.1.4",
     "marked": "^0.3.6",
     "sinon": "^1.17.6",
-    "typescript-collections": "^1.2.3"
+    "typescript-collections": "^1.2.3",
+    "typescript-domhelper": "^1.1.0"
   },
   "devDependencies": {
-    "electron": "^1.4.3",
+    "electron": "^1.4.15",
     "electron-builder": "^10.15.1",
     "electron-winstaller": "^2.5.1",
     "gulp-typedoc": "^2.0.2",
