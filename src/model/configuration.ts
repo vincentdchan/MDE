@@ -66,24 +66,16 @@ export namespace ValidatorGenerator {
      */
     export function NumberInRange(start: number, end: number): Validator {
         return function (value: any): boolean | ValidateResult {
-            if (typeof value == "number") {
-
-                if (value >= start && value <= end) {
-                    return true;
-                }
-
-                return {
-                    type: ValidateType.Error,
-                    message: StringFormat(i18n.getString("value must be between {0} and {1}"), 
-                    start.toString(), end.toString()),
-                };
-
-            } else {
-                return {
-                    type: ValidateType.Error,
-                    message: i18n.getString("config.alert.valueIsNotNumber")
-                };
+            let realValue = parseInt(value);
+            if (realValue >= start && realValue <= end) {
+                return true;
             }
+
+            return {
+                type: ValidateType.Error,
+                message: StringFormat(i18n.getString("config.alert.valueNotInRange"), 
+                start.toString(), end.toString()),
+            };
         }
     }
 
@@ -110,7 +102,14 @@ export interface ConfigItem
      */
     onChanged?: (newValue, oldValue: any) => void;
 
-    validator? : [Validator];
+    validators? : [Validator];
+
+    /**
+     * Optional(default: `false`):
+     *  If set to true, the handler will trigger `OnChanged` callback
+     *  afer loading the config at the start of MDE
+     */
+    triggerOnStart?: boolean;
 
 }
 

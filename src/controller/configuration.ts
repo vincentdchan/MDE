@@ -31,7 +31,8 @@ export function configurationThunk(mde: MDE) : Config {
                         if (value !== mde.editorView.showLineNumber) {
                             mde.editorView.toggleLineNumber();
                         }
-                    }
+                    },
+                    triggerOnStart: true,
                 }
             }
         }, 
@@ -88,7 +89,7 @@ export function configurationThunk(mde: MDE) : Config {
                     labelThunk: () => $.getString("config.style.lineHeight"),
                     type: ConfigItemType.Text,
                     value: "18",
-                    validator: [ValidatorGenerator.NumberInRange(14, 25)]
+                    validators: [ValidatorGenerator.NumberInRange(14, 25)]
                 }
             }
         }

@@ -245,19 +245,20 @@ export class ConfigView extends DomWrapper.FixedElement implements IDisposable {
 
         let pass = true;
 
-        if (item.validator) {
-            item.validator.forEach((v: Validator, index: number) => {
+        if (item.validators) {
+            this.clearAlerts(elem);
+            item.validators.forEach((v: Validator, index: number) => {
                 let result = v(newValue);
 
                 if (typeof result == "boolean") {
                     pass = result;
                     if (!pass) {
-                        // TODO: show red alert
+                        this.appendAlert(elem, ValidateType.Error, "Data Invalid");
                     }
                 } else if (isValidateResult(result)) {
                     if (result.type !== ValidateType.Normal) pass = false;
 
-                    // TODO: show alert
+                    this.appendAlert(elem, result.type, result.message);
                 } else {
                     throw new Error("Validate result type error, item name:" + item.label);
                 }
