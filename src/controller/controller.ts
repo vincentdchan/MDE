@@ -137,6 +137,28 @@ export class MDE implements IDisposable {
 
         });
 
+        this.triggerOnStart();
+    }
+
+    /**
+     * Call this method after the class is initialized.
+     * 
+     * If ConfigItem's `triggerOnStart` property is true, 
+     * then trigger the callback, and the `oldValue`
+     * parameter will be set to `null`.
+     */
+    private triggerOnStart() {
+        for (let tabName in this._config) {
+            let configTab = this._config[tabName];
+
+            for (let itemName in configTab.items) {
+                let configItem = configTab.items[itemName];
+
+                if (configItem.triggerOnStart) {
+                    configItem.onChanged(configItem.value, null);
+                }
+            }
+        }
     }
 
     private reloadBuffer(buffer: BufferState) {

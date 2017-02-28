@@ -177,6 +177,7 @@ export namespace ConfigurationUtil {
 
                         configItem.value = itemObj;
                     } else {
+                        // don't know how to handle it, just log.
                         console.log("Can not find item \"", itemName, "\" in tab \"", tabName, "\" in config file.");
                     }
 
