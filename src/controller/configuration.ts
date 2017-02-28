@@ -26,6 +26,12 @@ export function configurationThunk(mde: MDE) : Config {
                 "showLineNumber": {
                     labelThunk: () => $.getString("config.general.showLineNumber"),
                     type: ConfigItemType.Checkbox,
+                    onChanged: (value) => {
+                        if (typeof value !== "boolean") throw new TypeError("value must be boolean");
+                        if (value !== mde.editorView.showLineNumber) {
+                            mde.editorView.toggleLineNumber();
+                        }
+                    }
                 }
             }
         }, 

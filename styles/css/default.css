@@ -3,6 +3,10 @@ body {
     margin: 0;
 }
 
+.hidden {
+    visibility: hidden;
+}
+
 .big-font {
     font-size: 18px;
 }

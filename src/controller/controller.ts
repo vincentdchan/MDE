@@ -32,6 +32,11 @@ function getAboutMessageString() : string {
     return _aboutMsg;
 }
 
+/**
+ * The controller load the config from default path,
+ * and if any changes ara made, the controller will write the 
+ * config to the default path.
+ */
 export class MDE implements IDisposable {
 
     private _buffers: TextModel[] = [];
@@ -72,6 +77,9 @@ export class MDE implements IDisposable {
         this._view = new WindowView();
         this._view.bind(this._buffer_state);
         this._view.configView.bind(this._config);
+        this._view.configView.onTabItemChanged((e) => {
+            ConfigurationUtil.saveConfigToDefaultPath(this._config);
+        });
 
         this._searchBox = SearchBox.GetOne();
         this._searchBox.closeButton.addEventListener("click", (e: MouseEvent) => {

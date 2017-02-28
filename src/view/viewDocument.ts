@@ -92,6 +92,7 @@ export class DocumentView extends DomWrapper.AbsoluteElement implements IDisposa
     private _entries: RenderEntry[];
     private _render_queue: Collection.PriorityQueue<number>;
     private _waiting_times = 0;
+    private _showLineNumber = true;
 
     constructor(allowMultiselections: boolean = false) {
         super("div", "mde-document unselectable");
@@ -334,6 +335,21 @@ export class DocumentView extends DomWrapper.AbsoluteElement implements IDisposa
 
             clipboard.writeText(textContent);
         }
+    }
+
+    toggleLineNumber() {
+        if (this._showLineNumber == true) {
+            this._showLineNumber = false;
+        } else {
+            this._showLineNumber = true;
+        }
+        /// NOTICE:
+        /// line could be null
+        this._lines.forEach((line) => {
+            if (line !== null) {
+                line.showLineNumber = this._showLineNumber;
+            }
+        });
     }
 
     private handleSelectionKeydown(evt: KeyboardEvent) {
@@ -731,7 +747,7 @@ export class DocumentView extends DomWrapper.AbsoluteElement implements IDisposa
         if (option.lineNumberFrom) {
             let linesCount = this._model.linesCount
             for (let i = option.lineNumberFrom; i <= linesCount; i++) {
-                this._lines[i].renderLineNumber(i);
+                this._lines[i].renderLineNumber(i, this._showLineNumber);
             }
         }
 
@@ -1123,6 +1139,10 @@ export class DocumentView extends DomWrapper.AbsoluteElement implements IDisposa
         window.removeEventListener("mouseup", this._window_mouseup_handler, true);
         window.removeEventListener("keydown", this._window_keydown_handler, true);
         window.removeEventListener("keyup", this._window_keyup_handler, true);
+    }
+
+    get showLineNumber() {
+        return this._showLineNumber;
     }
 
     get historyHandler(): HistoryHandler {

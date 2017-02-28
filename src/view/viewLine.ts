@@ -3,7 +3,7 @@ import {IVirtualElement, Coordinate} from "."
 import {LineRenderer, MarkdownToken} from "../controller"
 import {IDisposable, DomWrapper} from "../util"
 import {Deque} from "../util/queue"
-import {Dom} from "typescript-domhelper"
+import {Dom, text} from "typescript-domhelper"
 
 function getItem<T>(arr : T[], index: number) : T {
     if (arr === undefined || index >= arr.length || index < 0) return null;
@@ -90,6 +90,8 @@ export class LineView extends DomWrapper.AppendableDomWrapper implements IDispos
     private _words: WordView[]; 
     private _rendered_lineNumber: number = 0;
     private _line_content_dom: HTMLElement = null;
+    private _lineNumberSpan: HTMLSpanElement;
+    private _showLineNumber: boolean = true;
 
     constructor(index: number) {
         super("p", "mde-line");
@@ -130,16 +132,19 @@ export class LineView extends DomWrapper.AppendableDomWrapper implements IDispos
         this._dom.appendChild(this._line_content_dom);
     }
 
-    renderLineNumber(num: number) {
+    renderLineNumber(num: number, showLineNumber = true) {
+        this._showLineNumber = showLineNumber;
         if (num !== this._rendered_lineNumber) {
-            let span = Dom.Span("mde-line-number unselectable");
+            this._lineNumberSpan = Dom.Span("mde-line-number unselectable", null,[
+                text(num.toString()),
+            ]);
+
+            if (!this._showLineNumber) {
+                this._lineNumberSpan.classList.add('hidden');
+            }
 
             this._leftMargin.clearAll();
-
-            let node = document.createTextNode(num.toString());
-            span.appendChild(node);
-
-            this._leftMargin.element().appendChild(span);
+            this._leftMargin.element().appendChild(this._lineNumberSpan);
             this._rendered_lineNumber = num;
 
             let evt = new RenderNumberEvent(num);
@@ -199,6 +204,21 @@ export class LineView extends DomWrapper.AppendableDomWrapper implements IDispos
 
     dispose() {
         this._leftMargin.dispose();
+    }
+
+    get showLineNumber() {
+        return this._showLineNumber;
+    }
+
+    set showLineNumber(showLineNumber: boolean) {
+        if (showLineNumber !== this._showLineNumber) {
+            this._showLineNumber = showLineNumber;
+            if (this._showLineNumber) {
+                this._lineNumberSpan.classList.remove('hidden');
+            } else {
+                this._lineNumberSpan.classList.add('hidden');
+            }
+        }
     }
 
     get leftMargin() {

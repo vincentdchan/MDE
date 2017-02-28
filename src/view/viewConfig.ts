@@ -162,7 +162,7 @@ export class ConfigView extends DomWrapper.FixedElement implements IDisposable {
 
                 textInput.addEventListener("change", (e) => {
                     this.validateAndApplyNewValue(itemName, item, 
-                    textInput.value, itemContainerElem);
+                    textInput.checked, itemContainerElem);
                 });
                 
                 if (item.value) textInput.checked = item.value;

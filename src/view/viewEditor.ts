@@ -330,6 +330,14 @@ export class EditorView extends DomWrapper.FixedElement
         ];
     }
 
+    toggleLineNumber() {
+        this._document.toggleLineNumber();
+    }
+
+    get showLineNumber() {
+        return this._document.showLineNumber;
+    }
+
     get documentView() : DocumentView {
         return this._document;
     }
