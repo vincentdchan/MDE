@@ -19,7 +19,11 @@
   "keywords": [
     "editor"
   ],
-  "author": "DZ Chan",
+  "author": {
+	  "name": "DZ Chan",
+	  "email": "cdzos97@gmail.com",
+	  "url": "http://blog.diverse.space"
+  },
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/ChannelOne/MDE/issues"
@@ -42,7 +46,7 @@
   },
   "devDependencies": {
     "electron": "^1.4.15",
-    "electron-builder": "^10.15.1",
+    "electron-builder": "^14.5.3",
     "electron-winstaller": "^2.5.1",
     "gulp-typedoc": "^2.0.2",
     "mocha": "^3.2.0",
@@ -54,6 +58,12 @@
     "win": {
       "icon": "./build_resources/icon.ico"
     },
+	"linux": {
+		"category": "Office",
+		"description": "A markdown editor built on Electron.",
+		"target": ["deb", "tar.gz"],
+		"icon": "./build_resources/logo"
+	},
     "fileAssociations": [
       {
         "ext": "md",
