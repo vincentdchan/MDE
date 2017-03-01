@@ -31,8 +31,12 @@
     "config.general.language.esn": "English",
     "config.general.showLineNumber": "Line number",
 
-    "config.general.fontSize": "Font Size",
-    "config.general.lineHeight": "Line Height",
+    "config.style": "Style",
+    "config.style.fontSize": "Font Size",
+    "config.style.fontSize.big": "Big",
+    "config.style.fontSize.normal": "Normal",
+    "config.style.fontSize.small": "Small",
+    "config.style.lineHeight": "Line Height",
 
     "config.alert.valueIsNotNumber": "Value is not as number",
     "config.alert.valueNotInRange": "value must be between {0} and {1}",
