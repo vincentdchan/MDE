@@ -33,6 +33,7 @@ export function configurationThunk(mde: MDE) : Config {
                         }
                     },
                     triggerOnStart: true,
+                    value: true,
                 }
             }
         }, 
