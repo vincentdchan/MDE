@@ -6,7 +6,7 @@ MDE(Markdown Editor) is a Markdown editor based on [Electron](http://electron.at
 
 ![mde.gif](https://ooo.0o0.ooo/2017/02/08/589af9da2cae8.gif)
 
-![config.png](https://ooo.0o0.ooo/2017/03/02/58b77f8b2761c.png)
+![config.png](https://ooo.0o0.ooo/2017/03/02/58b78181674d9.png)
 
 ## Features
 
