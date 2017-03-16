@@ -85,13 +85,7 @@ export function configurationThunk(mde: MDE) : Config {
                                 break;
                         }
                     }
-                }, 
-                "lineHeight": {
-                    labelThunk: () => $.getString("config.style.lineHeight"),
-                    type: ConfigItemType.Text,
-                    value: "18",
-                    validators: [ValidatorGenerator.NumberInRange(14, 25)]
-                }
+                } 
             }
         }
     }
