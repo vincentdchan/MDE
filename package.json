@@ -41,7 +41,7 @@
     "typescript-domhelper": "^1.1.0"
   },
   "devDependencies": {
-    "electron": "^1.4.15",
+    "electron": "^1.6.6",
     "electron-builder": "^10.15.1",
     "electron-winstaller": "^2.5.1",
     "gulp-typedoc": "^2.0.2",
