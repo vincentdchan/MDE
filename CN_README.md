@@ -2,6 +2,8 @@
 
 MDE(Markdown Editor) 是一个基于[Electron](http://electron.atom.io/)的编辑器。
 
+**已弃坑**
+
 \[[English](./README.md)\]
 
 ![mde.gif](https://ooo.0o0.ooo/2017/02/08/589af9da2cae8.gif)
@@ -16,7 +18,7 @@ MDE(Markdown Editor) 是一个基于[Electron](http://electron.atom.io/)的编�
 
 ## 下载
 
-转去 [releases](https://github.com/ChannelOne/MDE/releases) 页面下载最新版本。
+转去 [releases](https://github.com/vincentdchan/MDE/releases) 页面下载最新版本。
 
 ## Windows 10
 
@@ -42,5 +44,5 @@ MDE(Markdown Editor) 是一个基于[Electron](http://electron.atom.io/)的编�
 
 ## Connect
 
-[我的博客](http://blog.diverse.space/category/program/editor/)上面有一系列关于MDE的文章，
+[我的博客](https://vincentdchan.github.io/tags/editor/)上面有一系列关于MDE的文章，
 有兴趣的我们可以一同学习。
