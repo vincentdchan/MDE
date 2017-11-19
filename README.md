@@ -2,6 +2,8 @@
 
 MDE(Markdown Editor) is a Markdown editor based on [Electron](http://electron.atom.io/), written in *Typescript*.
 
+**Abandoned!**
+
 \[[中文](./CN_README.md)\]
 
 ![mde.gif](https://ooo.0o0.ooo/2017/02/08/589af9da2cae8.gif)
@@ -16,7 +18,7 @@ MDE(Markdown Editor) is a Markdown editor based on [Electron](http://electron.at
 
 ## Download
 
-Go go the [releases](https://github.com/ChannelOne/MDE/releases) page and download the latest version. 
+Go go the [releases](https://github.com/vincentdchan/MDE/releases) page and download the latest version. 
 
 ## Windows 10
 
@@ -41,5 +43,5 @@ It's on progress and comming soon.
 
 ## Connect
 
-[My blog](http://blog.diverse.space/category/program/editor/) have a log of articles about
+[My blog](https://vincentdchan.github.io/tags/editor/) have a log of articles about
 developing `MDE Editor`. If you are interested, please join me.

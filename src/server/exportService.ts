@@ -24,7 +24,7 @@ export function initializeExportService() {
         win.on('closed', () => {
             win = null;
         })
-        win.openDevTools();
+        // win.openDevTools();
 
     });
 
